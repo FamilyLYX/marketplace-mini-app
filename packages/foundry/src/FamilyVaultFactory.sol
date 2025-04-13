@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+import "./FamilyVault.sol";
+
+contract FamilyVaultFactory {
+    event VaultCreated(
+        address indexed vaultAddress,
+        address indexed seller,
+        address nftContract,
+        bytes32 tokenId,
+        uint256 priceInLYX,
+        bytes32 expectedUIDHash
+    );
+
+    function createVault(
+        address _nftContract,
+        bytes32 _tokenId,
+        uint256 _priceInLYX,
+        bytes32 _expectedUIDHash
+    ) external returns (address) {
+        FamilyVault vault = new FamilyVault(
+            msg.sender,
+            _nftContract,
+            _tokenId,
+            _priceInLYX,
+            _expectedUIDHash
+        );
+
+        emit VaultCreated(
+            address(vault),
+            msg.sender,
+            _nftContract,
+            _tokenId,
+            _priceInLYX,
+            _expectedUIDHash
+        );
+
+        return address(vault);
+    }
+}
