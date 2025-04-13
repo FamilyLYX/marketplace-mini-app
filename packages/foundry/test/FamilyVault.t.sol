@@ -130,8 +130,7 @@ contract FamilyVaultTest is Test {
         // Try to buy before NFT is deposited
         vm.prank(buyer);
         vm.expectRevert("Invalid state");
-        (bool success, ) = address(vault).call{value: price}("");
-        assertFalse(success);
+        address(vault).call{value: price}("");
     }
 
     function test_WrongUIDConfirmation() public {
@@ -209,20 +208,22 @@ contract FamilyVaultTest is Test {
     }
 
     function test_DisputeAfterConfirmation() public {
-        // Setup vault with NFT, buyer payment, and confirmation
+        // Mint and transfer NFT to vault
         vm.startPrank(seller);
         nftContract.mint(seller, tokenId);
         nftContract.transfer(seller, address(vault), tokenId, true, "0x");
         vm.stopPrank();
 
+        // Buyer deposits payment (triggering FundsDeposited state)
         vm.prank(buyer);
         (bool success, ) = address(vault).call{value: price}("");
         assertTrue(success);
 
+        // Buyer confirms receipt (which will auto-settle the trade and move to Completed state)
         vm.prank(buyer);
         vault.confirmReceipt(plainUidCode);
 
-        // Try to dispute after completion
+        // Attempt to dispute after completion should revert
         vm.prank(buyer);
         vm.expectRevert("Can't dispute now");
         vault.initiateDispute();
