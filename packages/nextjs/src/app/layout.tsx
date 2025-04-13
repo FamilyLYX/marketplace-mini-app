@@ -2,13 +2,13 @@ import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { TemplateAppWithProviders } from "@/components/template-provider";
+import { MarketPlaceAppWithProviders } from "@/components/marketplace-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Forkable Next.js Template",
-  description: "A template for Next.js with UP provider and Wagmi and supabase",
+  title: "FamilyLYX: Marketplace",
+  description: "Buy, Sell your products",
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <TemplateAppWithProviders>{children}</TemplateAppWithProviders>
+        <MarketPlaceAppWithProviders>{children}</MarketPlaceAppWithProviders>
       </body>
     </html>
   );
