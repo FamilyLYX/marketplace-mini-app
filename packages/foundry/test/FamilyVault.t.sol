@@ -23,9 +23,9 @@ contract FamilyVaultTest is Test {
     MockLSP8 nftContract;
 
     // Actors
-    address seller = address(0x1);
-    address buyer = address(0x2);
-    address thirdParty = address(0x3);
+    address seller = vm.addr(0x1);
+    address buyer = vm.addr(2);
+    address thirdParty = vm.addr(0x3);
 
     // Test parameters
     bytes32 tokenId = bytes32(uint256(1));
@@ -222,13 +222,9 @@ contract FamilyVaultTest is Test {
         vm.prank(buyer);
         (bool success, ) = address(vault).call{value: price}("");
         assertTrue(success);
-
         // Buyer confirms receipt (which will auto-settle the trade and move to Completed state)
         vm.prank(buyer);
         vault.confirmReceipt(plainUidCode);
-
-        // Attempt to dispute after completion should revert
-        vm.prank(buyer);
         vm.expectRevert("Can't dispute now");
         vault.initiateDispute();
     }

@@ -81,7 +81,7 @@ contract FamilyVault is LSP9Vault {
             msg.sender == nftContract &&
             abi.decode(data, (bytes32)) == tokenId
         ) {
-            state = VaultState.Listed;
+            state = VaultState.Listed; // or another appropriate state transition
         }
         return "";
     }
@@ -93,12 +93,12 @@ contract FamilyVault is LSP9Vault {
         require(hashed == expectedUIDHash, "UID hash mismatch");
         state = VaultState.DeliveryConfirmed;
         emit ReceiptConfirmed(msg.sender);
-
         _settleTrade();
     }
 
     function _settleTrade() internal onlyInState(VaultState.DeliveryConfirmed) {
         state = VaultState.Completed;
+
         ILSP8IdentifiableDigitalAsset(nftContract).transfer(
             address(this),
             buyer,
@@ -106,7 +106,8 @@ contract FamilyVault is LSP9Vault {
             true,
             "0x"
         );
-        payable(seller).transfer(priceInLYX);
+        (bool success, ) = seller.call{value: priceInLYX}("");
+        require(success, "Transfer to seller failed");
         emit TradeCompleted();
     }
 
