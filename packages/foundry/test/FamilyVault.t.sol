@@ -87,16 +87,18 @@ contract FamilyVaultTest is Test {
             "Vault is token owner: %s",
             nftContract.tokenOwnerOf(tokenId) == address(vault)
         );
+
         // Verify state changed to Listed
         assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Listed));
+
         // Buyer deposits funds
         vm.prank(buyer);
         vm.expectEmit(true, false, false, true);
-        emit FundsDeposited(buyer, price);
+        emit FundsDeposited(buyer, price); // Expect FundsDeposited event
         (bool success, ) = address(vault).call{value: price}("");
         assertTrue(success);
 
-        // Verify state and buyer address
+        // Verify state and buyer address after deposit
         assertEq(vault.buyer(), buyer);
         assertEq(
             uint(vault.state()),
@@ -107,14 +109,15 @@ contract FamilyVaultTest is Test {
         vm.prank(buyer);
         vm.expectEmit(true, false, false, false);
         console.log("Before confirmReceipt: state = %s", uint(vault.state()));
-        emit ReceiptConfirmed(buyer);
+        emit ReceiptConfirmed(buyer); // Expect ReceiptConfirmed event
+        vm.prank(buyer);
         vault.confirmReceipt(plainUidCode);
         console.log("After confirmReceipt: state = %s", uint(vault.state()));
 
         // Verify final state and balances/ownership
-        assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Completed));
-        assertEq(nftContract.tokenOwnerOf(tokenId), buyer);
-        assertEq(address(seller).balance, 11 ether); // Initial 10 + 1 ether from sale
+        assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Completed)); // Final state should be Completed
+        assertEq(nftContract.tokenOwnerOf(tokenId), buyer); // NFT should now belong to buyer
+        assertEq(address(seller).balance, 11 ether); // Seller should have received 1 ether from the sale (total balance should be 11 ether)
     }
 
     function test_WrongPaymentAmount() public {
@@ -218,13 +221,23 @@ contract FamilyVaultTest is Test {
         nftContract.transfer(seller, address(vault), tokenId, true, "0x");
         vm.stopPrank();
 
-        // Buyer deposits payment (triggering FundsDeposited state)
+        // Verify the vault owns the token
+        console.log(
+            "Vault is token owner: %s",
+            nftContract.tokenOwnerOf(tokenId) == address(vault)
+        );
+
+        // Buyer deposits payment, triggering FundsDeposited state
         vm.prank(buyer);
         (bool success, ) = address(vault).call{value: price}("");
         assertTrue(success);
-        // Buyer confirms receipt (which will auto-settle the trade and move to Completed state)
+
+        // Buyer confirms receipt, which should settle the trade and move to Completed state
         vm.prank(buyer);
         vault.confirmReceipt(plainUidCode);
+
+        // Now attempt to initiate a dispute after confirmation (this should fail)
+        vm.prank(seller);
         vm.expectRevert("Can't dispute now");
         vault.initiateDispute();
     }

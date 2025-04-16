@@ -79,7 +79,7 @@ contract FamilyVault is LSP9Vault {
         if (
             state == VaultState.Initialized &&
             msg.sender == nftContract &&
-            abi.decode(data, (bytes32)) == tokenId
+            data.length > 0
         ) {
             state = VaultState.Listed; // or another appropriate state transition
         }
