@@ -7,6 +7,7 @@ import "./FamilyVault.sol";
 contract FamilyVaultFactory {
     event VaultCreated(
         address indexed vaultAddress,
+        address indexed admin,
         address indexed seller,
         address nftContract,
         bytes32 tokenId,
@@ -15,12 +16,14 @@ contract FamilyVaultFactory {
     );
 
     function createVault(
+        address _admin,
         address _nftContract,
         bytes32 _tokenId,
         uint256 _priceInLYX,
         bytes32 _expectedUIDHash
     ) external returns (address) {
         FamilyVault vault = new FamilyVault(
+            _admin,
             msg.sender,
             _nftContract,
             _tokenId,
@@ -30,6 +33,7 @@ contract FamilyVaultFactory {
 
         emit VaultCreated(
             address(vault),
+            _admin,
             msg.sender,
             _nftContract,
             _tokenId,

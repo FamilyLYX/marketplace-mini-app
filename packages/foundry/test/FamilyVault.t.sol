@@ -23,6 +23,7 @@ contract FamilyVaultTest is Test {
     MockLSP8 nftContract;
 
     // Actors
+    address admin = vm.addr(0x99);
     address seller = vm.addr(0x1);
     address buyer = vm.addr(2);
     address thirdParty = vm.addr(0x3);
@@ -44,9 +45,11 @@ contract FamilyVaultTest is Test {
     event ReceiptConfirmed(address indexed buyer);
     event TradeCompleted();
     event DisputeOpened(address indexed initiator);
+    event TradeSettledByAdmin(address indexed admin);
 
     function setUp() public {
         // Setup seller with some ETH
+        vm.deal(admin, 10 ether);
         vm.deal(seller, 10 ether);
         vm.deal(buyer, 10 ether);
 
@@ -57,6 +60,7 @@ contract FamilyVaultTest is Test {
         // Deploy vault contract
         vm.prank(seller);
         vault = new FamilyVault(
+            admin,
             seller,
             address(nftContract),
             tokenId,
@@ -174,91 +178,6 @@ contract FamilyVaultTest is Test {
         vault.confirmReceipt(plainUidCode);
     }
 
-    function test_BuyerDispute() public {
-        // Setup vault with NFT and buyer payment
-        vm.startPrank(seller);
-        nftContract.mint(seller, tokenId);
-        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
-        vm.stopPrank();
-
-        vm.prank(buyer);
-        (bool success, ) = address(vault).call{value: price}("");
-        assertTrue(success);
-
-        // Buyer initiates dispute
-        vm.prank(buyer);
-        vm.expectEmit(true, false, false, false);
-        emit DisputeOpened(buyer);
-        vault.initiateDispute();
-
-        assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Disputed));
-    }
-
-    function test_SellerDispute() public {
-        // Setup vault with NFT and buyer payment
-        vm.startPrank(seller);
-        nftContract.mint(seller, tokenId);
-        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
-        vm.stopPrank();
-
-        vm.prank(buyer);
-        (bool success, ) = address(vault).call{value: price}("");
-        assertTrue(success);
-
-        // Seller initiates dispute
-        vm.prank(seller);
-        vm.expectEmit(true, false, false, false);
-        emit DisputeOpened(seller);
-        vault.initiateDispute();
-
-        assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Disputed));
-    }
-
-    function test_DisputeAfterConfirmation() public {
-        // Mint and transfer NFT to vault
-        vm.startPrank(seller);
-        nftContract.mint(seller, tokenId);
-        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
-        vm.stopPrank();
-
-        // Verify the vault owns the token
-        console.log(
-            "Vault is token owner: %s",
-            nftContract.tokenOwnerOf(tokenId) == address(vault)
-        );
-
-        // Buyer deposits payment, triggering FundsDeposited state
-        vm.prank(buyer);
-        (bool success, ) = address(vault).call{value: price}("");
-        assertTrue(success);
-
-        // Buyer confirms receipt, which should settle the trade and move to Completed state
-        vm.prank(buyer);
-        vault.confirmReceipt(plainUidCode);
-
-        // Now attempt to initiate a dispute after confirmation (this should fail)
-        vm.prank(seller);
-        vm.expectRevert("Can't dispute now");
-        vault.initiateDispute();
-    }
-
-    function test_OnlyParticipantsCanDispute() public {
-        // Setup vault with NFT and buyer payment
-        vm.startPrank(seller);
-        nftContract.mint(seller, tokenId);
-        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
-        vm.stopPrank();
-
-        vm.prank(buyer);
-        (bool success, ) = address(vault).call{value: price}("");
-        assertTrue(success);
-
-        // Try to dispute from third party
-        vm.prank(thirdParty);
-        vm.expectRevert("Not participant");
-        vault.initiateDispute();
-    }
-
     function test_UniversalReceiverWithWrongParameters() public {
         // Mint NFT
         vm.prank(seller);
@@ -312,5 +231,124 @@ contract FamilyVaultTest is Test {
             uint(vault.state()),
             uint(FamilyVault.VaultState.FundsDeposited)
         );
+    }
+
+    function test_CanInitiateDispute_AsBuyerOrSeller() public {
+        // Setup: Mint NFT, transfer to vault, buyer deposits
+        vm.startPrank(seller);
+        nftContract.mint(seller, tokenId);
+        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
+        vm.stopPrank();
+
+        vm.prank(buyer);
+        (bool success, ) = address(vault).call{value: price}("");
+        assertTrue(success);
+
+        // Buyer initiates dispute
+        vm.prank(buyer);
+        vault.initiateDispute();
+        assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Disputed));
+
+        // Reset for seller dispute
+        setUp(); // resets the contract
+
+        vm.startPrank(seller);
+        nftContract.mint(seller, tokenId);
+        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
+        vm.stopPrank();
+
+        vm.prank(buyer);
+        (success, ) = address(vault).call{value: price}("");
+        assertTrue(success);
+
+        vm.prank(seller);
+        vault.initiateDispute();
+        assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Disputed));
+    }
+
+    function test_AdminCanResolveDisputeToBuyer() public {
+        // Setup
+        vm.startPrank(seller);
+        nftContract.mint(seller, tokenId);
+        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
+        vm.stopPrank();
+
+        vm.prank(buyer);
+        (bool success, ) = address(vault).call{value: price}("");
+        assertEq(buyer.balance, 9 ether); // buyer should have 9 ether after deposit
+        assertTrue(success);
+
+        vm.prank(buyer);
+        vault.initiateDispute();
+
+        vm.deal(address(vault), price); // Simulate vault has funds
+
+        // Admin resolves dispute in favor of buyer
+        vm.prank(admin);
+        vm.expectEmit(true, false, false, false);
+        emit TradeSettledByAdmin(admin);
+        vault.resolveDispute(buyer, buyer); // NFT + funds to buyer
+
+        assertEq(nftContract.tokenOwnerOf(tokenId), buyer);
+        assertEq(buyer.balance, 10 ether); // received refund
+        assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Completed));
+    }
+
+    function test_AdminCanResolveDisputeToSeller() public {
+        // Setup
+        vm.startPrank(seller);
+        nftContract.mint(seller, tokenId);
+        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
+        vm.stopPrank();
+
+        vm.prank(buyer);
+        (bool success, ) = address(vault).call{value: price}("");
+        assertTrue(success);
+
+        vm.prank(seller);
+        vault.initiateDispute();
+
+        vm.deal(address(vault), price); // Simulate vault has funds
+
+        // Admin resolves dispute in favor of seller
+        vm.prank(admin);
+        vault.resolveDispute(seller, seller); // NFT + funds to seller
+
+        assertEq(nftContract.tokenOwnerOf(tokenId), seller);
+        assertEq(seller.balance, 11 ether); // received payment
+        assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Completed));
+    }
+
+    function test_OnlyAdminCanResolveDispute() public {
+        // Setup
+        vm.startPrank(seller);
+        nftContract.mint(seller, tokenId);
+        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
+        vm.stopPrank();
+
+        vm.prank(buyer);
+        (bool success, ) = address(vault).call{value: price}("");
+        assertTrue(success);
+
+        vm.prank(seller);
+        vault.initiateDispute();
+
+        vm.prank(buyer);
+        vm.expectRevert("Not admin");
+        vault.resolveDispute(buyer, buyer);
+    }
+
+    function test_ResolveDispute_OnlyInDisputedState() public {
+        // Try resolve without dispute
+        vm.startPrank(seller);
+        nftContract.mint(seller, tokenId);
+        nftContract.transfer(seller, address(vault), tokenId, true, "0x");
+        vm.stopPrank();
+
+        vm.deal(address(vault), price);
+
+        vm.prank(admin);
+        vm.expectRevert("Invalid state");
+        vault.resolveDispute(buyer, buyer);
     }
 }

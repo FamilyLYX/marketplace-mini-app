@@ -18,7 +18,7 @@ contract FamilyVault is LSP9Vault {
         Disputed,
         Cancelled
     }
-
+    address public immutable admin;
     address public seller;
     address public buyer;
     address public nftContract;
@@ -37,7 +37,7 @@ contract FamilyVault is LSP9Vault {
     event ReceiptConfirmed(address indexed buyer);
     event TradeCompleted();
     event DisputeOpened(address indexed initiator);
-
+    event TradeSettledByAdmin(address indexed admin);
     modifier onlyBuyer() {
         require(msg.sender == buyer, "Not buyer");
         _;
@@ -48,13 +48,20 @@ contract FamilyVault is LSP9Vault {
         _;
     }
 
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Not admin");
+        _;
+    }
+
     constructor(
+        address _admin,
         address _seller,
         address _nftContract,
         bytes32 _tokenId,
         uint256 _priceInLYX,
         bytes32 _expectedUIDHash
     ) LSP9Vault(_seller) {
+        admin = _admin;
         seller = _seller;
         nftContract = _nftContract;
         tokenId = _tokenId;
@@ -111,14 +118,33 @@ contract FamilyVault is LSP9Vault {
         emit TradeCompleted();
     }
 
-    function initiateDispute() external {
-        require(msg.sender == seller || msg.sender == buyer, "Not participant");
+    function initiateDispute() external onlyInState(VaultState.FundsDeposited) {
         require(
-            state == VaultState.FundsDeposited ||
-                state == VaultState.DeliveryConfirmed,
-            "Can't dispute now"
+            msg.sender == buyer || msg.sender == seller,
+            "Only buyer or seller"
         );
         state = VaultState.Disputed;
         emit DisputeOpened(msg.sender);
+    }
+
+    function resolveDispute(
+        address nftRecipient,
+        address paymentRecipient
+    ) external onlyAdmin onlyInState(VaultState.Disputed) {
+        state = VaultState.Completed;
+
+        ILSP8IdentifiableDigitalAsset(nftContract).transfer(
+            address(this),
+            nftRecipient,
+            tokenId,
+            true,
+            "0x"
+        );
+
+        (bool sent, ) = paymentRecipient.call{value: priceInLYX}("");
+        require(sent, "Payment transfer failed");
+
+        emit TradeSettledByAdmin(msg.sender);
+        emit TradeCompleted();
     }
 }
