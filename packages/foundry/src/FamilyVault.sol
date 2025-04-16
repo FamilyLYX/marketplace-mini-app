@@ -48,6 +48,14 @@ contract FamilyVault is LSP9Vault {
         _;
     }
 
+    modifier onlyParticipant() {
+        require(
+            msg.sender == buyer || msg.sender == seller,
+            "Not buyer or seller"
+        );
+        _;
+    }
+
     modifier onlyAdmin() {
         require(msg.sender == admin, "Not admin");
         _;
@@ -83,13 +91,13 @@ contract FamilyVault is LSP9Vault {
         bytes32 typeId,
         bytes memory data
     ) public payable virtual override returns (bytes memory) {
-        if (
-            state == VaultState.Initialized &&
-            msg.sender == nftContract &&
-            data.length > 0
-        ) {
-            state = VaultState.Listed; // or another appropriate state transition
+        if (state == VaultState.Initialized && msg.sender == nftContract) {
+            address currentOwner = ILSP8IdentifiableDigitalAsset(nftContract)
+                .tokenOwnerOf(tokenId);
+            require(currentOwner == address(this), "Incorrect tokenId");
+            state = VaultState.Listed;
         }
+
         return "";
     }
 
@@ -104,8 +112,6 @@ contract FamilyVault is LSP9Vault {
     }
 
     function _settleTrade() internal onlyInState(VaultState.DeliveryConfirmed) {
-        state = VaultState.Completed;
-
         ILSP8IdentifiableDigitalAsset(nftContract).transfer(
             address(this),
             buyer,
@@ -115,14 +121,16 @@ contract FamilyVault is LSP9Vault {
         );
         (bool success, ) = seller.call{value: priceInLYX}("");
         require(success, "Transfer to seller failed");
+
+        state = VaultState.Completed;
         emit TradeCompleted();
     }
 
-    function initiateDispute() external onlyInState(VaultState.FundsDeposited) {
-        require(
-            msg.sender == buyer || msg.sender == seller,
-            "Only buyer or seller"
-        );
+    function initiateDispute()
+        external
+        onlyParticipant
+        onlyInState(VaultState.FundsDeposited)
+    {
         state = VaultState.Disputed;
         emit DisputeOpened(msg.sender);
     }
@@ -131,7 +139,13 @@ contract FamilyVault is LSP9Vault {
         address nftRecipient,
         address paymentRecipient
     ) external onlyAdmin onlyInState(VaultState.Disputed) {
-        state = VaultState.Completed;
+        require(
+            nftRecipient != address(0) &&
+                paymentRecipient != address(0) &&
+                (nftRecipient == buyer || nftRecipient == seller) &&
+                (paymentRecipient == buyer || paymentRecipient == seller),
+            "Invalid recipient has to be either buyer or seller"
+        );
 
         ILSP8IdentifiableDigitalAsset(nftContract).transfer(
             address(this),
@@ -143,7 +157,7 @@ contract FamilyVault is LSP9Vault {
 
         (bool sent, ) = paymentRecipient.call{value: priceInLYX}("");
         require(sent, "Payment transfer failed");
-
+        state = VaultState.Completed;
         emit TradeSettledByAdmin(msg.sender);
         emit TradeCompleted();
     }
