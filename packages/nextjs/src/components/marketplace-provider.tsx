@@ -8,7 +8,7 @@ import { config } from "../lib/wagmi";
 
 const MarketPlaceApp = ({ children }: { children: React.ReactNode }) => {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system">
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem={false}>
       <UpProvider>{children}</UpProvider>
       <Toaster />
     </ThemeProvider>

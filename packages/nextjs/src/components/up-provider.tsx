@@ -157,11 +157,5 @@ export function UpProvider({ children }: UpProviderProps) {
     selectedAddress,
     isSearching,
   ]);
-  return (
-    <UpContext.Provider value={data}>
-      <div className="min-h-screen flex items-center justify-center">
-        {children}
-      </div>
-    </UpContext.Provider>
-  );
+  return <UpContext.Provider value={data}>{children}</UpContext.Provider>;
 }
