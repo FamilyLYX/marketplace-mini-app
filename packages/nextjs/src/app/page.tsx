@@ -5,15 +5,25 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
+import { useUpProvider } from "@/components/up-provider";
 
 const Inventory = () => {
-  // do a call to getAllNFTMetadata
+  const { accounts } = useUpProvider();
   const { data } = useQuery({
     queryKey: ["allNfts"],
     queryFn: () => getAllNFTMetadata(),
     refetchOnWindowFocus: false,
   });
-  console.log("data", data);
+
+  const products = React.useMemo(() => {
+    if (!data || !accounts) return [];
+    return accounts.flatMap((address) =>
+      Object.values(data[address] ?? {}).flat(),
+    );
+  }, [data, accounts]);
+
+  console.log(data);
+
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className="text-center mb-6">
@@ -40,7 +50,11 @@ const Inventory = () => {
         </TabsList>
 
         <TabsContent value="products">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
+            {products.map(({ decodedMetadata }, index) => (
+              <ProductCard key={index} metadata={decodedMetadata} />
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
@@ -48,7 +62,3 @@ const Inventory = () => {
 };
 
 export default Inventory;
-
-// {products.map((product, index) => (
-//               <ProductCard key={index} metadata={product} />
-//             ))}
