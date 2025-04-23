@@ -25,13 +25,11 @@ export async function getAllNFTMetadata(): Promise<
       address: FACTORY_ADDRESS,
       functionName: "getDeployedNFTs",
     })) as string[];
-    console.log("Deployed NFTs:", deployedNFTs);
     const ownerMap: Record<
       string,
       { nftAddress: string; decodedMetadata: ProductMetadata }[]
     > = {};
     for (const nftAddress of deployedNFTs) {
-      console.log("NFT Address:", nftAddress);
       // 2. Fetch metadata for each NFT
       const metadata = await readClient.readContract({
         abi: NFT_ABI,
@@ -45,8 +43,7 @@ export async function getAllNFTMetadata(): Promise<
         abi: NFT_ABI,
         address: nftAddress as `0x${string}`,
         functionName: "owner",
-      })) as string;
-      console.log("👤 Owner:", owner, " of metadata: ", decodedMetadata);
+      })) as `0x${string}`;
       if (!ownerMap[owner]) {
         ownerMap[owner] = [];
       }

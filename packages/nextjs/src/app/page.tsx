@@ -16,13 +16,9 @@ const Inventory = () => {
   });
 
   const products = React.useMemo(() => {
-    if (!data || !accounts) return [];
-    return accounts.flatMap((address) =>
-      Object.values(data[address] ?? {}).flat(),
-    );
+    if (!data || !accounts || accounts.length === 0) return [];
+    return data[accounts[0]] ?? [];
   }, [data, accounts]);
-
-  console.log(data);
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
