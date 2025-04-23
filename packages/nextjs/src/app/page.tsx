@@ -6,7 +6,7 @@ import { ProductCard } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
 import { useUpProvider } from "@/components/up-provider";
-
+import { getAddress } from "viem";
 const Inventory = () => {
   const { accounts } = useUpProvider();
   const { data } = useQuery({
@@ -17,7 +17,7 @@ const Inventory = () => {
 
   const products = React.useMemo(() => {
     if (!data || !accounts || accounts.length === 0) return [];
-    return data[accounts[0]] ?? [];
+    return data[getAddress(accounts[0])] ?? [];
   }, [data, accounts]);
 
   return (
