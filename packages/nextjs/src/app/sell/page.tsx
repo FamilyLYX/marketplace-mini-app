@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
 import { parseEther } from "viem";
+import { Vault } from "@/types";
 
 export default function SellProductPage() {
   const router = useRouter();
@@ -47,17 +48,19 @@ export default function SellProductPage() {
       }
       const { tx, vaultAddress } = res;
       try {
-        const response = await fetch("/api/vault-listing", {
+        const response = await fetch("/api/vault", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            vaultAddress,
-            nftContract,
-            expectedUIDHash,
-            price,
-            location,
+            vault_address: vaultAddress,
+            nft_contract: nftContract,
+            seller: "0x",
             notes,
-          }),
+            price_in_lyx: parseEther(price.toString()).toString(),
+            title: parsedMetadata?.title,
+            location,
+            listing_status:"listed"
+          } as Vault),
         });
         if (!response.ok) {
           const errorText = await response.text();
@@ -66,7 +69,7 @@ export default function SellProductPage() {
       } catch (error) {
         console.error("Vault listing failed:", error);
       }
-      return { tx, vaultAddress };
+      // return { tx, vaultAddress };
     },
     onSuccess: (data) => {
       console.log("Transaction successful:", data);

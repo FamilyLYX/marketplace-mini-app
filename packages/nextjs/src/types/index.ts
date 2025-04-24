@@ -20,7 +20,7 @@ export type Vault = {
   vault_address: string;
   nft_contract: string;
   seller: string;
-  price_in_lyx: number;
+  price_in_lyx: string;
   title: string;
   description?: string;
   location?: string;
