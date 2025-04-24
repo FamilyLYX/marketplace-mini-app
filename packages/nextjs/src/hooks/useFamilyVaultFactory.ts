@@ -7,21 +7,26 @@ import {
 import { createPublicClient, http } from "viem";
 import { luksoTestnet } from "viem/chains";
 import { parseEventLogs } from "viem";
+import { account } from "@/lib/owner";
 const readClient = createPublicClient({
   chain: luksoTestnet,
   transport: http("https://rpc.testnet.lukso.network"),
 });
 
+const admin = account.address;
+type CreateVaultParams = {
+  nftContract: string;
+  priceInLYX: number;
+  expectedUIDHash: string;
+};
 export const useFamilyVaultFactory = () => {
   const { client, accounts, walletConnected } = useUpProvider();
 
-  const createVault = async (
-    admin: string,
-    nftContract: string,
-    tokenId: string,
-    priceInLYX: number,
-    expectedUIDHash: string,
-  ) => {
+  const createVault = async ({
+    nftContract,
+    priceInLYX,
+    expectedUIDHash,
+  }: CreateVaultParams) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
       return null;
@@ -34,7 +39,7 @@ export const useFamilyVaultFactory = () => {
         functionName: "createVault",
         account: accounts[0] as `0x${string}`,
         chain: client.chain,
-        args: [admin, nftContract, tokenId, priceInLYX, expectedUIDHash],
+        args: [admin, nftContract, priceInLYX, expectedUIDHash],
       });
       const receipt = await readClient.waitForTransactionReceipt({
         hash: tx,

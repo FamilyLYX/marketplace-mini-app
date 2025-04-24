@@ -14,7 +14,7 @@ if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
   throw new Error("PRIVATE_KEY environment variable is not set.");
 }
 
-const account = privateKeyToAccount(
+export const account = privateKeyToAccount(
   process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`,
 );
 
@@ -100,13 +100,11 @@ export const createVaultTest = async (params: CreateVaultParams) => {
       logs: receipt.logs,
       eventName: "VaultCreated",
     });
-    
-    // @ts-ignore
+
     const vaultAddress = parsedLogs?.[0]?.args?.vaultAddress;
 
     console.log("✅ Vault deployed at:", vaultAddress);
     return { tx, vaultAddress };
-    return { tx };
   } catch (err) {
     console.error("Error creating vault:", err);
     return null;

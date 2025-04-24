@@ -3,15 +3,27 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import Image from "next/image";
 import { useState } from "react";
 import { X, Plus } from "lucide-react";
 
+import { useSearchParams } from "next/navigation";
+
 export default function SellProductPage() {
+  const searchParams = useSearchParams();
+  const nftContract = searchParams.get("nftContract") || "";
+  const expectedUIDHash = searchParams.get("expectedUIDHash") || "";
+  const metadataParam = searchParams.get("metadata") || "";
+  let parsedMetadata: { [key: string]: any } = {};
+  try {
+    parsedMetadata = JSON.parse(decodeURIComponent(metadataParam));
+  } catch (error) {
+    console.error("Invalid metadata JSON", error);
+  }
+
   const [location, setLocation] = useState("");
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(parsedMetadata.description || "");
   const [price, setPrice] = useState("1245");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>(parsedMetadata.images || []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,10 +94,10 @@ export default function SellProductPage() {
 
               {images.map((src, i) => (
                 <div key={i} className="relative w-14 h-14">
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={src}
                     alt={`Uploaded ${i}`}
-                    fill
                     className="object-cover rounded-full"
                   />
                   <button

@@ -16,10 +16,15 @@ const Inventory = () => {
     refetchOnWindowFocus: false,
   });
 
+  // const products = React.useMemo(() => {
+  //   if (!data || !accounts || accounts.length === 0) return [];
+  //   return data[getAddress(accounts[0])] ?? [];
+  // }, [data, accounts]);
+
   const products = React.useMemo(() => {
-    if (!data || !accounts || accounts.length === 0) return [];
-    return data[getAddress(accounts[0])] ?? [];
-  }, [data, accounts]);
+    if (!data) return [];
+    return Object.values(data).flat();
+  }, [data]);
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
@@ -48,8 +53,8 @@ const Inventory = () => {
 
         <TabsContent value="products">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-            {products.map(({ decodedMetadata }, index) => (
-              <ProductCard key={index} metadata={decodedMetadata} />
+            {products.map(({ nftAddress, decodedMetadata }, index) => (
+              <ProductCard key={index} metadata={decodedMetadata} nftAddress={nftAddress} />
             ))}
           </div>
         </TabsContent>
@@ -61,7 +66,8 @@ const Inventory = () => {
           createVaultTest({
             nftContract: "0x8c1d4f2a3b5e7c9e6f3a4b5d8e2f4c5e4f5d4c5e",
             priceInLYX: 0,
-            expectedUIDHash: "0x795952d3f4de4d818d3a83de0a101bdea2324f54db22bfafe428459ade5216c1",
+            expectedUIDHash:
+              "0x795952d3f4de4d818d3a83de0a101bdea2324f54db22bfafe428459ade5216c1",
           });
         }}
       >

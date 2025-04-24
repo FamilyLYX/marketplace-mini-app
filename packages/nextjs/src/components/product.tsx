@@ -8,6 +8,9 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRef } from "react";
+import { Button } from "./ui/button";
+import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
+import { useRouter } from "next/navigation";
 
 export type ProductMetadata = {
   title: string;
@@ -52,9 +55,19 @@ function ProductImageCarousel({ images }: { images: string[] }) {
 }
 
 // Main component
-export function ProductCard({ metadata }: { metadata: ProductMetadata }) {
+
+export function ProductCard({
+  metadata,
+  nftAddress,
+  expectedUIDHash,
+}: {
+  metadata: ProductMetadata;
+  nftAddress: `0x${string}` | string;
+  expectedUIDHash: `0x${string}`;
+}) {
+  const {push} = useRouter();
   return (
-    <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl">
+    <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
       <ProductImageCarousel images={metadata.images} />
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
@@ -71,6 +84,20 @@ export function ProductCard({ metadata }: { metadata: ProductMetadata }) {
           <span className="font-medium">{metadata.brand}</span>
         </p>
       </CardContent>
+      <div className="p-4 flex justify-start">
+        <Button
+          onClick={() => {
+            const params = new URLSearchParams({
+              nftContract: nftAddress,
+              expectedUIDHash,
+              metadata: JSON.stringify(metadata),
+            });
+            push(`/sell?${params.toString()}`);
+          }}
+        >
+          Sell
+        </Button>
+      </div>
     </Card>
   );
 }
