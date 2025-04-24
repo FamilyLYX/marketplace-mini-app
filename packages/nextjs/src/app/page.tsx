@@ -4,9 +4,10 @@ import React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
-import { getAllNFTMetadata } from "@/lib/owner";
+import { createVaultTest, getAllNFTMetadata } from "@/lib/owner";
 import { useUpProvider } from "@/components/up-provider";
 import { getAddress } from "viem";
+import { Button } from "@/components/ui/button";
 const Inventory = () => {
   const { accounts } = useUpProvider();
   const { data } = useQuery({
@@ -53,6 +54,19 @@ const Inventory = () => {
           </div>
         </TabsContent>
       </Tabs>
+      <Button
+        variant="outline"
+        className="mt-8"
+        onClick={() => {
+          createVaultTest({
+            nftContract: "0x8c1d4f2a3b5e7c9e6f3a4b5d8e2f4c5e4f5d4c5e",
+            priceInLYX: 0,
+            expectedUIDHash: "0x795952d3f4de4d818d3a83de0a101bdea2324f54db22bfafe428459ade5216c1",
+          });
+        }}
+      >
+        Test Create Vault Factory usage
+      </Button>
     </div>
   );
 };

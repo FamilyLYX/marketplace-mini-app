@@ -15,11 +15,12 @@ contract FamilyVaultFactory {
         uint256 priceInLYX,
         bytes32 expectedUIDHash
     );
+    // The tokenId is 1 since each nft contract has only one tokenId 
+    bytes32 tokenId = bytes32(uint256(1));
 
     function createVault(
         address _admin,
         address _nftContract,
-        bytes32 _tokenId,
         uint256 _priceInLYX,
         bytes32 _expectedUIDHash
     ) external returns (address) {
@@ -27,7 +28,7 @@ contract FamilyVaultFactory {
             _admin,
             msg.sender,
             _nftContract,
-            _tokenId,
+            tokenId,
             _priceInLYX,
             _expectedUIDHash
         );
@@ -37,7 +38,7 @@ contract FamilyVaultFactory {
             _admin,
             msg.sender,
             _nftContract,
-            _tokenId,
+            tokenId,
             _priceInLYX,
             _expectedUIDHash
         );

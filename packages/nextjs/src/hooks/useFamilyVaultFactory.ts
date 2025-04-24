@@ -6,7 +6,7 @@ import {
 } from "@/constants/vaultFactory";
 import { createPublicClient, http } from "viem";
 import { luksoTestnet } from "viem/chains";
-
+import { parseEventLogs } from "viem";
 const readClient = createPublicClient({
   chain: luksoTestnet,
   transport: http("https://rpc.testnet.lukso.network"),
@@ -36,9 +36,21 @@ export const useFamilyVaultFactory = () => {
         chain: client.chain,
         args: [admin, nftContract, tokenId, priceInLYX, expectedUIDHash],
       });
-
-      toast.success("Vault creation transaction sent!");
-      return tx;
+      const receipt = await readClient.waitForTransactionReceipt({
+        hash: tx,
+      });
+      if (receipt.status !== "success") {
+        toast.error("Transaction failed.");
+        return null;
+      }
+      toast.success("Vault created successfully!");
+      const parsedLogs = parseEventLogs({
+        logs: receipt.logs,
+        abi: FAMILY_VAULT_FACTORY_ABI,
+      }) as any;
+      const vaultAddress = parsedLogs?.[0]?.args?.vaultAddress;
+      console.log("✅ Vault deployed at:", vaultAddress);
+      return { tx, vaultAddress };
     } catch (err) {
       console.error("Error creating vault:", err);
       toast.error("Failed to create vault.");

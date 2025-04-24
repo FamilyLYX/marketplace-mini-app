@@ -1,13 +1,22 @@
-import { http, createPublicClient } from "viem";
+import { http, createPublicClient, createWalletClient } from "viem";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";
 import { NFT_ABI } from "@/constants/dpp";
 import { fromHex } from "viem/utils";
 import { ProductMetadata } from "@/components/product";
-
+import { privateKeyToAccount } from "viem/accounts";
+import {
+  FAMILY_VAULT_FACTORY_ADDRESS,
+  FAMILY_VAULT_FACTORY_ABI,
+} from "@/constants/vaultFactory";
+import { parseEventLogs } from "viem";
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
   throw new Error("PRIVATE_KEY environment variable is not set.");
 }
+
+const account = privateKeyToAccount(
+  process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`,
+);
 
 // Create the public client for reading from contracts
 const readClient = createPublicClient({
@@ -55,3 +64,51 @@ export async function getAllNFTMetadata(): Promise<
     throw error;
   }
 }
+
+const walletClient = createWalletClient({
+  account,
+  chain: luksoTestnet,
+  transport: http(), // Make sure the transport is properly configured for the testnet
+});
+
+interface CreateVaultParams {
+  nftContract: `0x${string}`;
+  priceInLYX: number | bigint;
+  expectedUIDHash: `0x${string}`;
+}
+
+export const createVaultTest = async (params: CreateVaultParams) => {
+  const { nftContract, priceInLYX, expectedUIDHash } = params;
+  try {
+    const tx = await walletClient.writeContract({
+      abi: FAMILY_VAULT_FACTORY_ABI,
+      address: FAMILY_VAULT_FACTORY_ADDRESS,
+      functionName: "createVault",
+      args: [account.address, nftContract, priceInLYX, expectedUIDHash],
+      chain: luksoTestnet,
+    });
+    const receipt = await readClient.waitForTransactionReceipt({
+      hash: tx,
+    });
+    if (receipt.status !== "success") {
+      return null;
+    }
+    console.log("Transaction receipt:", receipt);
+    console.log("Transaction hash:", tx);
+    const parsedLogs = parseEventLogs({
+      abi: FAMILY_VAULT_FACTORY_ABI,
+      logs: receipt.logs,
+      eventName: "VaultCreated",
+    });
+    
+    // @ts-ignore
+    const vaultAddress = parsedLogs?.[0]?.args?.vaultAddress;
+
+    console.log("✅ Vault deployed at:", vaultAddress);
+    return { tx, vaultAddress };
+    return { tx };
+  } catch (err) {
+    console.error("Error creating vault:", err);
+    return null;
+  }
+};
