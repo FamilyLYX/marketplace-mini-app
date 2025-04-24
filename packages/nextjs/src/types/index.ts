@@ -16,7 +16,7 @@ export type GenericContractsDeclaration = {
   };
 };
 
-export type VaultListing = {
+export type Vault = {
   vault_address: string;
   nft_contract: string;
   seller: string;
@@ -27,25 +27,20 @@ export type VaultListing = {
   images?: string[];
   category?: string;
   notes?: string;
-  status: "listed" | "sold" | "disputed" | "cancelled";
-  created_at: string;
-  updated_at?: string;
-};
-
-export type VaultOrder = {
-  vault_address: string;
-  buyer: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  country: string;
-  state: string;
-  city: string;
-  zip: string;
-  address1: string;
+  listing_status: "listed" | "sold" | "disputed" | "cancelled";
+  buyer?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  zip?: string;
+  address1?: string;
   address2?: string;
   payment_method?: string;
-  status: "pending" | "confirmed" | "shipped" | "cancelled";
+  order_status?: "pending" | "confirmed" | "shipped" | "cancelled";
   created_at: string;
+  updated_at?: string;
 };
