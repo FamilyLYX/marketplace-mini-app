@@ -34,11 +34,31 @@ export default function SellProductPage() {
       if (!nftContract || !expectedUIDHash) {
         throw new Error("Missing required parameters");
       }
-      const { tx, vaultAddress } = await createVault({
+      const res = await createVault({
         nftContract: nftContract as `0x${string}`,
         priceInLYX: parseEther(price.toString()),
         expectedUIDHash: expectedUIDHash as `0x${string}`,
       });
+      if (!res) {
+        throw new Error("Failed to create vault");
+      }
+      const { tx, vaultAddress } = res;
+      const response = await fetch("/api/vault-listing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vaultAddress,
+          nftContract,
+          expectedUIDHash,
+          price,
+          location,
+          notes,
+        }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Vault listing failed: ${errorText}`);
+      }
       return tx;
     },
     onSuccess: (data) => {
@@ -95,7 +115,12 @@ export default function SellProductPage() {
             <div className="px-3 py-2 bg-muted text-sm font-semibold">LYX</div>
           </div>
 
-          <Button className="w-full mt-4 text-white rounded-full text-md py-6 text-lg">
+          <Button
+            className="w-full mt-4 text-white rounded-full text-md py-6 text-lg"
+            onClick={() => {
+              handleSellMutation.mutate();
+            }}
+          >
             Sell
           </Button>
         </div>

@@ -16,7 +16,7 @@ const readClient = createPublicClient({
 const admin = account.address;
 type CreateVaultParams = {
   nftContract: string;
-  priceInLYX: number;
+  priceInLYX: bigint;
   expectedUIDHash: string;
 };
 export const useFamilyVaultFactory = () => {
@@ -26,7 +26,7 @@ export const useFamilyVaultFactory = () => {
     nftContract,
     priceInLYX,
     expectedUIDHash,
-  }: CreateVaultParams) => {
+  }: CreateVaultParams)=> {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
       return null;
@@ -53,7 +53,7 @@ export const useFamilyVaultFactory = () => {
         logs: receipt.logs,
         abi: FAMILY_VAULT_FACTORY_ABI,
       }) as any;
-      const vaultAddress = parsedLogs?.[0]?.args?.vaultAddress;
+      const vaultAddress = parsedLogs?.[0]?.args?.vaultAddress as `0x${string}`;
       console.log("✅ Vault deployed at:", vaultAddress);
       return { tx, vaultAddress };
     } catch (err) {
