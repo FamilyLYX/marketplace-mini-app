@@ -19,7 +19,6 @@ export type GenericContractsDeclaration = {
 export type VaultListing = {
   vault_address: string;
   nft_contract: string;
-  token_id: string;
   seller: string;
   price_in_lyx: number;
   title: string;
@@ -27,6 +26,7 @@ export type VaultListing = {
   location?: string;
   images?: string[];
   category?: string;
+  notes?: string;
   status: "listed" | "sold" | "disputed" | "cancelled";
   created_at: string;
   updated_at?: string;

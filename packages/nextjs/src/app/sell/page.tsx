@@ -8,8 +8,12 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProductCard, ProductMetadata } from "@/components/product";
 import { Label } from "@/components/ui/label";
+import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
+import { useMutation } from "@tanstack/react-query";
+import { parseEther } from "viem";
 
 export default function SellProductPage() {
+  const { createVault } = useFamilyVaultFactory();
   const searchParams = useSearchParams();
   const nftContract = searchParams.get("nftContract") || "";
   const expectedUIDHash = searchParams.get("expectedUIDHash") || "";
@@ -25,21 +29,43 @@ export default function SellProductPage() {
   const [notes, setNotes] = useState(parsedMetadata?.description || "");
   const [price, setPrice] = useState("1245");
 
+  const handleSellMutation = useMutation({
+    mutationFn: async () => {
+      if (!nftContract || !expectedUIDHash) {
+        throw new Error("Missing required parameters");
+      }
+      const { tx, vaultAddress } = await createVault({
+        nftContract: nftContract as `0x${string}`,
+        priceInLYX: parseEther(price.toString()),
+        expectedUIDHash: expectedUIDHash as `0x${string}`,
+      });
+      return tx;
+    },
+    onSuccess: (data) => {
+      console.log("Transaction successful:", data);
+    },
+    onError: (error) => {
+      console.error("Transaction failed:", error);
+    },
+  });
+
   return (
     <div className="min-h-screen bg-white px-6 py-12">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-4xl font-black mb-2">Sell Product</h1>
         <p className="text-sm font-mono text-muted-foreground mb-8">
-          To sell the product shown below, please fill in all the fields below, these fields will store additional information about the product and the sale.
-          This additional data will be displayed to users who are interested in buying your product.
+          To sell the product shown below, please fill in all the fields below,
+          these fields will store additional information about the product and
+          the sale. This additional data will be displayed to users who are
+          interested in buying your product.
         </p>
         <div className="w-full flex items-center justify-center mb-6">
-        <ProductCard
-          metadata={parsedMetadata as ProductMetadata}
-          nftAddress={nftContract}
-          expectedUIDHash={expectedUIDHash as `0x${string}`}
-          showSellButton={false}
-        />
+          <ProductCard
+            metadata={parsedMetadata as ProductMetadata}
+            nftAddress={nftContract}
+            expectedUIDHash={expectedUIDHash as `0x${string}`}
+            showSellButton={false}
+          />
         </div>
         <div className="space-y-6">
           <Label htmlFor="location">Location</Label>
