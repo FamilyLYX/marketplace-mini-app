@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { ProductCard, ProductMetadata } from "@/components/product";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { parseEther } from "viem";
 
 export default function SellProductPage() {
+  const router = useRouter();
   const { createVault } = useFamilyVaultFactory();
   const searchParams = useSearchParams();
   const nftContract = searchParams.get("nftContract") || "";
@@ -28,7 +31,6 @@ export default function SellProductPage() {
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState(parsedMetadata?.description || "");
   const [price, setPrice] = useState("1245");
-
 
   const handleSellMutation = useMutation({
     mutationFn: async () => {
@@ -76,8 +78,17 @@ export default function SellProductPage() {
 
   return (
     <div className="min-h-screen bg-white px-6 py-12">
+      <Button
+        variant="ghost"
+        className="absolute top-4 left-4 z-10 p-2"
+        onClick={() => router.push("/")}
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-black mb-2">Sell Product</h1>
+        <div className="flex items-center justify-center mb-4">
+          <h1 className="text-4xl font-black ml-4">Sell Product</h1>
+        </div>
         <p className="text-sm font-mono text-muted-foreground mb-8">
           To sell the product shown below, please fill in all the fields below,
           these fields will store additional information about the product and
