@@ -60,12 +60,14 @@ export function ProductCard({
   metadata,
   nftAddress,
   expectedUIDHash,
+  showSellButton = true,
 }: {
   metadata: ProductMetadata;
   nftAddress: `0x${string}` | string;
   expectedUIDHash: `0x${string}`;
+  showSellButton?: boolean;
 }) {
-  const {push} = useRouter();
+  const { push } = useRouter();
   return (
     <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
       <ProductImageCarousel images={metadata.images} />
@@ -84,20 +86,22 @@ export function ProductCard({
           <span className="font-medium">{metadata.brand}</span>
         </p>
       </CardContent>
-      <div className="p-4 flex justify-start">
-        <Button
-          onClick={() => {
-            const params = new URLSearchParams({
-              nftContract: nftAddress,
-              expectedUIDHash,
-              metadata: JSON.stringify(metadata),
-            });
-            push(`/sell?${params.toString()}`);
-          }}
-        >
-          Sell
-        </Button>
-      </div>
+      {showSellButton && (
+        <div className="p-4 flex justify-start">
+          <Button
+            onClick={() => {
+              const params = new URLSearchParams({
+                nftContract: nftAddress,
+                expectedUIDHash,
+                metadata: JSON.stringify(metadata),
+              });
+              push(`/sell?${params.toString()}`);
+            }}
+          >
+            Sell
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }

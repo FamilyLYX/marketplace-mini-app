@@ -54,7 +54,12 @@ const Inventory = () => {
         <TabsContent value="products">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
             {products.map(({ nftAddress, decodedMetadata }, index) => (
-              <ProductCard key={index} metadata={decodedMetadata} nftAddress={nftAddress} />
+              <ProductCard
+                key={index}
+                metadata={decodedMetadata}
+                nftAddress={nftAddress}
+                expectedUIDHash="0x795952d3f4de4d818d3a83de0a101bdea2324f54db22bfafe428459ade5216c1"
+              />
             ))}
           </div>
         </TabsContent>
