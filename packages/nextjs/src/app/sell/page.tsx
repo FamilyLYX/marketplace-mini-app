@@ -29,6 +29,7 @@ export default function SellProductPage() {
   const [notes, setNotes] = useState(parsedMetadata?.description || "");
   const [price, setPrice] = useState("1245");
 
+
   const handleSellMutation = useMutation({
     mutationFn: async () => {
       if (!nftContract || !expectedUIDHash) {
@@ -43,23 +44,27 @@ export default function SellProductPage() {
         throw new Error("Failed to create vault");
       }
       const { tx, vaultAddress } = res;
-      const response = await fetch("/api/vault-listing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          vaultAddress,
-          nftContract,
-          expectedUIDHash,
-          price,
-          location,
-          notes,
-        }),
-      });
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Vault listing failed: ${errorText}`);
+      try {
+        const response = await fetch("/api/vault-listing", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            vaultAddress,
+            nftContract,
+            expectedUIDHash,
+            price,
+            location,
+            notes,
+          }),
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Vault listing failed: ${errorText}`);
+        }
+      } catch (error) {
+        console.error("Vault listing failed:", error);
       }
-      return tx;
+      return { tx, vaultAddress };
     },
     onSuccess: (data) => {
       console.log("Transaction successful:", data);
