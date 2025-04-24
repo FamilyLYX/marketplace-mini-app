@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "./FamilyVault.sol";
 
 contract FamilyVaultFactory {
+    address[] public vaults;
     event VaultCreated(
         address indexed vaultAddress,
         address indexed admin,
@@ -40,7 +41,12 @@ contract FamilyVaultFactory {
             _priceInLYX,
             _expectedUIDHash
         );
+        vaults.push(address(vault));
 
         return address(vault);
+    }
+
+    function getVaults() external view returns (address[] memory) {
+        return vaults;
     }
 }
