@@ -14,8 +14,10 @@ import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
 import { parseEther } from "viem";
 import { Vault } from "@/types";
+import { useUpProvider } from "@/components/up-provider";
 
 export default function SellProductPage() {
+  const { accounts } = useUpProvider();
   const router = useRouter();
   const { createVault } = useFamilyVaultFactory();
   const searchParams = useSearchParams();
@@ -54,7 +56,7 @@ export default function SellProductPage() {
           body: JSON.stringify({
             vault_address: vaultAddress,
             nft_contract: nftContract,
-            seller: "0x",
+            seller:accounts[0],
             notes,
             price_in_lyx: parseEther(price.toString()).toString(),
             title: parsedMetadata?.title,
@@ -62,6 +64,7 @@ export default function SellProductPage() {
             location,
             images: parsedMetadata?.images,
             category: parsedMetadata?.category,
+            brand: parsedMetadata?.brand,
             listing_status:"listed"
           } as Vault),
         });

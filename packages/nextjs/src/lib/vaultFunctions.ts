@@ -13,6 +13,12 @@ export async function createVault(vault: Vault) {
   return data;
 }
 
+export async function getAllVaults() {
+  const { data, error } = await supabase.from(TABLE_NAME).select("*");
+  if (error) throw error;
+  return data;
+}
+
 export async function getVaultByAddress(vault_address: string) {
   const { data, error } = await supabase
     .from(TABLE_NAME)

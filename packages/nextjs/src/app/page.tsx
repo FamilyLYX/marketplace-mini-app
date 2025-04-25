@@ -4,10 +4,11 @@ import React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
-import { createVaultTest, getAllNFTMetadata } from "@/lib/owner";
+import { getAllNFTMetadata } from "@/lib/owner";
+import { BuyProduct } from "@/components/buy-product";
+import { Vault } from "@/types";
 // import { useUpProvider } from "@/components/up-provider";
 // import { getAddress } from "viem";
-import { Button } from "@/components/ui/button";
 const Inventory = () => {
   // const { accounts } = useUpProvider();
   const { data } = useQuery({
@@ -15,6 +16,20 @@ const Inventory = () => {
     queryFn: () => getAllNFTMetadata(),
     refetchOnWindowFocus: false,
   });
+
+  const { data: marketplaceProducts } = useQuery({
+    queryKey: ["marketplaceProducts"],
+    queryFn: async () => {
+      const response = await fetch("/api/vaults");
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    },
+    refetchOnWindowFocus: false,
+  });
+
+  console.log("Marketplace Products", marketplaceProducts);
 
   // const products = React.useMemo(() => {
   //   if (!data || !accounts || accounts.length === 0) return [];
@@ -44,12 +59,53 @@ const Inventory = () => {
       >
         <TabsList className="gap-2 bg-gray-100 rounded-full mb-6">
           <TabsTrigger
+            value="marketplace"
+            className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
+          >
+            Marketplace
+          </TabsTrigger>
+          <TabsTrigger
             value="products"
             className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
           >
             Your Products
           </TabsTrigger>
         </TabsList>
+        <TabsContent value="marketplace">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
+            {marketplaceProducts?.map(
+              (
+                {
+                  title = "",
+                  description = "",
+                  images = [],
+                  category = "",
+                  vault_address = "",
+                  notes = "",
+                  location = "",
+                  seller = "",
+                  brand = "",
+                }: Vault,
+                index: number,
+              ) => (
+                <BuyProduct
+                  key={index}
+                  metadata={{
+                    title,
+                    description,
+                    images,
+                    category,
+                    brand,
+                  }}
+                  vaultAddress={vault_address}
+                  condition={notes}
+                  location={location}
+                  sellerAddress={seller}
+                />
+              ),
+            )}
+          </div>
+        </TabsContent>
 
         <TabsContent value="products">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">

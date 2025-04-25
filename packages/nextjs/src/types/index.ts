@@ -27,6 +27,7 @@ export type Vault = {
   images?: string[];
   category?: string;
   notes?: string;
+  brand?: string;
   listing_status: "listed" | "sold" | "disputed" | "cancelled";
   buyer?: string;
   first_name?: string;

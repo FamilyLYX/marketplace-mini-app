@@ -5,9 +5,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRef } from "react";
+import { getAddress } from "viem";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 
@@ -55,18 +56,23 @@ function ProductImageCarousel({ images }: { images: string[] }) {
 
 // Main component
 
-export function ProductCard({
+export function BuyProduct({
   metadata,
-  nftAddress,
-  expectedUIDHash,
-  showSellButton = true,
+  vaultAddress,
+  condition,
+  location,
+  sellerAddress,
+  showBuyButton = true,
 }: {
   metadata: ProductMetadata;
-  nftAddress: `0x${string}` | string;
-  expectedUIDHash: `0x${string}` | string;
-  showSellButton?: boolean;
+  vaultAddress: string | `0x${string}`;
+  condition: string;
+  location: string;
+  sellerAddress: string | `0x${string}`;
+  showBuyButton?: boolean;
 }) {
   const { push } = useRouter();
+
   return (
     <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
       <ProductImageCarousel images={metadata.images} />
@@ -80,26 +86,47 @@ export function ProductCard({
         <p className="text-sm text-muted-foreground line-clamp-2">
           {metadata.description}
         </p>
-        <p className="text-sm">
-          <span className="text-muted-foreground">Brand:</span>{" "}
-          <span className="font-medium">{metadata.brand}</span>
+        <p className="text-xs">
+          <span className="font-medium">Brand: {metadata.brand}</span>
         </p>
+        <div className="col-span-2">
+          <p className="text-xs text-muted-foreground">Condition</p>
+          <Badge className="whitespace-pre-wrap">{condition}</Badge>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Location</p>
+          <Badge>{location}</Badge>
+        </div>
+        <div className="col-span-2 gap-2">
+          <p className="text-xs text-muted-foreground">Product By</p>
+          <a
+            href={`https://universaleverything.io/${getAddress(sellerAddress)}?network=testnet&assetGroup=tokens`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-medium text-blue-600 hover:underline truncate block"
+          >
+            <Badge variant="outline" className="truncate">
+              {sellerAddress}
+            </Badge>
+          </a>
+        </div>
       </CardContent>
-      {showSellButton && (
-        <div className="p-4 flex justify-start">
+      {showBuyButton && (
+        <CardFooter className="flex justify-end">
           <Button
             onClick={() => {
-              const params = new URLSearchParams({
-                nftContract: nftAddress,
-                expectedUIDHash,
-                metadata: JSON.stringify(metadata),
-              });
-              push(`/sell?${params.toString()}`);
+              const params = new URLSearchParams({});
+              params.append("vaultAddress", vaultAddress);
+              params.append("metadata", JSON.stringify(metadata));
+              params.append("condition", condition);
+              params.append("location", location);
+              params.append("sellerAddress", sellerAddress);
+              push(`/buy?${params.toString()}`);
             }}
           >
-            Sell
+            Buy
           </Button>
-        </div>
+        </CardFooter>
       )}
     </Card>
   );
