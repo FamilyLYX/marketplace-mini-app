@@ -1,7 +1,6 @@
 import { http, createPublicClient, createWalletClient } from "viem";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";
-import { NFT_ABI } from "@/constants/dpp";
 import { fromHex } from "viem/utils";
 import { ProductMetadata } from "@/components/product";
 import { privateKeyToAccount } from "viem/accounts";
@@ -9,6 +8,7 @@ import {
   FAMILY_VAULT_FACTORY_ADDRESS,
   FAMILY_VAULT_FACTORY_ABI,
 } from "@/constants/vaultFactory";
+import { NFT_ABI } from "@/constants/dpp";
 import { parseEventLogs } from "viem";
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
   throw new Error("PRIVATE_KEY environment variable is not set.");
@@ -127,6 +127,85 @@ export const createVaultTest = async (params: CreateVaultParams) => {
     return { tx, vaultAddress };
   } catch (err) {
     console.error("Error creating vault:", err);
+    return null;
+  }
+};
+
+interface TransferOwnershipParams {
+  contractAddress: `0x${string}`;
+  toAddress: `0x${string}`;
+  plainUidCode: string;
+}
+
+export const transferOwnershipWithUIDTest = async (
+  params: TransferOwnershipParams,
+) => {
+  const { contractAddress, toAddress, plainUidCode } = params;
+
+  try {
+    const tx = await walletClient.writeContract({
+      abi: NFT_ABI,
+      address: contractAddress,
+      functionName: "transferOwnershipWithUID",
+      args: [toAddress, plainUidCode],
+      chain: luksoTestnet,
+    });
+
+    // Wait for the transaction receipt to confirm its success
+    const receipt = await readClient.waitForTransactionReceipt({
+      hash: tx,
+    });
+
+    // Check if the transaction was successful
+    if (receipt.status !== "success") {
+      console.error("Transaction failed:", receipt);
+      return null;
+    }
+
+    console.log("Ownership transferred successfully!");
+    console.log("Transaction receipt:", receipt);
+    console.log("Transaction hash:", tx);
+
+    // Return the transaction hash and any additional relevant data
+    return { tx };
+  } catch (err) {
+    console.error("Error transferring ownership:", err);
+    return null;
+  }
+};
+
+interface DepositFundsParams {
+  vaultAddress: `0x${string}`;
+  priceInLYX: bigint;
+}
+
+export const depositFundsTest = async (params: DepositFundsParams) => {
+  const { vaultAddress, priceInLYX } = params;
+
+  try {
+    const tx = await walletClient.sendTransaction({
+      to: vaultAddress,
+      value: priceInLYX,
+      account: account.address,
+      chain: luksoTestnet,
+    });
+
+    const receipt = await readClient.waitForTransactionReceipt({
+      hash: tx,
+    });
+
+    if (receipt.status !== "success") {
+      console.error("Transaction failed:", receipt);
+      return null;
+    }
+
+    console.log("Funds deposited successfully!");
+    console.log("Transaction receipt:", receipt);
+    console.log("Transaction hash:", tx);
+
+    return { tx };
+  } catch (err) {
+    console.error("Error depositing funds:", err);
     return null;
   }
 };

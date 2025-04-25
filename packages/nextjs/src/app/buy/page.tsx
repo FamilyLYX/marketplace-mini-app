@@ -7,6 +7,10 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BuyProduct } from "@/components/buy-product";
 import { ArrowLeft } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { Vault } from "@/types";
+import { parseEther } from "viem";
+import { useFamilyVault } from "@/hooks/useFamilyVault";
 
 // Updated BuyFormData
 interface BuyFormData {
@@ -194,6 +198,60 @@ function PaymentStep({
   const sellerAddress = searchParams.get("sellerAddress") || "";
   const price = searchParams.get("price") || "";
 
+  const { depositFunds, getVaultState } = useFamilyVault(
+    vaultAddress as `0x${string}`,
+  );
+  console.log(
+    "Vault Address:",
+    vaultAddress + "vault state",
+    getVaultState().then((state) => console.log("Vault State:", state)),
+  );
+  const handleBuyMutation = useMutation({
+    mutationFn: async () => {
+      const res = await depositFunds({
+        priceInLYX: parseEther(price.toString()),
+      });
+      if (!res) {
+        throw new Error("Failed to create vault");
+      }
+      try {
+        const response = await fetch(
+          `/api/vault?vaultAddress=${vaultAddress}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              buyer: "0x1234567890abcdef1234567890abcdef12345678",
+              first_name: data.firstName,
+              last_name: data.lastName,
+              email: data.email,
+              phone: data.phone,
+              country: data.country,
+              state: data.state,
+              city: data.city,
+              zip: data.zip,
+              address1: data.address1,
+              address2: data.address2,
+            } as Vault),
+          },
+        );
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Vault listing update failed: ${errorText}`);
+        }
+      } catch (error) {
+        console.error("Vault listing update failed:", error);
+      }
+      return { res };
+    },
+    onSuccess: (data) => {
+      console.log("Buy mutation successful", data);
+    },
+    onError: (error) => {
+      console.error("Error during buy mutation:", error);
+    },
+  });
+
   return (
     <div>
       <Label className="text-2xl font-bold mb-4">Your Order Summary</Label>
@@ -223,6 +281,7 @@ function PaymentStep({
       <Button
         className="w-full mt-6 py-4 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
         size="lg"
+        onClick={() => handleBuyMutation.mutate()}
       >
         Pay with LYX
       </Button>

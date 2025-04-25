@@ -37,24 +37,27 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
-  const depositFunds = async (priceInLYX: bigint) => {
+  const depositFunds = async ({ priceInLYX }: { priceInLYX: bigint }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
       return;
     }
 
     try {
-      const vault = await client.writeContract({
-        abi: FAMILY_VAULT_ABI,
-        address: vaultAddress,
-        functionName: "receive",
+      const txHash = await client.sendTransaction({
+        to: vaultAddress,
+        value: priceInLYX,
         account: accounts[0] as `0x${string}`,
         chain: client.chain,
-        value: priceInLYX,
       });
 
+      const receipt = await readClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+      console.log("Transaction receipt:", receipt);
+
       toast.success("Funds deposited!");
-      return vault;
+      return txHash;
     } catch (err) {
       console.error("Error depositing funds:", err);
       toast.error("Failed to deposit funds.");

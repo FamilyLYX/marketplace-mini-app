@@ -14,12 +14,13 @@ import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
 import { parseEther } from "viem";
 import { Vault } from "@/types";
-import { useUpProvider } from "@/components/up-provider";
+import { account } from "@/lib/owner";
+import { useDPP } from "@/hooks/useDPP";
 
 export default function SellProductPage() {
-  const { accounts } = useUpProvider();
   const router = useRouter();
   const { createVault } = useFamilyVaultFactory();
+  const { transferOwnershipWithUID } = useDPP();
   const searchParams = useSearchParams();
   const nftContract = searchParams.get("nftContract") || "";
   const expectedUIDHash = searchParams.get("expectedUIDHash") || "";
@@ -33,7 +34,8 @@ export default function SellProductPage() {
 
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState(parsedMetadata?.description || "");
-  const [price, setPrice] = useState("1245");
+  const [price, setPrice] = useState("");
+  const [plainUIDCode, setPlainUIDCode] = useState("");
 
   const handleSellMutation = useMutation({
     mutationFn: async () => {
@@ -49,6 +51,14 @@ export default function SellProductPage() {
         throw new Error("Failed to create vault");
       }
       const { tx, vaultAddress } = res;
+      const transferDPP = await transferOwnershipWithUID({
+        dppAddress: nftContract as `0x${string}`,
+        to: vaultAddress,
+        plainUidCode: plainUIDCode,
+      });
+      if (!transferDPP) {
+        throw new Error("Failed to transfer ownership");
+      }
       try {
         const response = await fetch("/api/vault", {
           method: "POST",
@@ -56,7 +66,7 @@ export default function SellProductPage() {
           body: JSON.stringify({
             vault_address: vaultAddress,
             nft_contract: nftContract,
-            seller: accounts[0],
+            seller: account.address,
             notes,
             price_in_lyx: price.toString(),
             title: parsedMetadata?.title,
@@ -119,6 +129,13 @@ export default function SellProductPage() {
             placeholder="Location*"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+          />
+          <Label htmlFor="Plain UID Code">Plain UID Code</Label>
+          <Input
+            id="plainUIDCode"
+            placeholder="Plain UID Code*"
+            value={plainUIDCode}
+            onChange={(e) => setPlainUIDCode(e.target.value)}
           />
 
           <Label htmlFor="Condition notes">Condition Notes</Label>
