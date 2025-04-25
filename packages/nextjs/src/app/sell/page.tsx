@@ -58,7 +58,10 @@ export default function SellProductPage() {
             notes,
             price_in_lyx: parseEther(price.toString()).toString(),
             title: parsedMetadata?.title,
+            description: parsedMetadata?.description,
             location,
+            images: parsedMetadata?.images,
+            category: parsedMetadata?.category,
             listing_status:"listed"
           } as Vault),
         });
@@ -69,7 +72,7 @@ export default function SellProductPage() {
       } catch (error) {
         console.error("Vault listing failed:", error);
       }
-      // return { tx, vaultAddress };
+      return { tx, vaultAddress };
     },
     onSuccess: (data) => {
       console.log("Transaction successful:", data);

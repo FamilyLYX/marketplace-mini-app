@@ -25,7 +25,14 @@ const readClient = createPublicClient({
 });
 
 export async function getAllNFTMetadata(): Promise<
-  Record<string, { nftAddress: string; decodedMetadata: ProductMetadata }[]>
+  Record<
+    string,
+    {
+      nftAddress: string;
+      decodedMetadata: ProductMetadata;
+      expectedUIDHash: string;
+    }[]
+  >
 > {
   try {
     // 1. Fetch deployed NFTs from the factory contract
@@ -36,7 +43,11 @@ export async function getAllNFTMetadata(): Promise<
     })) as string[];
     const ownerMap: Record<
       string,
-      { nftAddress: string; decodedMetadata: ProductMetadata }[]
+      {
+        nftAddress: string;
+        decodedMetadata: ProductMetadata;
+        expectedUIDHash: string;
+      }[]
     > = {};
     for (const nftAddress of deployedNFTs) {
       // 2. Fetch metadata for each NFT
@@ -53,10 +64,19 @@ export async function getAllNFTMetadata(): Promise<
         address: nftAddress as `0x${string}`,
         functionName: "owner",
       })) as `0x${string}`;
+      const uidHash = await readClient.readContract({
+        abi: NFT_ABI,
+        address: nftAddress as `0x${string}`,
+        functionName: "getUIDHash",
+      });
       if (!ownerMap[owner]) {
         ownerMap[owner] = [];
       }
-      ownerMap[owner].push({ nftAddress, decodedMetadata });
+      ownerMap[owner].push({
+        nftAddress,
+        decodedMetadata,
+        expectedUIDHash: uidHash as string,
+      });
     }
     return ownerMap;
   } catch (error) {

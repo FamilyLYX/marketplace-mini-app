@@ -64,7 +64,7 @@ export function ProductCard({
 }: {
   metadata: ProductMetadata;
   nftAddress: `0x${string}` | string;
-  expectedUIDHash: `0x${string}`;
+  expectedUIDHash: `0x${string}` | string;
   showSellButton?: boolean;
 }) {
   const { push } = useRouter();

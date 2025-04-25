@@ -5,11 +5,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProductCard } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
 import { createVaultTest, getAllNFTMetadata } from "@/lib/owner";
-import { useUpProvider } from "@/components/up-provider";
-import { getAddress } from "viem";
+// import { useUpProvider } from "@/components/up-provider";
+// import { getAddress } from "viem";
 import { Button } from "@/components/ui/button";
 const Inventory = () => {
-  const { accounts } = useUpProvider();
+  // const { accounts } = useUpProvider();
   const { data } = useQuery({
     queryKey: ["allNfts"],
     queryFn: () => getAllNFTMetadata(),
@@ -53,31 +53,19 @@ const Inventory = () => {
 
         <TabsContent value="products">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-            {products.map(({ nftAddress, decodedMetadata }, index) => (
-              <ProductCard
-                key={index}
-                metadata={decodedMetadata}
-                nftAddress={nftAddress}
-                expectedUIDHash="0x795952d3f4de4d818d3a83de0a101bdea2324f54db22bfafe428459ade5216c1"
-              />
-            ))}
+            {products.map(
+              ({ nftAddress, decodedMetadata, expectedUIDHash }, index) => (
+                <ProductCard
+                  key={index}
+                  metadata={decodedMetadata}
+                  nftAddress={nftAddress}
+                  expectedUIDHash={expectedUIDHash}
+                />
+              ),
+            )}
           </div>
         </TabsContent>
       </Tabs>
-      <Button
-        variant="outline"
-        className="mt-8"
-        onClick={() => {
-          createVaultTest({
-            nftContract: "0x8c1d4f2a3b5e7c9e6f3a4b5d8e2f4c5e4f5d4c5e",
-            priceInLYX: 0,
-            expectedUIDHash:
-              "0x795952d3f4de4d818d3a83de0a101bdea2324f54db22bfafe428459ade5216c1",
-          });
-        }}
-      >
-        Test Create Vault Factory usage
-      </Button>
     </div>
   );
 };
