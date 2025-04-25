@@ -216,7 +216,7 @@ function PaymentStep({
       }
       try {
         const response = await fetch(
-          `/api/vault?vaultAddress=${vaultAddress}`,
+          `/api/vault?vault_address=${vaultAddress}`,
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -232,6 +232,7 @@ function PaymentStep({
               zip: data.zip,
               address1: data.address1,
               address2: data.address2,
+              order_status: "pending",
             } as Vault),
           },
         );

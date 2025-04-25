@@ -132,22 +132,22 @@ export const createVaultTest = async (params: CreateVaultParams) => {
 };
 
 interface TransferOwnershipParams {
-  contractAddress: `0x${string}`;
-  toAddress: `0x${string}`;
+  dppAddress: `0x${string}`;
+  to: `0x${string}`;
   plainUidCode: string;
 }
 
 export const transferOwnershipWithUIDTest = async (
   params: TransferOwnershipParams,
 ) => {
-  const { contractAddress, toAddress, plainUidCode } = params;
+  const { dppAddress, to, plainUidCode } = params;
 
   try {
     const tx = await walletClient.writeContract({
       abi: NFT_ABI,
-      address: contractAddress,
+      address: dppAddress,
       functionName: "transferOwnershipWithUID",
-      args: [toAddress, plainUidCode],
+      args: [to, plainUidCode],
       chain: luksoTestnet,
     });
 

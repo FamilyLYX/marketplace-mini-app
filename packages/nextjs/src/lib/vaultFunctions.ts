@@ -19,6 +19,15 @@ export async function getAllVaults() {
   return data;
 }
 
+export async function getAllVaultsInOrderStatusPending() {
+  const { data, error } = await supabase
+    .from(TABLE_NAME)
+    .select("*")
+    .eq("order_status", "pending");
+  if (error) throw error;
+  return data;
+}
+
 export async function getVaultByAddress(vault_address: string) {
   const { data, error } = await supabase
     .from(TABLE_NAME)
