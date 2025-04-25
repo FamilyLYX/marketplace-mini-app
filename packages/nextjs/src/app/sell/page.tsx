@@ -56,16 +56,16 @@ export default function SellProductPage() {
           body: JSON.stringify({
             vault_address: vaultAddress,
             nft_contract: nftContract,
-            seller:accounts[0],
+            seller: accounts[0],
             notes,
-            price_in_lyx: parseEther(price.toString()).toString(),
+            price_in_lyx: price.toString(),
             title: parsedMetadata?.title,
             description: parsedMetadata?.description,
             location,
             images: parsedMetadata?.images,
             category: parsedMetadata?.category,
             brand: parsedMetadata?.brand,
-            listing_status:"listed"
+            listing_status: "listed",
           } as Vault),
         });
         if (!response.ok) {

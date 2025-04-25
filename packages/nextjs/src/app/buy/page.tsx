@@ -4,8 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { BuyProduct } from "@/components/buy-product";
+import { ArrowLeft } from "lucide-react";
 
-// Central buy form state
+// Updated BuyFormData
 interface BuyFormData {
   firstName: string;
   lastName: string;
@@ -17,7 +20,6 @@ interface BuyFormData {
   zip: string;
   address1: string;
   address2: string;
-  paymentMethod: "LYX" | "Fiat" | null;
 }
 
 export default function BuyPage() {
@@ -27,13 +29,12 @@ export default function BuyPage() {
     lastName: "",
     email: "",
     phone: "",
-    country: "United States",
-    state: "California",
-    city: "Los Angeles",
+    country: "",
+    state: "",
+    city: "",
     zip: "",
     address1: "",
     address2: "",
-    paymentMethod: null,
   });
 
   const next = () => setStep((s) => s + 1);
@@ -42,19 +43,9 @@ export default function BuyPage() {
   return (
     <div className="p-4 min-h-screen">
       {step === 1 && (
-        <PersonalInfoForm data={formData} setData={setFormData} onNext={next} />
+        <CombinedForm data={formData} setData={setFormData} onNext={next} />
       )}
-      {step === 2 && (
-        <ShippingForm
-          data={formData}
-          setData={setFormData}
-          onBack={back}
-          onNext={next}
-        />
-      )}
-      {step === 3 && (
-        <PaymentForm data={formData} setData={setFormData} onBack={back} />
-      )}
+      {step === 2 && <PaymentStep data={formData} onBack={back} />}
     </div>
   );
 }
@@ -66,15 +57,23 @@ interface BuyFormProps {
   onBack?: () => void;
 }
 
-function PersonalInfoForm({ data, setData, onNext }: BuyFormProps) {
+function CombinedForm({ data, setData, onNext }: BuyFormProps) {
+  const { push } = useRouter();
   return (
-    <div className="flex flex-col items-center justify-between h-[90%]">
-      <div className="w-full space-y-4">
-        <h1 className="text-3xl font-bold">Buy Product</h1>
-        <p className="text-muted-foreground mb-6">
-          Enter your personal details
-        </p>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <Button
+        variant="ghost"
+        className="absolute top-4 left-4 z-10 p-2"
+        onClick={() => push("/")}
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+      <h1 className="text-3xl font-bold text-center">Buy Product</h1>
+      <p className="text-muted-foreground text-center">
+        Enter your personal and shipping details
+      </p>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>First name</Label>
           <Input
@@ -96,13 +95,13 @@ function PersonalInfoForm({ data, setData, onNext }: BuyFormProps) {
           />
         </div>
         <div>
-          <Label>E-mail</Label>
+          <Label>Email</Label>
           <Input
             value={data.email}
             onChange={(e) =>
               setData((prev) => ({ ...prev, email: e.target.value }))
             }
-            placeholder="Enter your email"
+            placeholder="Enter email"
           />
         </div>
         <div>
@@ -112,27 +111,9 @@ function PersonalInfoForm({ data, setData, onNext }: BuyFormProps) {
             onChange={(e) =>
               setData((prev) => ({ ...prev, phone: e.target.value }))
             }
-            placeholder="Enter your phone"
+            placeholder="Enter phone"
           />
         </div>
-      </div>
-
-      <div className="w-full">
-        <Button onClick={onNext} className="w-full mt-6">
-          Next →
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function ShippingForm({ data, setData, onBack, onNext }: BuyFormProps) {
-  return (
-    <div className="flex flex-col items-center justify-between h-[90%]">
-      <h1 className="text-3xl font-bold">Buy Product</h1>
-      <p className="text-muted-foreground mb-6">Add shipping address</p>
-
-      <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Country</Label>
           <Input
@@ -169,10 +150,7 @@ function ShippingForm({ data, setData, onBack, onNext }: BuyFormProps) {
             }
           />
         </div>
-      </div>
-
-      <div className="mt-4 space-y-4">
-        <div>
+        <div className="md:col-span-2">
           <Label>Address line 1</Label>
           <Input
             value={data.address1}
@@ -181,7 +159,7 @@ function ShippingForm({ data, setData, onBack, onNext }: BuyFormProps) {
             }
           />
         </div>
-        <div>
+        <div className="md:col-span-2">
           <Label>Address line 2</Label>
           <Input
             value={data.address2}
@@ -193,56 +171,61 @@ function ShippingForm({ data, setData, onBack, onNext }: BuyFormProps) {
         </div>
       </div>
 
-      <div className="flex justify-between mt-6">
-        <Button variant="outline" onClick={onBack}>
-          ← Back
-        </Button>
-        <Button onClick={onNext}>Select payment method</Button>
-      </div>
+      <Button onClick={onNext} className="w-full mt-6">
+        Proceed to Pay →
+      </Button>
     </div>
   );
 }
 
-function PaymentForm({ data, setData, onBack }: BuyFormProps) {
+function PaymentStep({
+  data,
+  onBack,
+}: {
+  data: BuyFormData;
+  onBack: () => void;
+}) {
+  const searchParams = useSearchParams();
+  const metadataParam = searchParams.get("metadata") || "";
+  const parsedMetadata = JSON.parse(metadataParam);
+  const vaultAddress = searchParams.get("vaultAddress") || "";
+  const condition = searchParams.get("condition") || "";
+  const location = searchParams.get("location") || "";
+  const sellerAddress = searchParams.get("sellerAddress") || "";
+  const price = searchParams.get("price") || "";
+
   return (
     <div>
-      <div className="w-full h-80 rounded-xl overflow-hidden mb-4">
-        <img
-          src="/img1.jpg"
-          alt="Product"
-          className="w-full h-full object-cover"
+      <Label className="text-2xl font-bold mb-4">Your Order Summary</Label>
+      <div className="flex flex-col items-center mb-4">
+        <BuyProduct
+          metadata={parsedMetadata}
+          vaultAddress={vaultAddress}
+          condition={condition}
+          location={location}
+          sellerAddress={sellerAddress}
+          priceInLYX={price}
+          showBuyButton={false}
         />
       </div>
-      <h2 className="text-2xl font-bold">Honft 001</h2>
-      <p className="text-sm text-muted-foreground mb-4">
-        Select payment method
-      </p>
 
-      <div className="space-y-3">
-        <Button
-          className="w-full"
-          variant={data.paymentMethod === "LYX" ? "default" : "outline"}
-          onClick={() => setData((prev) => ({ ...prev, paymentMethod: "LYX" }))}
-        >
-          LYX Payment
-        </Button>
-        <Button
-          className="w-full"
-          variant={data.paymentMethod === "Fiat" ? "default" : "outline"}
-          onClick={() =>
-            setData((prev) => ({ ...prev, paymentMethod: "Fiat" }))
-          }
-        >
-          Fiat Payment
-        </Button>
-      </div>
-
-      <div className="flex justify-between items-center mt-6">
-        <Button variant="outline" onClick={onBack}>
+      <div className="flex items-center justify-between border-t pt-6">
+        <Button variant="outline" onClick={onBack} className="rounded-full">
           ← Back
         </Button>
-        <p className="text-xl font-bold">Price: $1245</p>
+        <div className="text-right">
+          <p className="text-2xl font-extrabold text-gray-900">
+            Price: <span className="text-primary">{price} LYX</span>
+          </p>
+        </div>
       </div>
+
+      <Button
+        className="w-full mt-6 py-4 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
+        size="lg"
+      >
+        Pay with LYX
+      </Button>
     </div>
   );
 }

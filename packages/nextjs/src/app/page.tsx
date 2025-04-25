@@ -54,7 +54,7 @@ const Inventory = () => {
       </div>
 
       <Tabs
-        defaultValue="products"
+        defaultValue="marketplace"
         className="w-full flex items-center justify-center"
       >
         <TabsList className="gap-2 bg-gray-100 rounded-full mb-6">
@@ -85,6 +85,7 @@ const Inventory = () => {
                   location = "",
                   seller = "",
                   brand = "",
+                  price_in_lyx,
                 }: Vault,
                 index: number,
               ) => (
@@ -101,6 +102,7 @@ const Inventory = () => {
                   condition={notes}
                   location={location}
                   sellerAddress={seller}
+                  priceInLYX={price_in_lyx}
                 />
               ),
             )}

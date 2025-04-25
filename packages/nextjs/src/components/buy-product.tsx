@@ -62,6 +62,7 @@ export function BuyProduct({
   condition,
   location,
   sellerAddress,
+  priceInLYX,
   showBuyButton = true,
 }: {
   metadata: ProductMetadata;
@@ -69,6 +70,7 @@ export function BuyProduct({
   condition: string;
   location: string;
   sellerAddress: string | `0x${string}`;
+  priceInLYX: string;
   showBuyButton?: boolean;
 }) {
   const { push } = useRouter();
@@ -97,19 +99,21 @@ export function BuyProduct({
           <p className="text-xs text-muted-foreground">Location</p>
           <Badge>{location}</Badge>
         </div>
-        <div className="col-span-2 gap-2">
-          <p className="text-xs text-muted-foreground">Product By</p>
-          <a
-            href={`https://universaleverything.io/${getAddress(sellerAddress)}?network=testnet&assetGroup=tokens`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-medium text-blue-600 hover:underline truncate block"
-          >
-            <Badge variant="outline" className="truncate">
-              {sellerAddress}
-            </Badge>
-          </a>
-        </div>
+        {showBuyButton && (
+          <div className="col-span-2 gap-2">
+            <p className="text-xs text-muted-foreground">Product By</p>
+            <a
+              href={`https://universaleverything.io/${getAddress(sellerAddress)}?network=testnet&assetGroup=tokens`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-medium text-blue-600 hover:underline truncate block"
+            >
+              <Badge variant="outline" className="truncate">
+                {sellerAddress}
+              </Badge>
+            </a>
+          </div>
+        )}
       </CardContent>
       {showBuyButton && (
         <CardFooter className="flex justify-end">
@@ -121,6 +125,7 @@ export function BuyProduct({
               params.append("condition", condition);
               params.append("location", location);
               params.append("sellerAddress", sellerAddress);
+              params.append("price", priceInLYX); // Replace with actual price
               push(`/buy?${params.toString()}`);
             }}
           >

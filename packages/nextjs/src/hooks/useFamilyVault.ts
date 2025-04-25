@@ -37,7 +37,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
-  const depositFunds = async () => {
+  const depositFunds = async (priceInLYX: bigint) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
       return;
@@ -50,7 +50,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         functionName: "receive",
         account: accounts[0] as `0x${string}`,
         chain: client.chain,
-        value: priceInLYX, // Assuming priceInLYX is fetched from the contract or passed in
+        value: priceInLYX,
       });
 
       toast.success("Funds deposited!");
