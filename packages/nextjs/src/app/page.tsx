@@ -7,16 +7,17 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
 import { BuyProduct } from "@/components/buy-product";
 import { Vault } from "@/types";
+import { ConfirmProduct } from "@/components/confirm-product";
 // import { useUpProvider } from "@/components/up-provider";
 // import { getAddress } from "viem";
 const Inventory = () => {
   // const { accounts } = useUpProvider();
+
   const { data } = useQuery({
     queryKey: ["allNfts"],
     queryFn: () => getAllNFTMetadata(),
     refetchOnWindowFocus: false,
   });
-
   const { data: marketplaceProducts } = useQuery({
     queryKey: ["marketplaceProducts"],
     queryFn: async () => {
@@ -29,7 +30,17 @@ const Inventory = () => {
     refetchOnWindowFocus: false,
   });
 
-  console.log("Marketplace Products", marketplaceProducts);
+  // TODO: add address to this logic
+  const orderedProducts = React.useMemo(() => {
+    if (!marketplaceProducts) return [];
+    return marketplaceProducts
+      .filter((p: Vault) => p.order_status === "pending")
+      .sort((a: Vault, b: Vault) => {
+        const aDate = new Date(a.created_at);
+        const bDate = new Date(b.created_at);
+        return bDate.getTime() - aDate.getTime();
+      });
+  }, [marketplaceProducts]);
 
   // const products = React.useMemo(() => {
   //   if (!data || !accounts || accounts.length === 0) return [];
@@ -70,6 +81,12 @@ const Inventory = () => {
           >
             Your Products
           </TabsTrigger>
+          <TabsTrigger
+            value="orders"
+            className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
+          >
+            Orders
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="marketplace">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
@@ -108,7 +125,41 @@ const Inventory = () => {
             )}
           </div>
         </TabsContent>
-
+        <TabsContent value="orders">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
+            {orderedProducts.map(
+              (
+                {
+                  title = "",
+                  description = "",
+                  images = [],
+                  category = "",
+                  vault_address = "",
+                  notes = "",
+                  location = "",
+                  seller = "",
+                  brand = "",
+                }: Vault,
+                index: number,
+              ) => (
+                <ConfirmProduct
+                  key={index}
+                  metadata={{
+                    title,
+                    description,
+                    images,
+                    category,
+                    brand,
+                  }}
+                  vaultAddress={vault_address}
+                  condition={notes}
+                  location={location}
+                  sellerAddress={seller}
+                />
+              ),
+            )}
+          </div>
+        </TabsContent>
         <TabsContent value="products">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
             {products.map(

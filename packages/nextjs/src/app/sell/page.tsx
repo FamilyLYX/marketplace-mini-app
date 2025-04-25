@@ -12,7 +12,7 @@ import { ProductCard, ProductMetadata } from "@/components/product";
 import { Label } from "@/components/ui/label";
 import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
-import { parseEther } from "viem";
+import { encodePacked, keccak256, parseEther } from "viem";
 import { Vault } from "@/types";
 import { account } from "@/lib/owner";
 import { useDPP } from "@/hooks/useDPP";
@@ -45,7 +45,7 @@ export default function SellProductPage() {
       const res = await createVault({
         nftContract: nftContract as `0x${string}`,
         priceInLYX: parseEther(price.toString()),
-        expectedUIDHash: expectedUIDHash as `0x${string}`,
+        expectedUIDHash: keccak256(encodePacked(["string"], [plainUIDCode])),
       });
       if (!res) {
         throw new Error("Failed to create vault");

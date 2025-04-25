@@ -8,6 +8,7 @@ import {
   FAMILY_VAULT_FACTORY_ADDRESS,
   FAMILY_VAULT_FACTORY_ABI,
 } from "@/constants/vaultFactory";
+import { FAMILY_VAULT_ABI } from "@/constants/vault";
 import { NFT_ABI } from "@/constants/dpp";
 import { parseEventLogs } from "viem";
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
@@ -206,6 +207,44 @@ export const depositFundsTest = async (params: DepositFundsParams) => {
     return { tx };
   } catch (err) {
     console.error("Error depositing funds:", err);
+    return null;
+  }
+};
+
+interface ConfirmReceiptParams {
+  vaultAddress: `0x${string}`;
+  plainUidCode: string;
+}
+
+export const confirmReceiptTest = async (params: ConfirmReceiptParams) => {
+  const { vaultAddress, plainUidCode } = params;
+
+  try {
+    const tx = await walletClient.writeContract({
+      abi: FAMILY_VAULT_ABI,
+      address: vaultAddress,
+      functionName: "confirmReceipt",
+      args: [plainUidCode],
+      chain: luksoTestnet,
+      account: account.address,
+    });
+
+    const receipt = await readClient.waitForTransactionReceipt({
+      hash: tx,
+    });
+
+    if (receipt.status !== "success") {
+      console.error("Receipt confirmation failed:", receipt);
+      return null;
+    }
+
+    console.log("✅ Receipt confirmed successfully!");
+    console.log("Transaction receipt:", receipt);
+    console.log("Transaction hash:", tx);
+
+    return { tx };
+  } catch (err) {
+    console.error("❌ Error confirming receipt:", err);
     return null;
   }
 };

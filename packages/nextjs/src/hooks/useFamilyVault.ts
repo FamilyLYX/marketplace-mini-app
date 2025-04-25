@@ -37,6 +37,37 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
+  const getExpectedUIDHash = async (): Promise<string | null> => {
+    if (!client) return null;
+    try {
+      const expectedUIDHash = await readClient.readContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "expectedUIDHash",
+      });
+      return expectedUIDHash as string;
+    } catch (err) {
+      console.error("Error fetching expected UID hash:", err);
+      return null;
+    }
+  }
+
+
+  const getBuyer = async (): Promise<string | null> => {
+    if (!client) return null;
+    try {
+      const buyer = await readClient.readContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "buyer",
+      });
+      return buyer as string;
+    } catch (err) {
+      console.error("Error fetching buyer:", err);
+      return null;
+    }
+  };
+
   const depositFunds = async ({ priceInLYX }: { priceInLYX: bigint }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
@@ -146,5 +177,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     resolveDispute,
     connectedWallet: accounts?.[0],
     walletConnected,
+    getBuyer,
+    getExpectedUIDHash,
   };
 };
