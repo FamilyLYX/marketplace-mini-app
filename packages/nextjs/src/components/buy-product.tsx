@@ -36,9 +36,8 @@ export function BuyProduct({
 }) {
   const { push } = useRouter();
   const { accounts } = useUpProvider();
-
   const canBuy = useMemo(() => {
-    if (!accounts) return false;
+    if (!accounts || !accounts[0]) return false;
     if (sellerAddress === getAddress(accounts[0])) return false;
     return true;
   }, [accounts, sellerAddress]);
