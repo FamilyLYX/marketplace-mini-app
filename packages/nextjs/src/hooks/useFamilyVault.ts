@@ -114,33 +114,31 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
       toast.error("Please connect your Universal Profile wallet.");
       return;
     }
-    console.log(
-      "Confirming receipt with UID code:",
-      plainUidCode,
-      vaultAddress,
-    );
 
     try {
-      const simulation = await readClient.simulateContract({
-        abi: FAMILY_VAULT_ABI,
-        address: vaultAddress,
-        functionName: "confirmReceipt",
-        args: [plainUidCode],
-        account: accounts[0] as `0x${string}`,
-        chain: luksoTestnet,
-      });
-      console.log("Simulation result:", simulation);
-      // const vault = await client.writeContract({
+      // const simulation = await readClient.simulateContract({
       //   abi: FAMILY_VAULT_ABI,
       //   address: vaultAddress,
       //   functionName: "confirmReceipt",
-      //   account: accounts[0] as `0x${string}`,
-      //   chain: client.chain,
       //   args: [plainUidCode],
+      //   account: accounts[0] as `0x${string}`,
+      //   chain: luksoTestnet,
       // });
-
+      // console.log("Simulation result:", simulation);
+      const vault = await client.writeContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "confirmReceipt",
+        account: accounts[0] as `0x${string}`,
+        chain: client.chain,
+        args: [plainUidCode],
+      });
+      console.log("Transaction result:", vault);
+      const receipt = await readClient.waitForTransactionReceipt({
+        hash: vault,
+      });
       toast.success("Receipt confirmed!");
-      return simulation;
+      return receipt;
     } catch (err) {
       console.error("Error confirming receipt:", err);
       toast.error("Failed to confirm receipt.");

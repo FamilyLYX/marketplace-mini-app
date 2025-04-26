@@ -36,13 +36,13 @@ export default function SellProductPage() {
   const [notes, setNotes] = useState(parsedMetadata?.description || "");
   const [price, setPrice] = useState("");
   const [plainUIDCode, setPlainUIDCode] = useState("");
-  
-  console.log(keccak256(toBytes(plainUIDCode)));
+
   const handleSellMutation = useMutation({
     mutationFn: async () => {
       if (!nftContract || !expectedUIDHash) {
         throw new Error("Missing required parameters");
       }
+      console.log(keccak256(toBytes(plainUIDCode)));
       const res = await createVault({
         nftContract: nftContract as `0x${string}`,
         priceInLYX: parseEther(price.toString()),

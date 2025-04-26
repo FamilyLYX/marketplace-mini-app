@@ -92,8 +92,8 @@ export function ConfirmProduct({
       // const hash = keccak256(toBytes(functionSignature));
       // const selector = hash.slice(0, 10); // '0x' + first 8 hex chars
       // console.log("Selector:", selector);
-      // console.log(await getExpectedUIDHash(), "expectedUIDHash");
-      const res = await confirmReceipt("trial");
+      console.log(await getExpectedUIDHash(), "expectedUIDHash");
+      const res = await confirmReceipt(plainUIDCode);
       if (!res) {
         throw new Error("Failed to create vault");
       }
