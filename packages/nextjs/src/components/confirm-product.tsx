@@ -17,8 +17,7 @@ import { Input } from "./ui/input";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
-import { confirmReceiptTest } from "@/lib/owner";
-
+import { toast } from "sonner";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -75,14 +74,19 @@ export function ConfirmProduct({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [plainUIDCode, setPlainUIDCode] = useState("");
-  const { confirmReceipt, getVaultState,getBuyer,getExpectedUIDHash } = useFamilyVault(vaultAddress as `0x${string}`);
+  const { confirmReceipt, getVaultState, getBuyer, getExpectedUIDHash } =
+    useFamilyVault(vaultAddress as `0x${string}`);
   //
   console.log(
     "Vault Address:",
     vaultAddress + "vault state",
     getVaultState().then((state) => console.log("Vault State:", state)),
-    "getBuyer", getBuyer().then((buyer) => console.log("Buyer:", buyer)),
-    "expectedUIDCode",getExpectedUIDHash().then((expectedUIDCode) => console.log("Expected UID Code:", expectedUIDCode))
+    "getBuyer",
+    getBuyer().then((buyer) => console.log("Buyer:", buyer)),
+    "expectedUIDCode",
+    getExpectedUIDHash().then((expectedUIDCode) =>
+      console.log("Expected UID Code:", expectedUIDCode),
+    ),
   );
   const handleConfirmMutation = useMutation({
     mutationFn: async () => {
@@ -165,7 +169,7 @@ export function ConfirmProduct({
           <Button
             variant="outline"
             className="w-1/2"
-            onClick={() => alert("Dispute flow not implemented yet")}
+            onClick={() => toast.info("Feature coming soon!")}
           >
             Raise Dispute
           </Button>
