@@ -50,8 +50,22 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
       console.error("Error fetching expected UID hash:", err);
       return null;
     }
-  }
+  };
 
+  const getNFTContract = async (): Promise<string | null> => {
+    if (!client) return null;
+    try {
+      const nftContract = await readClient.readContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "nftContract",
+      });
+      return nftContract as string;
+    } catch (err) {
+      console.error("Error fetching NFT contract:", err);
+      return null;
+    }
+  };
 
   const getBuyer = async (): Promise<string | null> => {
     if (!client) return null;
@@ -100,19 +114,33 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
       toast.error("Please connect your Universal Profile wallet.");
       return;
     }
+    console.log(
+      "Confirming receipt with UID code:",
+      plainUidCode,
+      vaultAddress,
+    );
 
     try {
-      const vault = await client.writeContract({
+      const simulation = await readClient.simulateContract({
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
         functionName: "confirmReceipt",
-        account: accounts[0] as `0x${string}`,
-        chain: client.chain,
         args: [plainUidCode],
+        account: accounts[0] as `0x${string}`,
+        chain: luksoTestnet,
       });
+      console.log("Simulation result:", simulation);
+      // const vault = await client.writeContract({
+      //   abi: FAMILY_VAULT_ABI,
+      //   address: vaultAddress,
+      //   functionName: "confirmReceipt",
+      //   account: accounts[0] as `0x${string}`,
+      //   chain: client.chain,
+      //   args: [plainUidCode],
+      // });
 
       toast.success("Receipt confirmed!");
-      return vault;
+      return simulation;
     } catch (err) {
       console.error("Error confirming receipt:", err);
       toast.error("Failed to confirm receipt.");
@@ -173,6 +201,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     getVaultState,
     depositFunds,
     confirmReceipt,
+    getNFTContract,
     initiateDispute,
     resolveDispute,
     connectedWallet: accounts?.[0],

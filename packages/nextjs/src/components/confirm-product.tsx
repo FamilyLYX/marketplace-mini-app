@@ -10,7 +10,7 @@ import {
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRef, useState } from "react";
-import { getAddress } from "viem";
+import { getAddress, keccak256, toBytes } from "viem";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -18,6 +18,7 @@ import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { toast } from "sonner";
+import { confirmReceiptTest } from "@/lib/owner";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -74,27 +75,25 @@ export function ConfirmProduct({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [plainUIDCode, setPlainUIDCode] = useState("");
-  const { confirmReceipt, getVaultState, getBuyer, getExpectedUIDHash } =
-    useFamilyVault(vaultAddress as `0x${string}`);
-  //
-  console.log(
-    "Vault Address:",
-    vaultAddress + "vault state",
-    getVaultState().then((state) => console.log("Vault State:", state)),
-    "getBuyer",
-    getBuyer().then((buyer) => console.log("Buyer:", buyer)),
-    "expectedUIDCode",
-    getExpectedUIDHash().then((expectedUIDCode) =>
-      console.log("Expected UID Code:", expectedUIDCode),
-    ),
+  const { confirmReceipt, getExpectedUIDHash } = useFamilyVault(
+    vaultAddress as `0x${string}`,
   );
+  //
+
   const handleConfirmMutation = useMutation({
     mutationFn: async () => {
       // const res = await confirmReceiptTest({
       //   vaultAddress: vaultAddress as `0x${string}`,
       //   plainUidCode: plainUIDCode,
       // });
-      const res = await confirmReceipt(plainUIDCode);
+
+
+      // const functionSignature = "confirmReceipt(string)";
+      // const hash = keccak256(toBytes(functionSignature));
+      // const selector = hash.slice(0, 10); // '0x' + first 8 hex chars
+      // console.log("Selector:", selector);
+      // console.log(await getExpectedUIDHash(), "expectedUIDHash");
+      const res = await confirmReceipt("trial");
       if (!res) {
         throw new Error("Failed to create vault");
       }

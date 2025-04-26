@@ -220,29 +220,40 @@ export const confirmReceiptTest = async (params: ConfirmReceiptParams) => {
   const { vaultAddress, plainUidCode } = params;
 
   try {
-    const tx = await walletClient.writeContract({
+    // Simulate the call to catch any revert or issues before sending transaction
+    const simulation = await readClient.simulateContract({
       abi: FAMILY_VAULT_ABI,
       address: vaultAddress,
       functionName: "confirmReceipt",
       args: [plainUidCode],
-      chain: luksoTestnet,
       account: account.address,
+      chain: luksoTestnet,
     });
+    console.log("Simulation result:", simulation);
 
-    const receipt = await readClient.waitForTransactionReceipt({
-      hash: tx,
-    });
+    // const tx = await walletClient.writeContract({
+    //   abi: FAMILY_VAULT_ABI,
+    //   address: vaultAddress,
+    //   functionName: "confirmReceipt",
+    //   args: [plainUidCode],
+    //   chain: luksoTestnet,
+    //   account: account.address,
+    // });
+    //
+    // const receipt = await readClient.waitForTransactionReceipt({
+    //   hash: tx,
+    // });
+    //
+    // if (receipt.status !== "success") {
+    //   console.error("Receipt confirmation failed:", receipt);
+    //   return null;
+    // }
+    //
+    // console.log("✅ Receipt confirmed successfully!");
+    // console.log("Transaction receipt:", receipt);
+    // console.log("Transaction hash:", tx);
 
-    if (receipt.status !== "success") {
-      console.error("Receipt confirmation failed:", receipt);
-      return null;
-    }
-
-    console.log("✅ Receipt confirmed successfully!");
-    console.log("Transaction receipt:", receipt);
-    console.log("Transaction hash:", tx);
-
-    return { tx };
+    return { tx: ":" };
   } catch (err) {
     console.error("❌ Error confirming receipt:", err);
     return null;
