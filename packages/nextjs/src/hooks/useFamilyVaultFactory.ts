@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import {
@@ -26,7 +27,7 @@ export const useFamilyVaultFactory = () => {
     nftContract,
     priceInLYX,
     expectedUIDHash,
-  }: CreateVaultParams)=> {
+  }: CreateVaultParams) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
       return null;
@@ -49,7 +50,7 @@ export const useFamilyVaultFactory = () => {
         return null;
       }
       toast.success("Vault created successfully!");
-      const parsedLogs = parseEventLogs({
+      const parsedLogs: any = parseEventLogs({
         logs: receipt.logs,
         abi: FAMILY_VAULT_FACTORY_ABI,
       }) as any;

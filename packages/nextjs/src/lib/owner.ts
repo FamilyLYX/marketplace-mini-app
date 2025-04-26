@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import { http, createPublicClient, createWalletClient } from "viem";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";
@@ -120,7 +121,7 @@ export const createVaultTest = async (params: CreateVaultParams) => {
       abi: FAMILY_VAULT_FACTORY_ABI,
       logs: receipt.logs,
       eventName: "VaultCreated",
-    });
+    }) as any;
 
     const vaultAddress = parsedLogs?.[0]?.args?.vaultAddress;
 

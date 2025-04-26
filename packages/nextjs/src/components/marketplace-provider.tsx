@@ -5,11 +5,14 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "./ui/sonner";
 import { UpProvider } from "./up-provider";
 import { config } from "../lib/wagmi";
+import { Suspense } from "react";
 
 const MarketPlaceApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem={false}>
-      <UpProvider>{children}</UpProvider>
+      <UpProvider>
+        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+      </UpProvider>
       <Toaster />
     </ThemeProvider>
   );
