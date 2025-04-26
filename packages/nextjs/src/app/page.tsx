@@ -8,10 +8,10 @@ import { getAllNFTMetadata } from "@/lib/owner";
 import { BuyProduct } from "@/components/buy-product";
 import { Vault } from "@/types";
 import { ConfirmProduct } from "@/components/confirm-product";
-// import { useUpProvider } from "@/components/up-provider";
-// import { getAddress } from "viem";
+import { getAddress } from "viem";
+import { useUpProvider } from "@/components/up-provider";
 const Inventory = () => {
-  // const { accounts } = useUpProvider();
+  const { accounts } = useUpProvider();
 
   const { data } = useQuery({
     queryKey: ["allNfts"],
@@ -30,7 +30,6 @@ const Inventory = () => {
     refetchOnWindowFocus: false,
   });
 
-  // TODO: add address to this logic
   const orderedProducts = React.useMemo(() => {
     if (!marketplaceProducts) return [];
     return marketplaceProducts
@@ -42,15 +41,26 @@ const Inventory = () => {
       });
   }, [marketplaceProducts]);
 
-  // const products = React.useMemo(() => {
-  //   if (!data || !accounts || accounts.length === 0) return [];
-  //   return data[getAddress(accounts[0])] ?? [];
-  // }, [data, accounts]);
+  const confirmedProducts = React.useMemo(() => {
+    if (!marketplaceProducts) return [];
+    return marketplaceProducts
+      .filter((p: Vault) => p.order_status === "confirmed")
+      .sort((a: Vault, b: Vault) => {
+        const aDate = new Date(a.created_at);
+        const bDate = new Date(b.created_at);
+        return bDate.getTime() - aDate.getTime();
+      });
+  }, [marketplaceProducts]);
 
   const products = React.useMemo(() => {
-    if (!data) return [];
-    return Object.values(data).flat();
-  }, [data]);
+    if (!data || !accounts || accounts.length === 0) return [];
+    return data[getAddress(accounts[0])] ?? [];
+  }, [data, accounts]);
+
+  // const products = React.useMemo(() => {
+  //   if (!data) return [];
+  //   return Object.values(data).flat();
+  // }, [data]);
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">

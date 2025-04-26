@@ -1,17 +1,12 @@
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useRef } from "react";
+import { useMemo } from "react";
 import { getAddress } from "viem";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
-
+import { useUpProvider } from "./up-provider";
+import { toast } from "sonner";
+import { ProductImageCarousel } from "./product";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -19,40 +14,6 @@ export type ProductMetadata = {
   brand: string;
   images: string[];
 };
-
-// Subcomponent: ProductImageCarousel
-function ProductImageCarousel({ images }: { images: string[] }) {
-  const prevRef = useRef<HTMLButtonElement>(null);
-  const nextRef = useRef<HTMLButtonElement>(null);
-
-  return (
-    <Carousel
-      className="w-full overflow-hidden rounded-t-2xl"
-      opts={{ align: "start", loop: true }}
-    >
-      <CarouselContent>
-        {images.map((img, idx) => (
-          <CarouselItem key={idx}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={img}
-              alt={`Product image ${idx + 1}`}
-              className="block w-full h-64 object-fit transition-all duration-300"
-            />
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious
-        ref={prevRef}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
-      />
-      <CarouselNext
-        ref={nextRef}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
-      />
-    </Carousel>
-  );
-}
 
 // Main component
 
@@ -74,6 +35,13 @@ export function BuyProduct({
   showBuyButton?: boolean;
 }) {
   const { push } = useRouter();
+  const { accounts } = useUpProvider();
+
+  const canBuy = useMemo(() => {
+    if (!accounts) return false;
+    if (sellerAddress === getAddress(accounts[0])) return false;
+    return true;
+  }, [accounts, sellerAddress]);
 
   return (
     <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
@@ -119,6 +87,10 @@ export function BuyProduct({
         <CardFooter className="flex justify-end">
           <Button
             onClick={() => {
+              if (!canBuy) {
+                toast.error("You cannot buy your own product");
+                return;
+              }
               const params = new URLSearchParams({});
               params.append("vaultAddress", vaultAddress);
               params.append("metadata", JSON.stringify(metadata));

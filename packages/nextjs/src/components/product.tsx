@@ -20,7 +20,7 @@ export type ProductMetadata = {
 };
 
 // Subcomponent: ProductImageCarousel
-function ProductImageCarousel({ images }: { images: string[] }) {
+export function ProductImageCarousel({ images }: { images: string[] }) {
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 

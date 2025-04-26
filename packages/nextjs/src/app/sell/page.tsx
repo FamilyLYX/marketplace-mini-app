@@ -14,11 +14,12 @@ import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
 import { keccak256, parseEther, toBytes } from "viem";
 import { Vault } from "@/types";
-import { account } from "@/lib/owner";
 import { useDPP } from "@/hooks/useDPP";
 import { toast } from "sonner";
+import { useUpProvider } from "@/components/up-provider";
 
 export default function SellProductPage() {
+  const { accounts } = useUpProvider();
   const router = useRouter();
   const { createVault } = useFamilyVaultFactory();
   const { transferOwnershipWithUID } = useDPP();
@@ -67,7 +68,7 @@ export default function SellProductPage() {
           body: JSON.stringify({
             vault_address: vaultAddress,
             nft_contract: nftContract,
-            seller: account.address,
+            seller: accounts[0],
             notes,
             price_in_lyx: price.toString(),
             title: parsedMetadata?.title,

@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { getAddress } from "viem";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -18,6 +11,7 @@ import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { toast } from "sonner";
+import { ProductImageCarousel } from "./product";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -25,39 +19,6 @@ export type ProductMetadata = {
   brand: string;
   images: string[];
 };
-
-function ProductImageCarousel({ images }: { images: string[] }) {
-  const prevRef = useRef<HTMLButtonElement>(null);
-  const nextRef = useRef<HTMLButtonElement>(null);
-
-  return (
-    <Carousel
-      className="w-full overflow-hidden rounded-t-2xl"
-      opts={{ align: "start", loop: true }}
-    >
-      <CarouselContent>
-        {images.map((img, idx) => (
-          <CarouselItem key={idx}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={img}
-              alt={`Product image ${idx + 1}`}
-              className="block w-full h-64 object-fit transition-all duration-300"
-            />
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious
-        ref={prevRef}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
-      />
-      <CarouselNext
-        ref={nextRef}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
-      />
-    </Carousel>
-  );
-}
 
 export function ConfirmProduct({
   metadata,
