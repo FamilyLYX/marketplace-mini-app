@@ -10,7 +10,7 @@ import {
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRef, useState } from "react";
-import { getAddress, keccak256, toBytes } from "viem";
+import { getAddress } from "viem";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -18,7 +18,6 @@ import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { toast } from "sonner";
-import { confirmReceiptTest } from "@/lib/owner";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -75,24 +74,10 @@ export function ConfirmProduct({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [plainUIDCode, setPlainUIDCode] = useState("");
-  const { confirmReceipt, getExpectedUIDHash } = useFamilyVault(
-    vaultAddress as `0x${string}`,
-  );
-  //
+  const { confirmReceipt } = useFamilyVault(vaultAddress as `0x${string}`);
 
   const handleConfirmMutation = useMutation({
     mutationFn: async () => {
-      // const res = await confirmReceiptTest({
-      //   vaultAddress: vaultAddress as `0x${string}`,
-      //   plainUidCode: plainUIDCode,
-      // });
-
-
-      // const functionSignature = "confirmReceipt(string)";
-      // const hash = keccak256(toBytes(functionSignature));
-      // const selector = hash.slice(0, 10); // '0x' + first 8 hex chars
-      // console.log("Selector:", selector);
-      console.log(await getExpectedUIDHash(), "expectedUIDHash");
       const res = await confirmReceipt(plainUIDCode);
       if (!res) {
         throw new Error("Failed to create vault");
@@ -104,7 +89,6 @@ export function ConfirmProduct({
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              buyer: "0x1234567890abcdef1234567890abcdef12345678",
               order_status: "confirmed",
             } as Vault),
           },
@@ -120,6 +104,8 @@ export function ConfirmProduct({
     },
     onSuccess: (data) => {
       console.log("Buy mutation successful", data);
+      toast.success("Product delivery confirmed!");
+      setModalOpen(false);
     },
     onError: (error) => {
       console.error("Error during buy mutation:", error);
@@ -206,8 +192,9 @@ export function ConfirmProduct({
               onClick={() => {
                 handleConfirmMutation.mutate();
               }}
+              disabled={handleConfirmMutation.isPending}
             >
-              Confirm
+              {handleConfirmMutation.isPending ? "Processing..." : "Confirm"}
             </Button>
           </div>
         </DialogContent>

@@ -11,6 +11,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { parseEther } from "viem";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
+import { useUpProvider } from "@/components/up-provider";
+import { toast } from "sonner";
 
 // Updated BuyFormData
 interface BuyFormData {
@@ -189,6 +191,8 @@ function PaymentStep({
   data: BuyFormData;
   onBack: () => void;
 }) {
+  const { accounts } = useUpProvider();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const metadataParam = searchParams.get("metadata") || "";
   const parsedMetadata = JSON.parse(metadataParam);
@@ -198,14 +202,8 @@ function PaymentStep({
   const sellerAddress = searchParams.get("sellerAddress") || "";
   const price = searchParams.get("price") || "";
 
-  const { depositFunds, getVaultState } = useFamilyVault(
-    vaultAddress as `0x${string}`,
-  );
-  console.log(
-    "Vault Address:",
-    vaultAddress + "vault state",
-    getVaultState().then((state) => console.log("Vault State:", state)),
-  );
+  const { depositFunds } = useFamilyVault(vaultAddress as `0x${string}`);
+
   const handleBuyMutation = useMutation({
     mutationFn: async () => {
       const res = await depositFunds({
@@ -221,7 +219,7 @@ function PaymentStep({
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              buyer: "0x1234567890abcdef1234567890abcdef12345678",
+              buyer: accounts[0],
               first_name: data.firstName,
               last_name: data.lastName,
               email: data.email,
@@ -247,6 +245,8 @@ function PaymentStep({
     },
     onSuccess: (data) => {
       console.log("Buy mutation successful", data);
+      toast.success("Order played successfully!");
+      router.push("/");
     },
     onError: (error) => {
       console.error("Error during buy mutation:", error);
@@ -283,8 +283,9 @@ function PaymentStep({
         className="w-full mt-6 py-4 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
         size="lg"
         onClick={() => handleBuyMutation.mutate()}
+        disabled={!accounts?.[0] || handleBuyMutation.isPending}
       >
-        Pay with LYX
+        {handleBuyMutation.isPending ? "Processing..." : "Buy Now"}
       </Button>
     </div>
   );

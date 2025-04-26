@@ -12,10 +12,11 @@ import { ProductCard, ProductMetadata } from "@/components/product";
 import { Label } from "@/components/ui/label";
 import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
-import { encodePacked, keccak256, parseEther, toBytes } from "viem";
+import { keccak256, parseEther, toBytes } from "viem";
 import { Vault } from "@/types";
 import { account } from "@/lib/owner";
 import { useDPP } from "@/hooks/useDPP";
+import { toast } from "sonner";
 
 export default function SellProductPage() {
   const router = useRouter();
@@ -42,7 +43,6 @@ export default function SellProductPage() {
       if (!nftContract || !expectedUIDHash) {
         throw new Error("Missing required parameters");
       }
-      console.log(keccak256(toBytes(plainUIDCode)));
       const res = await createVault({
         nftContract: nftContract as `0x${string}`,
         priceInLYX: parseEther(price.toString()),
@@ -90,6 +90,8 @@ export default function SellProductPage() {
     },
     onSuccess: (data) => {
       console.log("Transaction successful:", data);
+      toast.success("Product listed successfully!");
+      router.push("/");
     },
     onError: (error) => {
       console.error("Transaction failed:", error);
@@ -163,8 +165,9 @@ export default function SellProductPage() {
             onClick={() => {
               handleSellMutation.mutate();
             }}
+            disabled={handleSellMutation.isPending}
           >
-            Sell
+            {handleSellMutation.isPending ? "Processing..." : "List Product"}
           </Button>
         </div>
       </div>
