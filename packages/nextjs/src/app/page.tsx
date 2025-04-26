@@ -11,6 +11,7 @@ import { ConfirmProduct } from "@/components/confirm-product";
 import { PurchasedProductCard } from "@/components/purchased-product";
 import { getAddress } from "viem";
 import { useUpProvider } from "@/components/up-provider";
+
 const Inventory = () => {
   const { accounts } = useUpProvider();
 
@@ -69,10 +70,32 @@ const Inventory = () => {
     return data[getAddress(accounts[0])] ?? [];
   }, [data, accounts]);
 
-  // const products = React.useMemo(() => {
-  //   if (!data) return [];
-  //   return Object.values(data).flat();
-  // }, [data]);
+  const vaultNFTAddresses = React.useMemo(() => {
+    if (!marketplace) return new Set<string>();
+    const set = new Set<string>();
+    marketplace.forEach((p: Vault) => {
+      if (p.nft_contract) {
+        set.add(p.nft_contract.toLowerCase());
+      }
+    });
+    return set;
+  }, [marketplace]);
+
+  const addToMarketplaceProducts = React.useMemo(() => {
+    return products.filter((product: { nftAddress: string }) => {
+      return !vaultNFTAddresses.has(product.nftAddress.toLowerCase());
+    });
+  }, [products, vaultNFTAddresses]);
+
+  const alreadyInMarketplaceProducts = React.useMemo(() => {
+    return products.filter((product: { nftAddress: string }) => {
+      return vaultNFTAddresses.has(product.nftAddress.toLowerCase());
+    });
+  }, [products, vaultNFTAddresses]);
+
+  const isEmpty =
+    addToMarketplaceProducts.length === 0 &&
+    alreadyInMarketplaceProducts.length === 0;
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
@@ -241,18 +264,60 @@ const Inventory = () => {
         </TabsContent>
 
         <TabsContent value="products">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-            {products.map(
-              ({ nftAddress, decodedMetadata, expectedUIDHash }, index) => (
-                <ProductCard
-                  key={index}
-                  metadata={decodedMetadata}
-                  nftAddress={nftAddress}
-                  expectedUIDHash={expectedUIDHash}
-                />
-              ),
-            )}
+          <div className="flex flex-col gap-10 w-full">
+            {/* Add to Marketplace Section */}
+            <div className="flex flex-col gap-4">
+              <h2 className="text-lg font-semibold">Add to Marketplace</h2>
+              {addToMarketplaceProducts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
+                  {addToMarketplaceProducts.map(
+                    (
+                      { nftAddress, decodedMetadata, expectedUIDHash },
+                      index,
+                    ) => (
+                      <ProductCard
+                        key={index}
+                        metadata={decodedMetadata}
+                        nftAddress={nftAddress}
+                        expectedUIDHash={expectedUIDHash}
+                      />
+                    ),
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center w-full h-[300px] border rounded-lg">
+                  <p className="text-muted-foreground text-center text-sm">
+                    No products available to add to marketplace.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Already in Marketplace Section */}
+            <div className="flex flex-col gap-4">
+              <h2 className="text-lg font-semibold">Already in Marketplace</h2>
+              <div className="flex items-center justify-center w-full h-[300px] border rounded-lg">
+                <p className="text-muted-foreground text-center text-sm">
+                  Coming soon... 🚀
+                </p>
+              </div>
+            </div>
           </div>
+
+          {/* Overall Empty State if products and marketplace products are BOTH empty */}
+          {products.length === 0 && addToMarketplaceProducts.length === 0 && (
+            <div className="flex flex-col items-center justify-center w-full h-[500px] mt-10">
+              <p className="text-muted-foreground text-center text-sm">
+                You can tokenize products to add to the marketplace.
+              </p>
+              <a
+                href="LINK_TO_TOKENIZE"
+                className="mt-4 px-4 py-2 bg-black text-white rounded text-xs"
+              >
+                Tokenize Products
+              </a>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
