@@ -4,11 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProductImageCarousel } from "./product";
 import { ProductMetadata } from "./buy-product";
+import { getAddress } from "viem";
 
 export function PurchasedProductCard({
   metadata,
+  seller,
 }: {
   metadata: ProductMetadata;
+  seller: string | `0x${string}`;
 }) {
   return (
     <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
@@ -27,8 +30,23 @@ export function PurchasedProductCard({
           <span className="font-medium">Brand: {metadata.brand}</span>
         </p>
         <div className="mt-4">
-          <Badge variant="outline" className="text-xs">Purchased Successfully</Badge>
+          <Badge variant="outline" className="text-xs">
+            Purchased Successfully
+          </Badge>
         </div>
+        <p className="text-sm font-medium">
+          Product by
+          <a
+            href={`https://universaleverything.io/${getAddress(seller)}?network=testnet&assetGroup=tokens`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-medium text-blue-600 hover:underline truncate block"
+          >
+            <Badge variant="outline" className="truncate">
+              {seller}
+            </Badge>
+          </a>
+        </p>
       </CardContent>
     </Card>
   );

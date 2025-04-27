@@ -90,13 +90,11 @@ const Inventory = () => {
 
   const alreadyInMarketplaceProducts = React.useMemo(() => {
     if (!marketplace) {
-      console.log("No marketplace data, returning empty array");
       return [];
     }
     return products
       .filter((product: { nftAddress: string }) => {
         const has = vaultNFTAddresses.has(product.nftAddress.toLowerCase());
-        console.log(`filter product ${product.nftAddress}: ${has}`);
         return has;
       })
       .map(
@@ -105,13 +103,11 @@ const Inventory = () => {
           decodedMetadata: unknown;
           expectedUIDHash: string;
         }) => {
-          console.log(`mapping product ${product.nftAddress}`, product);
           const matchedVault = marketplace.find(
             (p: Vault) =>
               p.nft_contract?.toLowerCase() ===
               product.nftAddress.toLowerCase(),
           );
-          console.log("matchedVault:", matchedVault);
           return {
             ...product,
             vault: matchedVault,
@@ -123,12 +119,15 @@ const Inventory = () => {
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className="text-center mb-6">
+        <h2 className="text-xl font-[cursive] italic text-black mb-2">
+          family
+        </h2>
         <h1 className="font-serif text-5xl font-black tracking-tight">
-          Inventory
+          Marketplace
         </h1>
         <p className="mt-2 text-xs text-gray-500">
-          Here you can fully interact with your NFTs, sell them, study them,
-          etc.
+          Manage your products, orders, and marketplace listings all in one
+          place.
         </p>
       </div>
 
@@ -261,6 +260,7 @@ const Inventory = () => {
                         images = [],
                         category = "",
                         brand = "",
+                        seller = "",
                       }: Vault,
                       index: number,
                     ) => (
@@ -273,6 +273,7 @@ const Inventory = () => {
                           category,
                           brand,
                         }}
+                        seller={seller}
                       />
                     ),
                   )}
@@ -339,20 +340,6 @@ const Inventory = () => {
               )}
             </div>
           </div>
-
-          {products.length === 0 && addToMarketplaceProducts.length === 0 && (
-            <div className="flex flex-col items-center justify-center w-full h-[500px] mt-10">
-              <p className="text-muted-foreground text-center text-sm">
-                You can tokenize products to add to the marketplace.
-              </p>
-              <a
-                href="LINK_TO_TOKENIZE"
-                className="mt-4 px-4 py-2 bg-black text-white rounded text-xs"
-              >
-                Tokenize Products
-              </a>
-            </div>
-          )}
         </TabsContent>
       </Tabs>
     </div>
