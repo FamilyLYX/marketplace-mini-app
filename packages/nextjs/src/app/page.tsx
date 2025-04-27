@@ -37,7 +37,8 @@ const Inventory = () => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
     return marketplace
       .filter(
-        (p: Vault) => p.order_status === "pending" && p.buyer === getAddress(accounts[0]),
+        (p: Vault) =>
+          p.order_status === "pending" && p.buyer === getAddress(accounts[0]),
       )
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
@@ -50,7 +51,8 @@ const Inventory = () => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
     return marketplace
       .filter(
-        (p: Vault) => p.order_status === "confirmed" && p.buyer === getAddress(accounts[0]),
+        (p: Vault) =>
+          p.order_status === "confirmed" && p.buyer === getAddress(accounts[0]),
       )
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
@@ -93,30 +95,11 @@ const Inventory = () => {
   }, [products, vaultNFTAddresses]);
 
   const alreadyInMarketplaceProducts = React.useMemo(() => {
-    if (!marketplace) {
-      return [];
-    }
-    return products
-      .filter((product: { nftAddress: string }) => {
-        const has = vaultNFTAddresses.has(product.nftAddress);
-        return has;
-      })
-      .map(
-        (product: {
-          nftAddress: string;
-          decodedMetadata: unknown;
-          expectedUIDHash: string;
-        }) => {
-          const matchedVault = marketplace.find(
-            (p: Vault) => p.nft_contract === product.nftAddress,
-          );
-          return {
-            ...product,
-            vault: matchedVault,
-          };
-        },
-      );
-  }, [products, vaultNFTAddresses, marketplace]);
+    if (!marketplace || !accounts || accounts.length === 0) return [];
+    return marketplace.filter(
+      (p: Vault) => p.seller === getAddress(accounts[0]),
+    );
+  }, [marketplace, accounts]);
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className="text-center mb-6">
@@ -321,15 +304,23 @@ const Inventory = () => {
               <h2 className="text-2xl font-semibold">In Marketplace</h2>
               {alreadyInMarketplaceProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {alreadyInMarketplaceProducts.map(
-                    ({ decodedMetadata, vault }, index) => (
+                  {alreadyInMarketplaceProducts.map((vault:Vault, index:number) => {
+                    const metadata: ProductMetadata = {
+                      title: vault.title,
+                      description: vault.description ?? "",
+                      category: vault.category ?? "",
+                      brand: vault.brand ?? "",
+                      images: vault.images ?? [],
+                    };
+
+                    return (
                       <AlreadyInMarketplace
                         key={`in-marketplace-${index}`}
-                        metadata={decodedMetadata as ProductMetadata}
+                        metadata={metadata}
                         vault={vault}
                       />
-                    ),
-                  )}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
