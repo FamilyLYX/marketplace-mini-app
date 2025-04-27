@@ -12,6 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { toast } from "sonner";
 import { ProductImageCarousel } from "./product";
+import { queryClient } from "./marketplace-provider";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -66,6 +67,9 @@ export function ConfirmProduct({
     onSuccess: (data) => {
       console.log("Buy mutation successful", data);
       toast.success("Product delivery confirmed!");
+      queryClient.invalidateQueries({
+        queryKey: ["marketplaceProducts"],
+      });
       setModalOpen(false);
     },
     onError: (error) => {

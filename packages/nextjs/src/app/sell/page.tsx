@@ -17,6 +17,7 @@ import { Vault } from "@/types";
 import { useDPP } from "@/hooks/useDPP";
 import { toast } from "sonner";
 import { useUpProvider } from "@/components/up-provider";
+import { queryClient } from "@/components/marketplace-provider";
 
 export default function SellProductPage() {
   const { accounts } = useUpProvider();
@@ -92,6 +93,9 @@ export default function SellProductPage() {
     onSuccess: (data) => {
       console.log("Transaction successful:", data);
       toast.success("Product listed successfully!");
+      queryClient.invalidateQueries({
+        queryKey: ["marketplaceProducts"],
+      });
       router.push("/");
     },
     onError: (error) => {

@@ -13,6 +13,7 @@ import { parseEther } from "viem";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
+import { queryClient } from "@/components/marketplace-provider";
 
 // Updated BuyFormData
 interface BuyFormData {
@@ -237,6 +238,9 @@ function PaymentStep({
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`Vault listing update failed: ${errorText}`);
+          queryClient.invalidateQueries({
+            queryKey: ["marketplaceProducts"],
+          });
         }
       } catch (error) {
         console.error("Vault listing update failed:", error);
