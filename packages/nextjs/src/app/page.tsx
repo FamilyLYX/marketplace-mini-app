@@ -133,7 +133,7 @@ const Inventory = () => {
 
       <Tabs
         defaultValue="marketplace"
-        className="w-full flex items-center justify-center"
+        className="w-full flex items-center justify-center w-full"
       >
         <TabsList className="gap-2 bg-gray-100 rounded-full mb-6">
           <TabsTrigger
@@ -204,7 +204,7 @@ const Inventory = () => {
         <TabsContent value="orders">
           <div className="flex flex-col gap-10 max-w-6xl w-full">
             {/* Shipping Section */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 w-full">
               <h2 className="text-2xl font-semibold">Shipping</h2>
               {orderedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -288,12 +288,12 @@ const Inventory = () => {
         </TabsContent>
 
         <TabsContent value="products">
-          <div className="flex flex-col gap-10 w-full">
-            {/* Add to Marketplace Section */}
-            <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-10 max-w-6xl w-full">
+            {/* Place in Marketplace Section */}
+            <div className="flex flex-col gap-4 w-full">
               <h2 className="text-2xl font-semibold">Place in Marketplace</h2>
               {addToMarketplaceProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {addToMarketplaceProducts.map(
                     (
                       { nftAddress, decodedMetadata, expectedUIDHash },
@@ -309,18 +309,17 @@ const Inventory = () => {
                   )}
                 </div>
               ) : (
-                <div className="flex items-center justify-center w-full h-[300px]">
-                  <p className="text-muted-foreground text-center text-sm">
-                    Tokenize products to add to the marketplace.
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Tokenize products to add to the marketplace.
+                </p>
               )}
             </div>
 
-            <div className="flex flex-col gap-4">
+            {/* In Marketplace Section */}
+            <div className="flex flex-col gap-4 w-full">
               <h2 className="text-2xl font-semibold">In Marketplace</h2>
               {alreadyInMarketplaceProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {alreadyInMarketplaceProducts.map(
                     ({ decodedMetadata, vault }, index) => (
                       <AlreadyInMarketplace
@@ -332,11 +331,9 @@ const Inventory = () => {
                   )}
                 </div>
               ) : (
-                <div className="flex items-center justify-center w-full h-[300px] border rounded-lg">
-                  <p className="text-muted-foreground text-center text-sm">
-                    No products currently listed in marketplace.
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  No products currently listed in marketplace.
+                </p>
               )}
             </div>
           </div>
