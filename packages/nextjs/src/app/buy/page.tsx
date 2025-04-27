@@ -9,7 +9,7 @@ import { BuyProduct } from "@/components/buy-product";
 import { ArrowLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
-import { parseEther } from "viem";
+import { getAddress, parseEther } from "viem";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
@@ -220,7 +220,7 @@ function PaymentStep({
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              buyer: accounts[0],
+              buyer: getAddress(accounts[0]),
               first_name: data.firstName,
               last_name: data.lastName,
               email: data.email,

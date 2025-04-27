@@ -37,7 +37,7 @@ const Inventory = () => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
     return marketplace
       .filter(
-        (p: Vault) => p.order_status === "pending" && p.buyer === accounts[0],
+        (p: Vault) => p.order_status === "pending" && p.buyer === getAddress(accounts[0]),
       )
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
@@ -50,7 +50,7 @@ const Inventory = () => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
     return marketplace
       .filter(
-        (p: Vault) => p.order_status === "confirmed" && p.buyer === accounts[0],
+        (p: Vault) => p.order_status === "confirmed" && p.buyer === getAddress(accounts[0]),
       )
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
@@ -117,6 +117,7 @@ const Inventory = () => {
         },
       );
   }, [products, vaultNFTAddresses, marketplace]);
+  console.log({ alreadyInMarketplaceProducts,marketplace });
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className="text-center mb-6">
