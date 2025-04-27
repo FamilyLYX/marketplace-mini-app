@@ -116,15 +116,15 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
 
     try {
-      // const simulation = await readClient.simulateContract({
-      //   abi: FAMILY_VAULT_ABI,
-      //   address: vaultAddress,
-      //   functionName: "confirmReceipt",
-      //   args: [plainUidCode],
-      //   account: accounts[0] as `0x${string}`,
-      //   chain: luksoTestnet,
-      // });
-      // console.log("Simulation result:", simulation);
+      const simulation = await readClient.simulateContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "confirmReceipt",
+        args: [plainUidCode],
+        account: accounts[0] as `0x${string}`,
+        chain: luksoTestnet,
+      });
+      console.log("Simulation result:", simulation);
       const vault = await client.writeContract({
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,

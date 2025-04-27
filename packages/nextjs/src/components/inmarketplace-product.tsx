@@ -21,8 +21,6 @@ export function AlreadyInMarketplace({
   metadata: ProductMetadata;
   vault: any;
 }) {
-  console.log("vault", vault);
-
   function handleRaiseDispute() {
     toast("Coming soon 🚀");
   }
@@ -39,10 +37,10 @@ export function AlreadyInMarketplace({
       return (
         <Button
           variant="destructive"
-          className="w-full text-sm"
+          className="w-full text-xs"
           onClick={handleRemove}
         >
-          Remove
+          Remove from Marketplace
         </Button>
       );
     }
@@ -52,7 +50,7 @@ export function AlreadyInMarketplace({
       return (
         <Button
           variant="outline"
-          className="w-full text-sm"
+          className="w-full text-xs"
           onClick={handleRaiseDispute}
         >
           Raise Dispute

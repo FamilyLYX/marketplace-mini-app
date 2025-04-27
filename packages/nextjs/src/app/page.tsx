@@ -117,7 +117,6 @@ const Inventory = () => {
         },
       );
   }, [products, vaultNFTAddresses, marketplace]);
-  console.log({ alreadyInMarketplaceProducts,marketplace });
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className="text-center mb-6">
