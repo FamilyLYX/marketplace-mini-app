@@ -15,7 +15,7 @@ import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 
 const Inventory = () => {
   const { accounts } = useUpProvider();
-  
+
   const { data } = useQuery({
     queryKey: ["allNfts"],
     queryFn: () => getAllNFTMetadata(),
@@ -65,7 +65,7 @@ const Inventory = () => {
   const marketplaceProducts = React.useMemo(() => {
     if (!marketplace) return [];
     return marketplace
-      .filter((p: Vault) => p.order_status === undefined)
+      .filter((p: Vault) => p.order_status === null)
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
         const bDate = new Date(b.created_at);
