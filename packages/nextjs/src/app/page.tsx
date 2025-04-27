@@ -35,10 +35,9 @@ const Inventory = () => {
 
   const orderedProducts = React.useMemo(() => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
-    const buyerAddress = getAddress(accounts[0]);
     return marketplace
       .filter(
-        (p: Vault) => p.order_status === "pending" && p.buyer === buyerAddress,
+        (p: Vault) => p.order_status === "pending" && p.buyer === accounts[0],
       )
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
@@ -49,11 +48,9 @@ const Inventory = () => {
 
   const confirmedProducts = React.useMemo(() => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
-    const buyerAddress = getAddress(accounts[0]);
     return marketplace
       .filter(
-        (p: Vault) =>
-          p.order_status === "confirmed" && p.buyer === buyerAddress,
+        (p: Vault) => p.order_status === "confirmed" && p.buyer === accounts[0],
       )
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
@@ -83,7 +80,7 @@ const Inventory = () => {
     const set = new Set<string>();
     marketplace.forEach((p: Vault) => {
       if (p.nft_contract) {
-        set.add(p.nft_contract.toLowerCase());
+        set.add(p.nft_contract);
       }
     });
     return set;
@@ -91,7 +88,7 @@ const Inventory = () => {
 
   const addToMarketplaceProducts = React.useMemo(() => {
     return products.filter((product: { nftAddress: string }) => {
-      return !vaultNFTAddresses.has(product.nftAddress.toLowerCase());
+      return !vaultNFTAddresses.has(product.nftAddress);
     });
   }, [products, vaultNFTAddresses]);
 
@@ -101,7 +98,7 @@ const Inventory = () => {
     }
     return products
       .filter((product: { nftAddress: string }) => {
-        const has = vaultNFTAddresses.has(product.nftAddress.toLowerCase());
+        const has = vaultNFTAddresses.has(product.nftAddress);
         return has;
       })
       .map(
@@ -111,9 +108,7 @@ const Inventory = () => {
           expectedUIDHash: string;
         }) => {
           const matchedVault = marketplace.find(
-            (p: Vault) =>
-              p.nft_contract?.toLowerCase() ===
-              product.nftAddress.toLowerCase(),
+            (p: Vault) => p.nft_contract === product.nftAddress,
           );
           return {
             ...product,
@@ -122,7 +117,6 @@ const Inventory = () => {
         },
       );
   }, [products, vaultNFTAddresses, marketplace]);
-
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className="text-center mb-6">
