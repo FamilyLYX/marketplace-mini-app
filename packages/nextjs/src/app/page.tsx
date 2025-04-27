@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ProductCard } from "@/components/product";
+import { ProductCard, ProductMetadata } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
 import { BuyProduct } from "@/components/buy-product";
@@ -11,6 +11,7 @@ import { ConfirmProduct } from "@/components/confirm-product";
 import { PurchasedProductCard } from "@/components/purchased-product";
 import { getAddress } from "viem";
 import { useUpProvider } from "@/components/up-provider";
+import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 
 const Inventory = () => {
   const { accounts } = useUpProvider();
@@ -88,14 +89,36 @@ const Inventory = () => {
   }, [products, vaultNFTAddresses]);
 
   const alreadyInMarketplaceProducts = React.useMemo(() => {
-    return products.filter((product: { nftAddress: string }) => {
-      return vaultNFTAddresses.has(product.nftAddress.toLowerCase());
-    });
-  }, [products, vaultNFTAddresses]);
-
-  const isEmpty =
-    addToMarketplaceProducts.length === 0 &&
-    alreadyInMarketplaceProducts.length === 0;
+    if (!marketplace) {
+      console.log("No marketplace data, returning empty array");
+      return [];
+    }
+    return products
+      .filter((product: { nftAddress: string }) => {
+        const has = vaultNFTAddresses.has(product.nftAddress.toLowerCase());
+        console.log(`filter product ${product.nftAddress}: ${has}`);
+        return has;
+      })
+      .map(
+        (product: {
+          nftAddress: string;
+          decodedMetadata: unknown;
+          expectedUIDHash: string;
+        }) => {
+          console.log(`mapping product ${product.nftAddress}`, product);
+          const matchedVault = marketplace.find(
+            (p: Vault) =>
+              p.nft_contract?.toLowerCase() ===
+              product.nftAddress.toLowerCase(),
+          );
+          console.log("matchedVault:", matchedVault);
+          return {
+            ...product,
+            vault: matchedVault,
+          };
+        },
+      );
+  }, [products, vaultNFTAddresses, marketplace]);
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
@@ -267,7 +290,7 @@ const Inventory = () => {
           <div className="flex flex-col gap-10 w-full">
             {/* Add to Marketplace Section */}
             <div className="flex flex-col gap-4">
-              <h2 className="text-lg font-semibold">Add to Marketplace</h2>
+              <h2 className="text-2xl font-semibold">Place in Marketplace</h2>
               {addToMarketplaceProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
                   {addToMarketplaceProducts.map(
@@ -276,7 +299,7 @@ const Inventory = () => {
                       index,
                     ) => (
                       <ProductCard
-                        key={index}
+                        key={`add-${index}`}
                         metadata={decodedMetadata}
                         nftAddress={nftAddress}
                         expectedUIDHash={expectedUIDHash}
@@ -285,26 +308,38 @@ const Inventory = () => {
                   )}
                 </div>
               ) : (
-                <div className="flex items-center justify-center w-full h-[300px] border rounded-lg">
+                <div className="flex items-center justify-center w-full h-[300px]">
                   <p className="text-muted-foreground text-center text-sm">
-                    No products available to add to marketplace.
+                    Tokenize products to add to the marketplace.
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Already in Marketplace Section */}
             <div className="flex flex-col gap-4">
-              <h2 className="text-lg font-semibold">Already in Marketplace</h2>
-              <div className="flex items-center justify-center w-full h-[300px] border rounded-lg">
-                <p className="text-muted-foreground text-center text-sm">
-                  Coming soon... 🚀
-                </p>
-              </div>
+              <h2 className="text-2xl font-semibold">In Marketplace</h2>
+              {alreadyInMarketplaceProducts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
+                  {alreadyInMarketplaceProducts.map(
+                    ({ decodedMetadata, vault }, index) => (
+                      <AlreadyInMarketplace
+                        key={`in-marketplace-${index}`}
+                        metadata={decodedMetadata as ProductMetadata}
+                        vault={vault}
+                      />
+                    ),
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center w-full h-[300px] border rounded-lg">
+                  <p className="text-muted-foreground text-center text-sm">
+                    No products currently listed in marketplace.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Overall Empty State if products and marketplace products are BOTH empty */}
           {products.length === 0 && addToMarketplaceProducts.length === 0 && (
             <div className="flex flex-col items-center justify-center w-full h-[500px] mt-10">
               <p className="text-muted-foreground text-center text-sm">
