@@ -15,7 +15,7 @@ import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 
 const Inventory = () => {
   const { accounts } = useUpProvider();
-
+  
   const { data } = useQuery({
     queryKey: ["allNfts"],
     queryFn: () => getAllNFTMetadata(),
@@ -34,26 +34,33 @@ const Inventory = () => {
   });
 
   const orderedProducts = React.useMemo(() => {
-    if (!marketplace) return [];
+    if (!marketplace || !accounts || accounts.length === 0) return [];
+    const buyerAddress = getAddress(accounts[0]);
     return marketplace
-      .filter((p: Vault) => p.order_status === "pending")
+      .filter(
+        (p: Vault) => p.order_status === "pending" && p.buyer === buyerAddress,
+      )
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
         const bDate = new Date(b.created_at);
         return bDate.getTime() - aDate.getTime();
       });
-  }, [marketplace]);
+  }, [marketplace, accounts]);
 
   const confirmedProducts = React.useMemo(() => {
-    if (!marketplace) return [];
+    if (!marketplace || !accounts || accounts.length === 0) return [];
+    const buyerAddress = getAddress(accounts[0]);
     return marketplace
-      .filter((p: Vault) => p.order_status === "confirmed")
+      .filter(
+        (p: Vault) =>
+          p.order_status === "confirmed" && p.buyer === buyerAddress,
+      )
       .sort((a: Vault, b: Vault) => {
         const aDate = new Date(a.created_at);
         const bDate = new Date(b.created_at);
         return bDate.getTime() - aDate.getTime();
       });
-  }, [marketplace]);
+  }, [marketplace, accounts]);
 
   const marketplaceProducts = React.useMemo(() => {
     if (!marketplace) return [];
