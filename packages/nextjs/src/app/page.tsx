@@ -155,7 +155,7 @@ const Inventory = () => {
             </div>
           ) : marketplaceProducts && marketplaceProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-              {marketplaceProducts.map((vault, index) => (
+              {marketplaceProducts.map((vault: Vault, index: number) => (
                 <BuyProduct
                   key={index}
                   metadata={{
@@ -166,8 +166,8 @@ const Inventory = () => {
                     brand: vault.brand ?? "",
                   }}
                   vaultAddress={vault.vault_address}
-                  condition={vault.notes}
-                  location={vault.location}
+                  condition={vault.notes as string}
+                  location={vault.location as string}
                   sellerAddress={vault.seller}
                   priceInLYX={vault.price_in_lyx}
                 />
@@ -193,7 +193,7 @@ const Inventory = () => {
                 </p>
               ) : orderedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {orderedProducts.map((vault, index) => (
+                  {orderedProducts.map((vault:Vault, index:number) => (
                     <ConfirmProduct
                       key={`shipping-${index}`}
                       metadata={{
@@ -204,8 +204,8 @@ const Inventory = () => {
                         brand: vault.brand ?? "",
                       }}
                       vaultAddress={vault.vault_address}
-                      condition={vault.notes}
-                      location={vault.location}
+                      condition={vault.notes as string}
+                      location={vault.location as string}
                       sellerAddress={vault.seller}
                     />
                   ))}
@@ -226,7 +226,7 @@ const Inventory = () => {
                 </p>
               ) : confirmedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {confirmedProducts.map((vault, index) => (
+                  {confirmedProducts.map((vault:Vault, index:number) => (
                     <PurchasedProductCard
                       key={`delivered-${index}`}
                       metadata={{
@@ -285,7 +285,7 @@ const Inventory = () => {
                 </p>
               ) : alreadyInMarketplaceProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {alreadyInMarketplaceProducts.map((vault, index) => {
+                  {alreadyInMarketplaceProducts.map((vault:Vault, index:number) => {
                     const metadata: ProductMetadata = {
                       title: vault.title,
                       description: vault.description ?? "",
