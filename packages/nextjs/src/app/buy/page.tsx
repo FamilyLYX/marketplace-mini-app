@@ -239,7 +239,7 @@ function PaymentStep({
           const errorText = await response.text();
           console.error(`Vault listing update failed: ${errorText}`);
           queryClient.invalidateQueries({
-            queryKey: ["marketplaceProducts"],
+            queryKey: ["marketplaceProducts","allNfts"],
           });
         }
       } catch (error) {

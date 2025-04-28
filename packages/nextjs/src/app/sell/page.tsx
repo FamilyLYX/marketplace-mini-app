@@ -94,7 +94,7 @@ export default function SellProductPage() {
       console.log("Transaction successful:", data);
       toast.success("Product listed successfully!");
       queryClient.invalidateQueries({
-        queryKey: ["marketplaceProducts"],
+        queryKey: ["marketplaceProducts", "allNfts"],
       });
       router.push("/");
     },
