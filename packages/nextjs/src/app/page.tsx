@@ -16,12 +16,14 @@ import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 const Inventory = () => {
   const { accounts } = useUpProvider();
 
-  const { data } = useQuery({
+  const { data, isLoading: isNFTsLoading } = useQuery({
     queryKey: ["allNfts"],
     queryFn: () => getAllNFTMetadata(),
     refetchOnWindowFocus: false,
+    refetchInterval: 1000,
   });
-  const { data: marketplace } = useQuery({
+
+  const { data: marketplace, isLoading: isMarketplaceLoading } = useQuery({
     queryKey: ["marketplaceProducts"],
     queryFn: async () => {
       const response = await fetch("/api/vaults");
@@ -40,11 +42,10 @@ const Inventory = () => {
         (p: Vault) =>
           p.order_status === "pending" && p.buyer === getAddress(accounts[0]),
       )
-      .sort((a: Vault, b: Vault) => {
-        const aDate = new Date(a.created_at);
-        const bDate = new Date(b.created_at);
-        return bDate.getTime() - aDate.getTime();
-      });
+      .sort(
+        (a: Vault, b: Vault) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
   }, [marketplace, accounts]);
 
   const confirmedProducts = React.useMemo(() => {
@@ -54,22 +55,20 @@ const Inventory = () => {
         (p: Vault) =>
           p.order_status === "confirmed" && p.buyer === getAddress(accounts[0]),
       )
-      .sort((a: Vault, b: Vault) => {
-        const aDate = new Date(a.created_at);
-        const bDate = new Date(b.created_at);
-        return bDate.getTime() - aDate.getTime();
-      });
+      .sort(
+        (a: Vault, b: Vault) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
   }, [marketplace, accounts]);
 
   const marketplaceProducts = React.useMemo(() => {
     if (!marketplace) return [];
     return marketplace
       .filter((p: Vault) => p.order_status === null)
-      .sort((a: Vault, b: Vault) => {
-        const aDate = new Date(a.created_at);
-        const bDate = new Date(b.created_at);
-        return bDate.getTime() - aDate.getTime();
-      });
+      .sort(
+        (a: Vault, b: Vault) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
   }, [marketplace]);
 
   const products = React.useMemo(() => {
@@ -77,22 +76,28 @@ const Inventory = () => {
     return data[getAddress(accounts[0])] ?? [];
   }, [data, accounts]);
 
-  const vaultNFTAddresses = React.useMemo(() => {
-    if (!marketplace) return new Set<string>();
-    const set = new Set<string>();
+  const nftAddressToVaultMap = React.useMemo(() => {
+    if (!marketplace) return new Map<string, Vault>();
+    const map = new Map<string, Vault>();
     marketplace.forEach((p: Vault) => {
       if (p.nft_contract) {
-        set.add(p.nft_contract);
+        map.set(p.nft_contract, p);
       }
     });
-    return set;
+    return map;
   }, [marketplace]);
 
   const addToMarketplaceProducts = React.useMemo(() => {
+    if (!products || !accounts || accounts.length === 0) return [];
+
+    const userAddress = getAddress(accounts[0]);
+
     return products.filter((product: { nftAddress: string }) => {
-      return !vaultNFTAddresses.has(product.nftAddress);
+      const vault = nftAddressToVaultMap.get(product.nftAddress);
+      if (!vault) return true;
+      return vault.seller.toLowerCase() !== userAddress.toLowerCase();
     });
-  }, [products, vaultNFTAddresses]);
+  }, [products, nftAddressToVaultMap, accounts]);
 
   const alreadyInMarketplaceProducts = React.useMemo(() => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
@@ -100,6 +105,7 @@ const Inventory = () => {
       (p: Vault) => p.seller === getAddress(accounts[0]),
     );
   }, [marketplace, accounts]);
+
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className="text-center mb-6">
@@ -139,42 +145,33 @@ const Inventory = () => {
             Orders
           </TabsTrigger>
         </TabsList>
+
         <TabsContent value="marketplace">
-          {marketplaceProducts && marketplaceProducts.length > 0 ? (
+          {isMarketplaceLoading ? (
+            <div className="flex flex-col items-center justify-center w-full h-[300px]">
+              <p className="text-muted-foreground text-center text-sm">
+                Loading marketplace products...
+              </p>
+            </div>
+          ) : marketplaceProducts && marketplaceProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-              {marketplaceProducts.map(
-                (
-                  {
-                    title = "",
-                    description = "",
-                    images = [],
-                    category = "",
-                    vault_address = "",
-                    notes = "",
-                    location = "",
-                    seller = "",
-                    brand = "",
-                    price_in_lyx,
-                  }: Vault,
-                  index: number,
-                ) => (
-                  <BuyProduct
-                    key={index}
-                    metadata={{
-                      title,
-                      description,
-                      images,
-                      category,
-                      brand,
-                    }}
-                    vaultAddress={vault_address}
-                    condition={notes}
-                    location={location}
-                    sellerAddress={seller}
-                    priceInLYX={price_in_lyx}
-                  />
-                ),
-              )}
+              {marketplaceProducts.map((vault, index) => (
+                <BuyProduct
+                  key={index}
+                  metadata={{
+                    title: vault.title ?? "",
+                    description: vault.description ?? "",
+                    images: vault.images ?? [],
+                    category: vault.category ?? "",
+                    brand: vault.brand ?? "",
+                  }}
+                  vaultAddress={vault.vault_address}
+                  condition={vault.notes}
+                  location={vault.location}
+                  sellerAddress={vault.seller}
+                  priceInLYX={vault.price_in_lyx}
+                />
+              ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-[500px]">
@@ -190,39 +187,28 @@ const Inventory = () => {
             {/* Shipping Section */}
             <div className="flex flex-col gap-4 w-full">
               <h2 className="text-2xl font-semibold">Shipping</h2>
-              {orderedProducts.length > 0 ? (
+              {isMarketplaceLoading ? (
+                <p className="text-sm text-muted-foreground">
+                  Loading your orders...
+                </p>
+              ) : orderedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {orderedProducts.map(
-                    (
-                      {
-                        title = "",
-                        description = "",
-                        images = [],
-                        category = "",
-                        vault_address = "",
-                        notes = "",
-                        location = "",
-                        seller = "",
-                        brand = "",
-                      }: Vault,
-                      index: number,
-                    ) => (
-                      <ConfirmProduct
-                        key={`shipping-${index}`}
-                        metadata={{
-                          title,
-                          description,
-                          images,
-                          category,
-                          brand,
-                        }}
-                        vaultAddress={vault_address}
-                        condition={notes}
-                        location={location}
-                        sellerAddress={seller}
-                      />
-                    ),
-                  )}
+                  {orderedProducts.map((vault, index) => (
+                    <ConfirmProduct
+                      key={`shipping-${index}`}
+                      metadata={{
+                        title: vault.title ?? "",
+                        description: vault.description ?? "",
+                        images: vault.images ?? [],
+                        category: vault.category ?? "",
+                        brand: vault.brand ?? "",
+                      }}
+                      vaultAddress={vault.vault_address}
+                      condition={vault.notes}
+                      location={vault.location}
+                      sellerAddress={vault.seller}
+                    />
+                  ))}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
@@ -234,33 +220,25 @@ const Inventory = () => {
             {/* Delivered Section */}
             <div className="flex flex-col gap-4">
               <h2 className="text-2xl font-semibold">Delivered</h2>
-              {confirmedProducts.length > 0 ? (
+              {isMarketplaceLoading ? (
+                <p className="text-sm text-muted-foreground">
+                  Loading delivered products...
+                </p>
+              ) : confirmedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {confirmedProducts.map(
-                    (
-                      {
-                        title = "",
-                        description = "",
-                        images = [],
-                        category = "",
-                        brand = "",
-                        seller = "",
-                      }: Vault,
-                      index: number,
-                    ) => (
-                      <PurchasedProductCard
-                        key={`delivered-${index}`}
-                        metadata={{
-                          title,
-                          description,
-                          images,
-                          category,
-                          brand,
-                        }}
-                        seller={seller}
-                      />
-                    ),
-                  )}
+                  {confirmedProducts.map((vault, index) => (
+                    <PurchasedProductCard
+                      key={`delivered-${index}`}
+                      metadata={{
+                        title: vault.title ?? "",
+                        description: vault.description ?? "",
+                        images: vault.images ?? [],
+                        category: vault.category ?? "",
+                        brand: vault.brand ?? "",
+                      }}
+                      seller={vault.seller}
+                    />
+                  ))}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
@@ -276,21 +254,20 @@ const Inventory = () => {
             {/* Place in Marketplace Section */}
             <div className="flex flex-col gap-4 w-full">
               <h2 className="text-2xl font-semibold">Place in Marketplace</h2>
-              {addToMarketplaceProducts.length > 0 ? (
+              {isNFTsLoading ? (
+                <p className="text-sm text-muted-foreground">
+                  Loading your products...
+                </p>
+              ) : addToMarketplaceProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {addToMarketplaceProducts.map(
-                    (
-                      { nftAddress, decodedMetadata, expectedUIDHash },
-                      index,
-                    ) => (
-                      <ProductCard
-                        key={`add-${index}`}
-                        metadata={decodedMetadata}
-                        nftAddress={nftAddress}
-                        expectedUIDHash={expectedUIDHash}
-                      />
-                    ),
-                  )}
+                  {addToMarketplaceProducts.map((product, index) => (
+                    <ProductCard
+                      key={`add-${index}`}
+                      metadata={product.decodedMetadata}
+                      nftAddress={product.nftAddress}
+                      expectedUIDHash={product.expectedUIDHash}
+                    />
+                  ))}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
@@ -302,9 +279,13 @@ const Inventory = () => {
             {/* In Marketplace Section */}
             <div className="flex flex-col gap-4 w-full">
               <h2 className="text-2xl font-semibold">In Marketplace</h2>
-              {alreadyInMarketplaceProducts.length > 0 ? (
+              {isMarketplaceLoading ? (
+                <p className="text-sm text-muted-foreground">
+                  Loading your marketplace listings...
+                </p>
+              ) : alreadyInMarketplaceProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {alreadyInMarketplaceProducts.map((vault:Vault, index:number) => {
+                  {alreadyInMarketplaceProducts.map((vault, index) => {
                     const metadata: ProductMetadata = {
                       title: vault.title,
                       description: vault.description ?? "",
@@ -312,7 +293,6 @@ const Inventory = () => {
                       brand: vault.brand ?? "",
                       images: vault.images ?? [],
                     };
-
                     return (
                       <AlreadyInMarketplace
                         key={`in-marketplace-${index}`}
