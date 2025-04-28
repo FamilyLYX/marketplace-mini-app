@@ -260,3 +260,11 @@ export const confirmReceiptTest = async (params: ConfirmReceiptParams) => {
     return null;
   }
 };
+
+export function getOwnerOfNFT(nftAddress: string): Promise<string> {
+  return readClient.readContract({
+    abi: NFT_ABI,
+    address: nftAddress as `0x${string}`,
+    functionName: "owner",
+  }) as Promise<string>;
+}
