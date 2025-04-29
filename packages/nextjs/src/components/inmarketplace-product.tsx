@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // Toast import here
 import { ProductImageCarousel } from "./product";
-import { getAddress } from "viem";
 import { BuyerInfo, Vault } from "@/types";
 import { useState } from "react";
 
@@ -60,31 +59,30 @@ export function AlreadyInMarketplace({
       );
     }
 
-    if (vault.order_status !== "confirmed") {
-      // Order exists but not confirmed
-      return (
-        <Button
-          variant="outline"
-          className="w-full text-xs"
-          onClick={handleRaiseDispute}
-        >
-          Raise Dispute
-        </Button>
-      );
-    }
-
-    // Order is confirmed
+    // Order exists (either pending or confirmed)
     return (
-      <p className="text-sm font-medium">
-        Purchased by
-        <button
-          onClick={() => setIsBuyerModalOpen(true)}
-          className="text-sm font-medium text-blue-600 hover:underline truncate block"
-        >
-          <Badge variant="outline" className="truncate">
-            {vault.buyer}
-          </Badge>
-        </button>
+      <div className="space-y-2">
+        {vault.order_status !== "confirmed" && (
+          <Button
+            variant="outline"
+            className="w-full text-xs"
+            onClick={handleRaiseDispute}
+          >
+            Raise Dispute
+          </Button>
+        )}
+        <p className="text-sm font-medium">
+          Purchased by{" "}
+          <button
+            onClick={() => setIsBuyerModalOpen(true)}
+            className="text-sm font-medium text-blue-600 hover:underline truncate block"
+          >
+            <Badge variant="outline" className="truncate">
+              {vault.buyer}
+            </Badge>
+          </button>
+        </p>
+
         {isBuyerModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-lg">
@@ -128,7 +126,7 @@ export function AlreadyInMarketplace({
             </div>
           </div>
         )}
-      </p>
+      </div>
     );
   };
 
