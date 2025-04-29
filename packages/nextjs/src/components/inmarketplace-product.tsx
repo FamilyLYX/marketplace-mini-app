@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // Toast import here
 import { ProductImageCarousel } from "./product";
 import { getAddress } from "viem";
+import { BuyerInfo, Vault } from "@/types";
+import { useState } from "react";
 
 export type ProductMetadata = {
   title: string;
@@ -19,8 +21,21 @@ export function AlreadyInMarketplace({
   vault,
 }: {
   metadata: ProductMetadata;
-  vault: any;
+  vault: Vault;
 }) {
+  const buyerInfo = {
+    buyer: vault.buyer,
+    first_name: vault.first_name,
+    last_name: vault.last_name,
+    email: vault.email,
+    phone: vault.phone,
+    country: vault.country,
+    state: vault.state,
+    city: vault.city,
+    zip: vault.zip,
+    address1: vault.address1,
+    address2: vault.address2,
+  } as BuyerInfo;
   function handleRaiseDispute() {
     toast("Coming soon 🚀");
   }
@@ -28,7 +43,7 @@ export function AlreadyInMarketplace({
   function handleRemove() {
     toast("Coming soon 🚀");
   }
-
+  const [isBuyerModalOpen, setIsBuyerModalOpen] = useState(false);
   const status = vault?.order_status || "Listed";
 
   const renderAction = () => {
@@ -62,16 +77,57 @@ export function AlreadyInMarketplace({
     return (
       <p className="text-sm font-medium">
         Purchased by
-        <a
-          href={`https://universaleverything.io/${getAddress(vault.buyer)}?network=testnet&assetGroup=tokens`}
-          target="_blank"
-          rel="noreferrer"
+        <button
+          onClick={() => setIsBuyerModalOpen(true)}
           className="text-sm font-medium text-blue-600 hover:underline truncate block"
         >
           <Badge variant="outline" className="truncate">
             {vault.buyer}
           </Badge>
-        </a>
+        </button>
+        {isBuyerModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-lg">
+              <h2 className="text-lg font-semibold mb-4">Buyer Info</h2>
+              <div className="space-y-2 text-sm">
+                <p>
+                  <strong>Name:</strong> {buyerInfo.first_name}{" "}
+                  {buyerInfo.last_name}
+                </p>
+                <p>
+                  <strong>Email:</strong> {buyerInfo.email}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {buyerInfo.phone}
+                </p>
+                <p>
+                  <strong>Country:</strong> {buyerInfo.country}
+                </p>
+                <p>
+                  <strong>State:</strong> {buyerInfo.state}
+                </p>
+                <p>
+                  <strong>City:</strong> {buyerInfo.city}
+                </p>
+                <p>
+                  <strong>ZIP:</strong> {buyerInfo.zip}
+                </p>
+                <p>
+                  <strong>Address 1:</strong> {buyerInfo.address1}
+                </p>
+                <p>
+                  <strong>Address 2:</strong> {buyerInfo.address2}
+                </p>
+              </div>
+              <button
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                onClick={() => setIsBuyerModalOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </p>
     );
   };

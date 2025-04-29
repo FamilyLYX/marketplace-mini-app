@@ -193,7 +193,7 @@ const Inventory = () => {
                 </p>
               ) : orderedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {orderedProducts.map((vault:Vault, index:number) => (
+                  {orderedProducts.map((vault: Vault, index: number) => (
                     <ConfirmProduct
                       key={`shipping-${index}`}
                       metadata={{
@@ -226,7 +226,7 @@ const Inventory = () => {
                 </p>
               ) : confirmedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {confirmedProducts.map((vault:Vault, index:number) => (
+                  {confirmedProducts.map((vault: Vault, index: number) => (
                     <PurchasedProductCard
                       key={`delivered-${index}`}
                       metadata={{
@@ -285,22 +285,25 @@ const Inventory = () => {
                 </p>
               ) : alreadyInMarketplaceProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {alreadyInMarketplaceProducts.map((vault:Vault, index:number) => {
-                    const metadata: ProductMetadata = {
-                      title: vault.title,
-                      description: vault.description ?? "",
-                      category: vault.category ?? "",
-                      brand: vault.brand ?? "",
-                      images: vault.images ?? [],
-                    };
-                    return (
-                      <AlreadyInMarketplace
-                        key={`in-marketplace-${index}`}
-                        metadata={metadata}
-                        vault={vault}
-                      />
-                    );
-                  })}
+                  {alreadyInMarketplaceProducts.map(
+                    (vault: Vault, index: number) => {
+                      const metadata: ProductMetadata = {
+                        title: vault.title,
+                        description: vault.description ?? "",
+                        category: vault.category ?? "",
+                        brand: vault.brand ?? "",
+                        images: vault.images ?? [],
+                      };
+
+                      return (
+                        <AlreadyInMarketplace
+                          key={`in-marketplace-${index}`}
+                          metadata={metadata}
+                          vault={vault}
+                        />
+                      );
+                    },
+                  )}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">

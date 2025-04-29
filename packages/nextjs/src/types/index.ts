@@ -16,6 +16,20 @@ export type GenericContractsDeclaration = {
   };
 };
 
+export type BuyerInfo = {
+  buyer: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  country: string;
+  state: string;
+  city: string;
+  zip: string;
+  address1: string;
+  address2?: string;
+};
+
 export type Vault = {
   vault_address: string;
   nft_contract: string;
