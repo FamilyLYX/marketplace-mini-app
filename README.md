@@ -109,7 +109,7 @@ The Open Beta mini-dApp allows users to experience the following core flows:
 
 ## Important Links
 
-MiniApp Link: *Insert Link*
+MiniApp Link: https://profile.link/0x6880AB1dE713f31EE16ad40d61612064f745686E
 Video Walkthrough: *Insert Link*
 
 ---
