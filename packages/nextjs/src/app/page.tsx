@@ -12,6 +12,7 @@ import { PurchasedProductCard } from "@/components/purchased-product";
 import { getAddress } from "viem";
 import { useUpProvider } from "@/components/up-provider";
 import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
+import ProductChat from "@/components/escrow-chat";
 
 const Inventory = () => {
   const { accounts } = useUpProvider();
@@ -120,6 +121,7 @@ const Inventory = () => {
           place.
         </p>
       </div>
+      <ProductChat userAddress="0x" productId="ox"/>
 
       <Tabs
         defaultValue="marketplace"

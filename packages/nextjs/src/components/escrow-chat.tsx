@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/initSupabase";
 import React, { useEffect, useState, useRef } from "react";
+import { useUpProvider } from "./up-provider";
 
 interface ChatMessage {
   from: "user" | "admin";
@@ -8,14 +9,13 @@ interface ChatMessage {
 }
 
 interface ProductChatProps {
-  userAddress: string;
   productId: string;
 }
 
-export default function ProductChat({
-  userAddress,
-  productId,
-}: ProductChatProps) {
+export default function ProductChat({ productId }: ProductChatProps) {
+  const { accounts } = useUpProvider();
+  const userAddress = accounts[0] || "";
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMsg, setNewMsg] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,10 @@ export default function ProductChat({
   }
 
   useEffect(() => {
-    fetchChat();
+    const intervalId = setInterval(() => {
+      fetchChat();
+    }, 15000);
+    return () => clearInterval(intervalId);
   }, [productId, userAddress]);
 
   // Send a new message (from user)
@@ -72,7 +75,9 @@ export default function ProductChat({
       ]);
     }
   }
-
+  if (!userAddress) {
+    return <div>Please connect your wallet to view the chat.</div>;
+  }
   return (
     <div className="max-w-md mx-auto border rounded p-4 flex flex-col h-[600px]">
       {/* Header */}
@@ -114,11 +119,10 @@ export default function ProductChat({
           return (
             <div
               key={idx}
-              className={`max-w-[70%] px-3 py-2 rounded-lg whitespace-pre-line ${
-                isUser
+              className={`max-w-[70%] px-3 py-2 rounded-lg whitespace-pre-line ${isUser
                   ? "bg-black text-white self-end"
                   : "bg-gray-200 self-start"
-              }`}
+                }`}
             >
               {msg.content}
               <div className="text-xs text-gray-400 text-right mt-1">

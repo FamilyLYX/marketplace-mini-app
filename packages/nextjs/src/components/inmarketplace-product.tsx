@@ -6,6 +6,8 @@ import { toast } from "sonner"; // Toast import here
 import { ProductImageCarousel } from "./product";
 import { BuyerInfo, Vault } from "@/types";
 import { useState } from "react";
+import { Dialog, DialogContent } from "./ui/dialog";
+import ProductChat from "./escrow-chat";
 
 export type ProductMetadata = {
   title: string;
@@ -22,6 +24,7 @@ export function AlreadyInMarketplace({
   metadata: ProductMetadata;
   vault: Vault;
 }) {
+  const [openChat, setOpenChat] = useState(false);
   const buyerInfo = {
     buyer: vault.buyer,
     first_name: vault.first_name,
@@ -35,9 +38,6 @@ export function AlreadyInMarketplace({
     address1: vault.address1,
     address2: vault.address2,
   } as BuyerInfo;
-  function handleRaiseDispute() {
-    toast("Coming soon 🚀");
-  }
 
   function handleRemove() {
     toast("Coming soon 🚀");
@@ -66,11 +66,18 @@ export function AlreadyInMarketplace({
           <Button
             variant="outline"
             className="w-full text-xs"
-            onClick={handleRaiseDispute}
+            onClick={() => {
+              setOpenChat(true);
+            }}
           >
             Raise Dispute
           </Button>
         )}
+        <Dialog open={openChat} onOpenChange={setOpenChat}>
+          <DialogContent className="max-w-2xl w-full">
+            <ProductChat productId={vault.vault_address} />
+          </DialogContent>
+        </Dialog>
         <p className="text-sm font-medium">
           Purchased by{" "}
           <button

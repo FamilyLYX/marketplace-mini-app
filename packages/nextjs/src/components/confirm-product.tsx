@@ -13,6 +13,7 @@ import { Vault } from "@/types";
 import { toast } from "sonner";
 import { ProductImageCarousel } from "./product";
 import { queryClient } from "./marketplace-provider";
+import ProductChat from "./escrow-chat";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -35,6 +36,7 @@ export function ConfirmProduct({
   sellerAddress: string | `0x${string}`;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [openChat, setOpenChat] = useState(false);
   const [plainUIDCode, setPlainUIDCode] = useState("");
   const { confirmReceipt } = useFamilyVault(vaultAddress as `0x${string}`);
 
@@ -68,7 +70,7 @@ export function ConfirmProduct({
       console.log("Buy mutation successful", data);
       toast.success("Product delivery confirmed!");
       queryClient.invalidateQueries({
-        queryKey: ["marketplaceProducts","allNfts"],
+        queryKey: ["marketplaceProducts", "allNfts"],
       });
       setModalOpen(false);
     },
@@ -119,7 +121,7 @@ export function ConfirmProduct({
           <Button
             variant="outline"
             className="w-1/2"
-            onClick={() => toast.info("Feature coming soon!")}
+            onClick={() => setOpenChat(!openChat)}
           >
             Raise Dispute
           </Button>
@@ -128,7 +130,11 @@ export function ConfirmProduct({
           </Button>
         </CardFooter>
       </Card>
-
+      <Dialog open={openChat} onOpenChange={setOpenChat}>
+        <DialogContent className="max-w-2xl w-full">
+          <ProductChat productId={vaultAddress} />
+        </DialogContent>
+      </Dialog>
       {/* Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-md">
