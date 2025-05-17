@@ -55,7 +55,7 @@ export type Vault = {
   address1?: string;
   address2?: string;
   payment_method?: string;
-  order_status?: "pending" | "confirmed" | "shipped" | "cancelled";
+  order_status?: "pending" | "confirmed" | "shipped" | "cancelled" | "disputed";
   created_at: string;
   updated_at?: string;
 };

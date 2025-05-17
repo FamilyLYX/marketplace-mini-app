@@ -152,6 +152,16 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
 
     try {
+      const vaultState = await getVaultState();
+      console.log("Vault state:", vaultState);
+      const simulation = await readClient.simulateContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "initiateDispute",
+        account: accounts[0] as `0x${string}`,
+        chain: luksoTestnet,
+      });
+      console.log("Simulation result:", simulation);
       const vault = await client.writeContract({
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
@@ -164,7 +174,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
       return vault;
     } catch (err) {
       console.error("Error initiating dispute:", err);
-      toast.error("Failed to initiate dispute.");
+      return err;
     }
   };
 
@@ -191,7 +201,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
       return vault;
     } catch (err) {
       console.error("Error resolving dispute:", err);
-      toast.error("Failed to resolve dispute.");
+      return err;
     }
   };
 

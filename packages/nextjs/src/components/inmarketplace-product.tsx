@@ -6,7 +6,7 @@ import { toast } from "sonner"; // Toast import here
 import { ProductImageCarousel } from "./product";
 import { BuyerInfo, Vault } from "@/types";
 import { useState } from "react";
-import { Dialog, DialogContent } from "./ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import ProductChat from "./escrow-chat";
 
 export type ProductMetadata = {
@@ -74,8 +74,9 @@ export function AlreadyInMarketplace({
           </Button>
         )}
         <Dialog open={openChat} onOpenChange={setOpenChat}>
+          <DialogTitle></DialogTitle>
           <DialogContent className="max-w-2xl w-full">
-            <ProductChat productId={vault.vault_address} />
+            <ProductChat vault={vault} alreadyInDispute={vault.order_status === "disputed"} />
           </DialogContent>
         </Dialog>
         <p className="text-sm font-medium">

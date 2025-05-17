@@ -1,135 +1,250 @@
 import { supabase } from "@/lib/initSupabase";
 import React, { useEffect, useState, useRef } from "react";
 import { useUpProvider } from "./up-provider";
+import { useFamilyVault } from "@/hooks/useFamilyVault";
+import { useMutation } from "@tanstack/react-query";
+import { Vault } from "@/types";
+import { toast } from "sonner";
+import clsx from "clsx";
+import { queryClient } from "./marketplace-provider";
+import { Label } from "@radix-ui/react-label";
+import { Button } from "./ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "./ui/select";
 
 interface ChatMessage {
-  from: "user" | "admin";
+  from: string;
   content: string;
   timestamp: string;
 }
 
 interface ProductChatProps {
-  productId: string;
+  vault: Vault;
+  alreadyInDispute?: boolean;
 }
 
-export default function ProductChat({ productId }: ProductChatProps) {
+const adminAddress =
+  process.env.NEXT_PUBLIC_ADMIN_ADDRESS ||
+  "0x9dD1084ac41e6234931680Cc1214691C4f098C01";
+
+export default function ProductChat({
+  vault,
+  alreadyInDispute,
+}: ProductChatProps) {
+  const { buyer, seller, vault_address: vaultAddress } = vault;
   const { accounts } = useUpProvider();
   const userAddress = accounts[0] || "";
+  const { initiateDispute } = useFamilyVault(vaultAddress as `0x${string}`);
+  const [selectedWinner, setSelectedWinner] = useState("");
+  const [selectedTraceReceiver, setSelectedTraceReceiver] = useState("");
+  const isAdmin = userAddress.toLowerCase() === adminAddress.toLowerCase();
+  const isBuyer = userAddress.toLowerCase() === buyer?.toLowerCase();
+  const isSeller = userAddress.toLowerCase() === seller?.toLowerCase();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMsg, setNewMsg] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll chat to bottom on messages update
+  const getUserRoleLabel = (address: string) => {
+    if (address === adminAddress) return "Admin";
+    if (address.toLowerCase() === buyer?.toLowerCase()) return "Buyer";
+    if (address.toLowerCase() === seller?.toLowerCase()) return "Seller";
+    if (address === "system") return "System";
+    return "System";
+  };
+
+  const getBubbleAlignment = (from: string) => {
+    if (from === adminAddress || from === "system") return "center";
+    if (from.toLowerCase() === userAddress.toLowerCase()) return "end";
+    return "start";
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch chat for product + user
   async function fetchChat() {
     const { data, error } = await supabase
       .from("product_chats")
       .select("content")
-      .eq("product_id", productId)
-      .eq("user_address", userAddress)
+      .eq("product_id", vaultAddress)
       .single();
 
     if (error) {
-      console.error("Error fetching messages:", error);
+      console.error("Fetch chat error:", error);
+      setMessages([]);
     } else {
       setMessages(data?.content || []);
     }
   }
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchChat();
-    }, 15000);
+    fetchChat();
+    const intervalId = setInterval(fetchChat, 15000);
     return () => clearInterval(intervalId);
-  }, [productId, userAddress]);
+  }, [vaultAddress, userAddress]);
 
-  // Send a new message (from user)
-  async function sendMessage() {
-    if (!newMsg.trim()) return;
+  async function sendMessage(
+    content: string,
+    from: "user" | "admin" | "system" = "user",
+    updateUI = true,
+  ) {
+    const fromAddress =
+      from === "user"
+        ? userAddress
+        : from === "admin"
+          ? adminAddress
+          : "system";
 
     const { error } = await supabase.rpc("upsert_product_chat", {
-      p_product_id: productId,
-      p_user_address: userAddress,
-      p_admin_address: "REPLACE_WITH_ADMIN_ADDRESS", // Replace with actual admin address
-      p_from: userAddress,
-      p_message: newMsg.trim(),
+      p_product_id: vaultAddress,
+      p_from: fromAddress,
+      p_message: content,
     });
 
-    if (error) {
-      console.error("Error sending message:", error);
-    } else {
-      setNewMsg("");
-      // append locally for instant UI feedback
+    if (!error && updateUI) {
       setMessages((msgs) => [
         ...msgs,
         {
-          from: "user",
-          content: newMsg.trim(),
+          from: fromAddress,
+          content,
           timestamp: new Date().toISOString(),
         },
       ]);
+    } else if (error) {
+      console.error("Send message error:", error);
     }
   }
-  if (!userAddress) {
-    return <div>Please connect your wallet to view the chat.</div>;
+
+  const handleResolveDispute = async () => {
+    await sendMessage(
+      "The dispute has been marked as resolved by admin.",
+      "admin",
+    );
+  };
+
+  async function sendDisputeMessage() {
+    await sendMessage(
+      "Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by :" +
+      userAddress,
+      "admin",
+    );
   }
+
+  async function markDisputeInDB() {
+    try {
+      const response = await fetch(`/api/vault?vault_address=${vaultAddress}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_status: "disputed",
+        } as Vault),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Vault listing update failed: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Vault listing update failed:", error);
+    }
+  }
+  const handleRaiseDispute = async () => {
+    await initiateDisputeMutation.mutateAsync();
+  };
+  const initiateDisputeMutation = useMutation({
+    mutationFn: initiateDispute,
+    onSuccess: () => {
+      markDisputeMutation.mutate(); // Trigger next step
+    },
+    onError: (err) => {
+      console.error("Failed to initiate dispute onchain:", err);
+      toast.error("Dispute onchain transaction failed.");
+    },
+  });
+  const markDisputeMutation = useMutation({
+    mutationFn: markDisputeInDB,
+    onSuccess: () => {
+      sendDisputeMessageMutation.mutate(); // Trigger next step
+    },
+    onError: (err) => {
+      console.error("Failed to mark dispute in DB:", err);
+      toast.error(
+        "Dispute was initiated, but marking it in the database failed.",
+      );
+    },
+  });
+
+  const sendDisputeMessageMutation = useMutation({
+    mutationFn: sendDisputeMessage,
+    onSuccess: () => {
+      toast.success("Dispute initiated successfully!");
+      queryClient.invalidateQueries({
+        queryKey: ["marketplaceProducts", "allNfts"],
+      });
+    },
+    onError: (err) => {
+      console.error("Failed to send dispute message:", err);
+      toast.error("Dispute was initiated, but notification failed.");
+    },
+  });
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMsg.trim()) return;
+    await sendMessage(newMsg.trim(), isAdmin ? "admin" : "user");
+    setNewMsg("");
+  };
+
+  if (!userAddress)
+    return <div>Please connect your wallet to view the chat.</div>;
+
   return (
-    <div className="max-w-md mx-auto border rounded p-4 flex flex-col h-[600px]">
-      {/* Header */}
-      <div className="mb-4 flex items-center space-x-4">
-        <button
-          className="p-2 rounded-full border"
-          onClick={() => alert("Back pressed (implement routing)")}
-        >
-          ←
-        </button>
-        <div className="flex space-x-2 text-sm">
-          <span className="flex items-center space-x-1 border px-3 py-1 rounded-full bg-gray-100">
-            <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-xs">
-              F
-            </span>
-            <span>Family</span>
-          </span>
-          <span>and</span>
-          <span className="flex items-center space-x-1 border px-3 py-1 rounded-full bg-black text-white">
-            <span className="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center text-xs">
-              D
-            </span>
-            <span>Dave (You)</span>
-          </span>
-        </div>
+    <div className="max-w-md p-4 flex flex-col h-[600px] ">
+      <div className="text-center font-semibold text-lg mb-3 border-b pb-2">
+        Family Marketplace Chat
       </div>
 
-      {/* Action buttons */}
-      <div className="mb-4 border rounded p-2 flex justify-around text-xs font-mono">
-        <button className="text-red-600">❌ Dispute</button>
-        <button className="text-green-600">✅ Confirm</button>
-        <button className="text-blue-600">❗ Lost</button>
-      </div>
-
-      {/* Messages list */}
-      <div className="flex-1 overflow-y-auto space-y-2 mb-4 p-2 bg-white border rounded">
+      {/* Chat Window */}
+      <div className="flex-1 overflow-y-auto space-y-3 mb-4 p-2 bg-gray-50 rounded">
         {messages.map((msg, idx) => {
-          const isUser = msg.from.toLowerCase() === userAddress.toLowerCase();
+          const role = getUserRoleLabel(msg.from);
+          const align = getBubbleAlignment(msg.from);
           return (
             <div
               key={idx}
-              className={`max-w-[70%] px-3 py-2 rounded-lg whitespace-pre-line ${isUser
-                  ? "bg-black text-white self-end"
-                  : "bg-gray-200 self-start"
-                }`}
+              className={clsx("flex flex-col", {
+                "items-end": align === "end",
+                "items-start": align === "start",
+                "items-center": align === "center",
+              })}
             >
-              {msg.content}
-              <div className="text-xs text-gray-400 text-right mt-1">
-                {new Date(msg.timestamp).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+              {role !== "System" && (
+                <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full mb-1">
+                  {role}
+                </span>
+              )}
+              <div
+                className={clsx(
+                  "max-w-[80%] px-4 py-2 rounded-lg text-sm shadow-sm whitespace-pre-line",
+                  {
+                    "bg-yellow-100 text-gray-700": role === "System",
+                    "bg-black text-white": align === "end",
+                    "bg-gray-200 text-gray-800": align === "start",
+                  },
+                )}
+              >
+                {msg.content}
+                <div className="text-[10px] text-right text-gray-500 mt-1">
+                  {new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
               </div>
             </div>
           );
@@ -137,25 +252,91 @@ export default function ProductChat({ productId }: ProductChatProps) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Dispute actions */}
+      <div className="mb-2 text-center">
+        {!isAdmin && !alreadyInDispute && (isBuyer || isSeller) && (
+          <div className="mb-2 text-center">
+            <button
+              onClick={handleRaiseDispute}
+              className="bg-red-100 text-red-600 px-4 py-1 rounded hover:bg-red-200 text-sm"
+            >
+              ⚠️ Raise Dispute
+            </button>
+          </div>
+        )}
+
+        {isAdmin && alreadyInDispute && (
+          <div className="space-y-4">
+            <div className="text-sm font-medium text-gray-700">
+              Resolve dispute:
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="winner">Who receives funds</Label>
+                <Select
+                  value={selectedWinner}
+                  onValueChange={setSelectedWinner}
+                >
+                  <SelectTrigger id="winner" className="w-full">
+                    <SelectValue placeholder="Select a party" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={buyer}>Buyer</SelectItem>
+                    <SelectItem value={seller}>Seller</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="traceReceiver">
+                  Who receives product trace
+                </Label>
+                <Select
+                  value={selectedTraceReceiver}
+                  onValueChange={setSelectedTraceReceiver}
+                >
+                  <SelectTrigger id="traceReceiver" className="w-full">
+                    <SelectValue placeholder="Select a party" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={buyer}>Buyer</SelectItem>
+                    <SelectItem value={seller}>Seller</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                disabled={!selectedWinner || !selectedTraceReceiver}
+                onClick={async () => {
+                  try {
+                    toast.success("Dispute resolved successfully!");
+                  } catch (err) {
+                    console.error("Dispute resolution failed", err);
+                    toast.error("Dispute resolution failed.");
+                  }
+                }}
+              >
+                ✅ Resolve
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Input */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          sendMessage();
-        }}
-        className="flex space-x-2"
-      >
+      <form onSubmit={handleSend} className="flex space-x-2">
         <input
           type="text"
-          placeholder="Write your message"
-          className="flex-1 border rounded px-3 py-2"
+          placeholder="Write your message..."
+          className="flex-1 border rounded px-3 py-2 text-sm"
           value={newMsg}
           onChange={(e) => setNewMsg(e.target.value)}
         />
         <button
           type="submit"
           disabled={!newMsg.trim()}
-          className="bg-black text-white px-4 py-2 rounded disabled:opacity-50 hover:bg-gray-800"
+          className="bg-black text-white px-4 py-2 rounded disabled:opacity-40 hover:bg-gray-800"
         >
           ➤
         </button>

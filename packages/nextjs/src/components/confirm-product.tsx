@@ -23,12 +23,14 @@ export type ProductMetadata = {
 };
 
 export function ConfirmProduct({
+  vault,
   metadata,
   vaultAddress,
   condition,
   location,
   sellerAddress,
 }: {
+  vault: Vault;
   metadata: ProductMetadata;
   vaultAddress: string | `0x${string}`;
   condition: string;
@@ -131,12 +133,17 @@ export function ConfirmProduct({
         </CardFooter>
       </Card>
       <Dialog open={openChat} onOpenChange={setOpenChat}>
+        <DialogTitle></DialogTitle>
         <DialogContent className="max-w-2xl w-full">
-          <ProductChat productId={vaultAddress} />
+          <ProductChat
+            vault={vault}
+            alreadyInDispute={vault.order_status === "disputed"}
+          />
         </DialogContent>
       </Dialog>
       {/* Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogTitle></DialogTitle>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-lg">Confirm Delivery</DialogTitle>
