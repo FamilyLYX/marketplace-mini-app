@@ -12,7 +12,10 @@ import { PurchasedProductCard } from "@/components/purchased-product";
 import { getAddress } from "viem";
 import { useUpProvider } from "@/components/up-provider";
 import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
-
+import AdminProductChats from "@/components/admin-product-chats";
+const adminAddress =
+  process.env.NEXT_PUBLIC_ADMIN_ADDRESS ||
+  "0x9dD1084ac41e6234931680Cc1214691C4f098C01";
 const Inventory = () => {
   const { accounts } = useUpProvider();
 
@@ -40,7 +43,10 @@ const Inventory = () => {
     return marketplace
       .filter(
         (p: Vault) =>
-          p.order_status === "pending" && p.buyer === getAddress(accounts[0]) || p.order_status === "disputed" && p.buyer === getAddress(accounts[0]),
+          (p.order_status === "pending" &&
+            p.buyer === getAddress(accounts[0])) ||
+          (p.order_status === "disputed" &&
+            p.buyer === getAddress(accounts[0])),
       )
       .sort(
         (a: Vault, b: Vault) =>
@@ -144,8 +150,18 @@ const Inventory = () => {
           >
             Orders
           </TabsTrigger>
+          {accounts &&
+            accounts.length > 0 &&
+            getAddress(accounts[0]).toLowerCase() ===
+              adminAddress.toLowerCase() && (
+              <TabsTrigger
+                value="admin"
+                className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
+              >
+                Admin
+              </TabsTrigger>
+            )}
         </TabsList>
-
         <TabsContent value="marketplace">
           {isMarketplaceLoading ? (
             <div className="flex flex-col items-center justify-center w-full h-[300px]">
@@ -181,7 +197,6 @@ const Inventory = () => {
             </div>
           )}
         </TabsContent>
-
         <TabsContent value="orders">
           <div className="flex flex-col gap-10 max-w-6xl w-full">
             {/* Shipping Section */}
@@ -249,7 +264,6 @@ const Inventory = () => {
             </div>
           </div>
         </TabsContent>
-
         <TabsContent value="products">
           <div className="flex flex-col gap-10 max-w-6xl w-full">
             {/* Place in Marketplace Section */}
@@ -314,6 +328,21 @@ const Inventory = () => {
             </div>
           </div>
         </TabsContent>
+        {/* Admin Section */}
+        {accounts &&
+          accounts.length > 0 &&
+          getAddress(accounts[0]).toLowerCase() ===
+            adminAddress.toLowerCase() && (
+            <TabsContent value="admin">
+              <div className="flex flex-col gap-10 max-w-6xl w-full">
+                <h2 className="text-2xl font-semibold">Admin Section</h2>
+                <p className="text-sm text-muted-foreground">
+                  This section is for admin purposes only.
+                </p>
+                <AdminProductChats />
+              </div>
+            </TabsContent>
+          )}{" "}
       </Tabs>
     </div>
   );
