@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
-pragma solidity ^0.8.0;
-
-import "./FamilyVault.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
+import "./FamilyVault.sol"; // This must have an `initialize` function
 
 contract FamilyVaultFactory {
+    using Clones for address;
+
+    address public immutable implementation;
     address[] public vaults;
+
     event VaultCreated(
         address indexed vaultAddress,
         address indexed admin,
@@ -15,36 +19,47 @@ contract FamilyVaultFactory {
         uint256 priceInLYX,
         bytes32 expectedUIDHash
     );
-    // The tokenId is 1 since each nft contract has only one tokenId 
-    bytes32 tokenId = bytes32(uint256(1));
+
+    constructor(address _implementation) {
+        require(_implementation != address(0), "Invalid implementation");
+        implementation = _implementation;
+    }
 
     function createVault(
         address _admin,
         address _nftContract,
+        bytes32 _tokenId,
         uint256 _priceInLYX,
         bytes32 _expectedUIDHash
     ) external returns (address) {
-        FamilyVault vault = new FamilyVault(
+        require(_admin != address(0), "Invalid admin");
+        require(_nftContract != address(0), "Invalid NFT");
+        require(_expectedUIDHash != bytes32(0), "Invalid UID");
+
+        address clone = implementation.clone();
+
+        FamilyVault(payable(clone)).initialize(
             _admin,
             msg.sender,
             _nftContract,
-            tokenId,
+            _tokenId,
             _priceInLYX,
             _expectedUIDHash
         );
+
+        vaults.push(clone);
 
         emit VaultCreated(
-            address(vault),
+            clone,
             _admin,
             msg.sender,
             _nftContract,
-            tokenId,
+            _tokenId,
             _priceInLYX,
             _expectedUIDHash
         );
-        vaults.push(address(vault));
 
-        return address(vault);
+        return clone;
     }
 
     function getVaults() external view returns (address[] memory) {

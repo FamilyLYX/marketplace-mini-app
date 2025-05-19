@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.17;
 
-// Modules
-import {LSP9Vault} from "@lukso/lsp9-contracts/contracts/LSP9Vault.sol";
+// OpenZeppelin upgradeable modules
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ILSP8IdentifiableDigitalAsset} from "@lukso/lsp8-contracts/contracts/ILSP8IdentifiableDigitalAsset.sol";
+import {LSP9Vault} from "@lukso/lsp9-contracts/contracts/LSP9Vault.sol";
 
-contract FamilyVault is LSP9Vault {
+contract FamilyVault is Initializable, OwnableUpgradeable {
     using ECDSA for bytes32;
 
     enum VaultState {
@@ -18,7 +20,8 @@ contract FamilyVault is LSP9Vault {
         Disputed,
         Cancelled
     }
-    address public immutable admin;
+
+    address public admin;
     address public seller;
     address public buyer;
     address public nftContract;
@@ -38,6 +41,7 @@ contract FamilyVault is LSP9Vault {
     event TradeCompleted();
     event DisputeOpened(address indexed initiator);
     event TradeSettledByAdmin(address indexed admin);
+
     modifier onlyBuyer() {
         require(msg.sender == buyer, "Not buyer");
         _;
@@ -61,14 +65,20 @@ contract FamilyVault is LSP9Vault {
         _;
     }
 
-    constructor(
+    function initialize(
         address _admin,
         address _seller,
         address _nftContract,
         bytes32 _tokenId,
         uint256 _priceInLYX,
         bytes32 _expectedUIDHash
-    ) LSP9Vault(_seller) {
+    ) public initializer {
+        __Ownable_init();
+
+        require(_admin != address(0), "admin zero address");
+        require(_seller != address(0), "seller zero address");
+        require(_nftContract != address(0), "NFT contract zero address");
+
         admin = _admin;
         seller = _seller;
         nftContract = _nftContract;
@@ -77,10 +87,13 @@ contract FamilyVault is LSP9Vault {
         expectedUIDHash = _expectedUIDHash;
         state = VaultState.Initialized;
 
-        emit VaultInitialized(seller, nftContract, tokenId, priceInLYX);
+        // Transfer ownership to seller to replicate LSP9Vault owner
+        transferOwnership(_seller);
+
+        emit VaultInitialized(_seller, _nftContract, _tokenId, _priceInLYX);
     }
 
-    receive() external payable override onlyInState(VaultState.Listed) {
+    receive() external payable onlyInState(VaultState.Listed) {
         require(msg.value == priceInLYX, "Incorrect payment");
         buyer = msg.sender;
         state = VaultState.FundsDeposited;
@@ -88,13 +101,16 @@ contract FamilyVault is LSP9Vault {
     }
 
     function universalReceiver(
-        bytes32 typeId,
-        bytes memory data
-    ) public payable virtual override returns (bytes memory) {
+        bytes32 /*typeId*/,
+        bytes memory /*data*/
+    ) public payable returns (bytes memory) {
         if (state == VaultState.Initialized && msg.sender == nftContract) {
             address currentOwner = ILSP8IdentifiableDigitalAsset(nftContract)
                 .tokenOwnerOf(tokenId);
-            require(currentOwner == address(this), "Incorrect tokenId");
+            require(
+                currentOwner == address(this),
+                "Incorrect tokenId ownership"
+            );
             state = VaultState.Listed;
         }
 
@@ -144,7 +160,7 @@ contract FamilyVault is LSP9Vault {
                 paymentRecipient != address(0) &&
                 (nftRecipient == buyer || nftRecipient == seller) &&
                 (paymentRecipient == buyer || paymentRecipient == seller),
-            "Invalid recipient has to be either buyer or seller"
+            "Invalid recipient, must be buyer or seller"
         );
 
         ILSP8IdentifiableDigitalAsset(nftContract).transfer(
@@ -157,6 +173,7 @@ contract FamilyVault is LSP9Vault {
 
         (bool sent, ) = paymentRecipient.call{value: priceInLYX}("");
         require(sent, "Payment transfer failed");
+
         state = VaultState.Completed;
         emit TradeSettledByAdmin(msg.sender);
         emit TradeCompleted();
