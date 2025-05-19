@@ -87,6 +87,7 @@ export default function ProductChat({
     fetchChat();
     const intervalId = setInterval(fetchChat, 15000);
     return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vaultAddress, userAddress]);
 
   async function sendMessage(
@@ -121,17 +122,10 @@ export default function ProductChat({
     }
   }
 
-  const handleResolveDispute = async () => {
-    await sendMessage(
-      "The dispute has been marked as resolved by admin.",
-      "admin",
-    );
-  };
-
   async function sendDisputeMessage() {
     await sendMessage(
       "Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by :" +
-      userAddress,
+        userAddress,
       "admin",
     );
   }
@@ -282,8 +276,8 @@ export default function ProductChat({
                     <SelectValue placeholder="Select a party" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={buyer}>Buyer</SelectItem>
-                    <SelectItem value={seller}>Seller</SelectItem>
+                    <SelectItem value={buyer as string}>Buyer</SelectItem>
+                    <SelectItem value={seller as string}>Seller</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -300,8 +294,8 @@ export default function ProductChat({
                     <SelectValue placeholder="Select a party" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={buyer}>Buyer</SelectItem>
-                    <SelectItem value={seller}>Seller</SelectItem>
+                    <SelectItem value={buyer as string}>Buyer</SelectItem>
+                    <SelectItem value={seller as string}>Seller</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
