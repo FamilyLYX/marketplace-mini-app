@@ -2,13 +2,22 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
-import "./FamilyVault.sol"; // This must have an `initialize` function
+import "./FamilyVault.sol";
 
 contract FamilyVaultFactory {
     using Clones for address;
 
+    /// @notice Address of the FamilyVault implementation contract used for cloning
     address public immutable implementation;
+
+    /// @notice List of deployed vault clone addresses
     address[] public vaults;
+
+    /// @dev Custom Errors
+    error InvalidImplementation();
+    error InvalidAdmin();
+    error InvalidNFTContract();
+    error InvalidUIDHash();
 
     event VaultCreated(
         address indexed vaultAddress,
@@ -20,27 +29,35 @@ contract FamilyVaultFactory {
         bytes32 expectedUIDHash
     );
 
+    /// @param _implementation Address of the FamilyVault implementation contract
     constructor(address _implementation) {
-        require(_implementation != address(0), "Invalid implementation");
+        if (_implementation == address(0)) revert InvalidImplementation();
         implementation = _implementation;
     }
 
+    /// @notice Creates a new FamilyVault clone and initializes it
+    /// @param _admin Admin address for the vault (e.g., marketplace admin)
+    /// @param _nftContract NFT contract address for the vault asset
+    /// @param _tokenId Token ID of the NFT (bytes32)
+    /// @param _priceInLYX Price of the item in LYX
+    /// @param _expectedUIDHash Hash of the expected UID code for validation
+    /// @return clone Address of the newly created vault clone
     function createVault(
         address _admin,
         address _nftContract,
         bytes32 _tokenId,
         uint256 _priceInLYX,
         bytes32 _expectedUIDHash
-    ) external returns (address) {
-        require(_admin != address(0), "Invalid admin");
-        require(_nftContract != address(0), "Invalid NFT");
-        require(_expectedUIDHash != bytes32(0), "Invalid UID");
+    ) external returns (address clone) {
+        if (_admin == address(0)) revert InvalidAdmin();
+        if (_nftContract == address(0)) revert InvalidNFTContract();
+        if (_expectedUIDHash == bytes32(0)) revert InvalidUIDHash();
 
-        address clone = implementation.clone();
+        clone = implementation.clone();
 
         FamilyVault(payable(clone)).initialize(
             _admin,
-            msg.sender,
+            msg.sender, // seller is caller of factory
             _nftContract,
             _tokenId,
             _priceInLYX,
@@ -58,10 +75,10 @@ contract FamilyVaultFactory {
             _priceInLYX,
             _expectedUIDHash
         );
-
-        return clone;
     }
 
+    /// @notice Returns all vault clone addresses created by this factory
+    /// @return List of vault addresses
     function getVaults() external view returns (address[] memory) {
         return vaults;
     }
