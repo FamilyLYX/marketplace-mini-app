@@ -1,8 +1,8 @@
 import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, pad } from "viem";
 import { luksoTestnet } from "viem/chains";
-import { NFT_ABI} from "@/constants/dpp";
+import { NFT_ABI } from "@/constants/dpp";
 const readClient = createPublicClient({
   chain: luksoTestnet,
   transport: http("https://rpc.testnet.lukso.network"),
@@ -10,6 +10,7 @@ const readClient = createPublicClient({
 
 export const useDPP = () => {
   const { client, accounts, walletConnected } = useUpProvider();
+  const tokenId = pad("0x1", { size: 32 });
 
   const transferOwnershipWithUID = async ({
     dppAddress,
@@ -31,7 +32,7 @@ export const useDPP = () => {
         address: dppAddress,
         functionName: "transferOwnershipWithUID",
         account: accounts[0],
-        args: [to, plainUidCode],
+        args: [tokenId, to, plainUidCode],
         chain: client.chain,
       });
 
@@ -56,7 +57,7 @@ export const useDPP = () => {
         abi: NFT_ABI,
         address: dppAddress,
         functionName: "getPublicMetadata",
-        args: [],
+        args: [tokenId],
       });
       return data as string;
     } catch (err) {
@@ -71,7 +72,7 @@ export const useDPP = () => {
         abi: NFT_ABI,
         address: dppAddress,
         functionName: "getEncryptedMetadata",
-        args: [],
+        args: [tokenId],
       });
       return data as string;
     } catch (err) {
