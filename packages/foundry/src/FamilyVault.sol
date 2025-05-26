@@ -6,6 +6,18 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ILSP8IdentifiableDigitalAsset} from "@lukso/lsp8-contracts/contracts/ILSP8IdentifiableDigitalAsset.sol";
 
+interface IDPPNFT {
+    function getUIDSalt(bytes32 tokenId) external view returns (bytes32);
+
+    function getUIDHash(bytes32 tokenId) external view returns (bytes32);
+
+    function transferOwnershipWithUID(
+        bytes32 tokenId,
+        address to,
+        string calldata plainUidCode
+    ) external;
+}
+
 contract FamilyVault is Initializable, OwnableUpgradeable {
     using ECDSA for bytes32;
 
@@ -38,7 +50,6 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     address public nftContract;
     bytes32 public tokenId;
     uint256 public priceInLYX;
-    bytes32 public expectedUIDHash;
     VaultState public state;
 
     // ===== Events =====
@@ -73,8 +84,12 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     }
 
     modifier onlyParticipant() {
-        if (msg.sender != buyer && msg.sender != seller)
+        bool isSeller = msg.sender == seller;
+        bool isBuyer = msg.sender == buyer;
+
+        if (!(isSeller || isBuyer)) {
             revert NotBuyerOrSeller();
+        }
         _;
     }
 
@@ -89,8 +104,7 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         address _seller,
         address _nftContract,
         bytes32 _tokenId,
-        uint256 _priceInLYX,
-        bytes32 _expectedUIDHash
+        uint256 _priceInLYX
     ) external initializer {
         __Ownable_init();
 
@@ -105,7 +119,6 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         nftContract = _nftContract;
         tokenId = _tokenId;
         priceInLYX = _priceInLYX;
-        expectedUIDHash = _expectedUIDHash;
         state = VaultState.Initialized;
 
         // Transfer ownership to seller to mimic LSP9Vault owner behavior
@@ -144,24 +157,26 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     // ===== Confirm receipt and settle trade =====
     function confirmReceipt(
         string calldata plainUidCode
-    ) external onlyBuyer onlyInState(VaultState.FundsDeposited) {
-        if (keccak256(abi.encodePacked(plainUidCode)) != expectedUIDHash)
-            revert UIDHashMismatch();
+    ) external onlyInState(VaultState.FundsDeposited) onlyBuyer {
+        bytes32 salt = IDPPNFT(nftContract).getUIDSalt(tokenId);
+        bytes32 expectedHash = keccak256(abi.encodePacked(salt, plainUidCode));
+        bytes32 storedHash = IDPPNFT(nftContract).getUIDHash(tokenId);
+        if (expectedHash != storedHash) revert UIDHashMismatch();
 
         state = VaultState.DeliveryConfirmed;
 
         emit ReceiptConfirmed(msg.sender);
 
-        _settleTrade();
+        _settleTrade(plainUidCode);
     }
 
-    function _settleTrade() internal onlyInState(VaultState.DeliveryConfirmed) {
-        ILSP8IdentifiableDigitalAsset(nftContract).transfer(
-            address(this),
-            buyer,
+    function _settleTrade(
+        string calldata plainUidCode
+    ) internal onlyInState(VaultState.DeliveryConfirmed) {
+        IDPPNFT(nftContract).transferOwnershipWithUID(
             tokenId,
-            true,
-            ""
+            buyer,
+            plainUidCode
         );
 
         (bool success, ) = seller.call{value: priceInLYX}("");
@@ -191,8 +206,8 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     // ===== Dispute management =====
     function initiateDispute()
         external
-        onlyParticipant
         onlyInState(VaultState.FundsDeposited)
+        onlyParticipant
     {
         state = VaultState.Disputed;
         emit DisputeOpened(msg.sender);
@@ -201,7 +216,7 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     function resolveDispute(
         address nftRecipient,
         address paymentRecipient
-    ) external onlyAdmin onlyInState(VaultState.Disputed) {
+    ) external onlyInState(VaultState.Disputed) onlyAdmin {
         if (
             nftRecipient == address(0) ||
             paymentRecipient == address(0) ||

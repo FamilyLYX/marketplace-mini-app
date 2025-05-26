@@ -25,8 +25,7 @@ contract FamilyVaultFactory {
         address indexed seller,
         address nftContract,
         bytes32 tokenId,
-        uint256 priceInLYX,
-        bytes32 expectedUIDHash
+        uint256 priceInLYX
     );
 
     /// @param _implementation Address of the FamilyVault implementation contract
@@ -40,28 +39,24 @@ contract FamilyVaultFactory {
     /// @param _nftContract NFT contract address for the vault asset
     /// @param _tokenId Token ID of the NFT (bytes32)
     /// @param _priceInLYX Price of the item in LYX
-    /// @param _expectedUIDHash Hash of the expected UID code for validation
     /// @return clone Address of the newly created vault clone
     function createVault(
         address _admin,
         address _nftContract,
         bytes32 _tokenId,
-        uint256 _priceInLYX,
-        bytes32 _expectedUIDHash
+        uint256 _priceInLYX
     ) external returns (address clone) {
         if (_admin == address(0)) revert InvalidAdmin();
         if (_nftContract == address(0)) revert InvalidNFTContract();
-        if (_expectedUIDHash == bytes32(0)) revert InvalidUIDHash();
 
         clone = implementation.clone();
 
         FamilyVault(payable(clone)).initialize(
             _admin,
-            msg.sender, // seller is caller of factory
+            msg.sender,
             _nftContract,
             _tokenId,
-            _priceInLYX,
-            _expectedUIDHash
+            _priceInLYX
         );
 
         vaults.push(clone);
@@ -72,8 +67,7 @@ contract FamilyVaultFactory {
             msg.sender,
             _nftContract,
             _tokenId,
-            _priceInLYX,
-            _expectedUIDHash
+            _priceInLYX
         );
     }
 

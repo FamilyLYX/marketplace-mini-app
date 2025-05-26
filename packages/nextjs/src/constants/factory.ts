@@ -9,8 +9,26 @@ const FACTORY_ABI = [
         type: "address",
         internalType: "address",
       },
+      {
+        name: "_admin",
+        type: "address",
+        internalType: "address",
+      },
     ],
     stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "admin",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
   },
   {
     type: "function",
@@ -197,12 +215,22 @@ const FACTORY_ABI = [
   },
   {
     type: "error",
+    name: "InvalidAdminIsZero",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "InvalidImplementationIsZero",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "InvalidInitialOwner",
     inputs: [],
   },
 ] as Abi;
 
 const FACTORY_ADDRESS =
-  "0xD4432b10b4bb2709ec40C597210AD3032d82Bacc" as `0x${string}`;
+  "0x214c3Bf48b95a837696d9403568E7eaa54D908aB" as `0x${string}`;
 
 export { FACTORY_ABI, FACTORY_ADDRESS };

@@ -2,7 +2,7 @@
 import { http, createPublicClient, createWalletClient } from "viem";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";
-import { fromHex } from "viem/utils";
+import { fromHex, pad } from "viem/utils";
 import { ProductMetadata } from "@/components/product";
 import { privateKeyToAccount } from "viem/accounts";
 import {
@@ -12,6 +12,8 @@ import {
 import { FAMILY_VAULT_ABI } from "@/constants/vault";
 import { NFT_ABI } from "@/constants/dpp";
 import { parseEventLogs } from "viem";
+
+const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
   throw new Error("PRIVATE_KEY environment variable is not set.");
 }
@@ -41,7 +43,7 @@ export async function getAllNFTMetadata(): Promise<
     const deployedNFTs = (await readClient.readContract({
       abi: FACTORY_ABI,
       address: FACTORY_ADDRESS,
-      functionName: "getDeployedNFTs",
+      functionName: "getDeployedDPPs",
     })) as string[];
     const ownerMap: Record<
       string,
@@ -57,7 +59,14 @@ export async function getAllNFTMetadata(): Promise<
         abi: NFT_ABI,
         address: nftAddress as `0x${string}`,
         functionName: "getPublicMetadata",
+        args: [tokenId],
       });
+      console.log(metadata);
+      if (!metadata) {
+        console.warn(`No metadata found for NFT at address: ${nftAddress}`);
+        continue;
+      }
+      console.log(fromHex(metadata as `0x${string}`, "string"));
       const decodedMetadata = JSON.parse(
         fromHex(metadata as `0x${string}`, "string"),
       );
@@ -66,18 +75,13 @@ export async function getAllNFTMetadata(): Promise<
         address: nftAddress as `0x${string}`,
         functionName: "owner",
       })) as `0x${string}`;
-      const uidHash = await readClient.readContract({
-        abi: NFT_ABI,
-        address: nftAddress as `0x${string}`,
-        functionName: "getUIDHash",
-      });
+
       if (!ownerMap[owner]) {
         ownerMap[owner] = [];
       }
       ownerMap[owner].push({
         nftAddress,
         decodedMetadata,
-        expectedUIDHash: uidHash as string,
       });
     }
     return ownerMap;

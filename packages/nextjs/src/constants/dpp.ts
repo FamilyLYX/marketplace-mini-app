@@ -11,6 +11,19 @@ export const NFT_ABI = [
   },
   {
     type: "function",
+    name: "admin",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "authorizeOperator",
     inputs: [
       {
@@ -69,19 +82,6 @@ export const NFT_ABI = [
       },
     ],
     stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "factory",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    stateMutability: "view",
   },
   {
     type: "function",
@@ -171,25 +171,6 @@ export const NFT_ABI = [
   },
   {
     type: "function",
-    name: "getEncryptedMetadata",
-    inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "getOperatorsOf",
     inputs: [
       {
@@ -247,6 +228,25 @@ export const NFT_ABI = [
   },
   {
     type: "function",
+    name: "getUIDSalt",
+    inputs: [
+      {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
     name: "initialize",
     inputs: [
       {
@@ -265,7 +265,7 @@ export const NFT_ABI = [
         internalType: "address",
       },
       {
-        name: "factoryAddress",
+        name: "adminAddress",
         type: "address",
         internalType: "address",
       },
@@ -315,11 +315,6 @@ export const NFT_ABI = [
         name: "publicJsonMetadata",
         type: "string",
         internalType: "string",
-      },
-      {
-        name: "encryptedPrivateMetadata",
-        type: "bytes",
-        internalType: "bytes",
       },
     ],
     outputs: [],
@@ -470,19 +465,6 @@ export const NFT_ABI = [
   },
   {
     type: "function",
-    name: "setFactory",
-    inputs: [
-      {
-        name: "newFactory",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
     name: "supportsInterface",
     inputs: [
       {
@@ -571,7 +553,7 @@ export const NFT_ABI = [
         internalType: "bytes32",
       },
       {
-        name: "force",
+        name: "allowNonTokenOwner",
         type: "bool",
         internalType: "bool",
       },
@@ -842,6 +824,11 @@ export const NFT_ABI = [
   },
   {
     type: "error",
+    name: "AddressZeroNotAllowed",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "ERC725Y_DataKeysValuesEmptyArray",
     inputs: [],
   },
@@ -865,11 +852,6 @@ export const NFT_ABI = [
         internalType: "bytes",
       },
     ],
-  },
-  {
-    type: "error",
-    name: "InvalidFactory",
-    inputs: [],
   },
   {
     type: "error",
@@ -952,22 +934,6 @@ export const NFT_ABI = [
         name: "tokenId",
         type: "bytes32",
         internalType: "bytes32",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "LSP8NotTokenOperator",
-    inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "caller",
-        type: "address",
-        internalType: "address",
       },
     ],
   },
@@ -1131,7 +1097,7 @@ export const NFT_ABI = [
   },
   {
     type: "error",
-    name: "Unauthorized",
+    name: "TransferNotAllowed",
     inputs: [],
   },
 ] as Abi;
