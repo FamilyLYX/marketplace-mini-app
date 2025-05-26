@@ -2,27 +2,6 @@ import { Abi } from "viem";
 
 export const NFT_ABI = [
   {
-    type: "constructor",
-    inputs: [
-      {
-        name: "name",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "symbol",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "factoryAddress",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    stateMutability: "nonpayable",
-  },
-  {
     type: "fallback",
     stateMutability: "payable",
   },
@@ -193,7 +172,13 @@ export const NFT_ABI = [
   {
     type: "function",
     name: "getEncryptedMetadata",
-    inputs: [],
+    inputs: [
+      {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
     outputs: [
       {
         name: "",
@@ -225,12 +210,18 @@ export const NFT_ABI = [
   {
     type: "function",
     name: "getPublicMetadata",
-    inputs: [],
+    inputs: [
+      {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
     outputs: [
       {
         name: "",
-        type: "bytes",
-        internalType: "bytes",
+        type: "string",
+        internalType: "string",
       },
     ],
     stateMutability: "view",
@@ -238,7 +229,13 @@ export const NFT_ABI = [
   {
     type: "function",
     name: "getUIDHash",
-    inputs: [],
+    inputs: [
+      {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
     outputs: [
       {
         name: "",
@@ -251,6 +248,58 @@ export const NFT_ABI = [
   {
     type: "function",
     name: "initialize",
+    inputs: [
+      {
+        name: "name_",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "symbol_",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newOwner_",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "factoryAddress",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "isOperatorFor",
+    inputs: [
+      {
+        name: "operator",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    outputs: [
+      {
+        name: "",
+        type: "bool",
+        internalType: "bool",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "mintDPP",
     inputs: [
       {
         name: "to",
@@ -278,24 +327,13 @@ export const NFT_ABI = [
   },
   {
     type: "function",
-    name: "isOperatorFor",
-    inputs: [
-      {
-        name: "operator",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
+    name: "nextTokenIndex",
+    inputs: [],
     outputs: [
       {
         name: "",
-        type: "bool",
-        internalType: "bool",
+        type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "view",
@@ -425,6 +463,19 @@ export const NFT_ABI = [
         name: "dataValue",
         type: "bytes",
         internalType: "bytes",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "setFactory",
+    inputs: [
+      {
+        name: "newFactory",
+        type: "address",
+        internalType: "address",
       },
     ],
     outputs: [],
@@ -584,6 +635,11 @@ export const NFT_ABI = [
     name: "transferOwnershipWithUID",
     inputs: [
       {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
         name: "to",
         type: "address",
         internalType: "address",
@@ -612,6 +668,19 @@ export const NFT_ABI = [
         type: "bytes",
         indexed: false,
         internalType: "bytes",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Initialized",
+    inputs: [
+      {
+        name: "version",
+        type: "uint8",
+        indexed: false,
+        internalType: "uint8",
       },
     ],
     anonymous: false,
@@ -799,6 +868,11 @@ export const NFT_ABI = [
   },
   {
     type: "error",
+    name: "InvalidFactory",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "InvalidFunctionSelector",
     inputs: [
       {
@@ -807,6 +881,11 @@ export const NFT_ABI = [
         internalType: "bytes",
       },
     ],
+  },
+  {
+    type: "error",
+    name: "InvalidUID",
+    inputs: [],
   },
   {
     type: "error",
@@ -1042,7 +1121,17 @@ export const NFT_ABI = [
   },
   {
     type: "error",
+    name: "NotTokenOwner",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "OwnableCannotSetZeroAddressAsOwner",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "Unauthorized",
     inputs: [],
   },
 ] as Abi;
