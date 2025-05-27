@@ -39,9 +39,9 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     error InvalidState(VaultState expected, VaultState actual);
     error IncorrectPayment(uint256 expected, uint256 actual);
     error IncorrectTokenOwner(address expected, address actual);
-    error UIDHashMismatch();
     error TransferFailed();
     error NotSeller();
+    error InvalidUIDCode();
 
     // ===== State variables =====
     address public admin;
@@ -90,6 +90,14 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         if (!(isSeller || isBuyer)) {
             revert NotBuyerOrSeller();
         }
+        _;
+    }
+
+    modifier onlyCorrectUIDCode(string calldata plainUidCode) {
+        bytes32 salt = IDPPNFT(nftContract).getUIDSalt(tokenId);
+        bytes32 expectedHash = keccak256(abi.encodePacked(salt, plainUidCode));
+        bytes32 storedHash = IDPPNFT(nftContract).getUIDHash(tokenId);
+        if (expectedHash != storedHash) revert InvalidUIDCode();
         _;
     }
 
@@ -157,12 +165,12 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     // ===== Confirm receipt and settle trade =====
     function confirmReceipt(
         string calldata plainUidCode
-    ) external onlyInState(VaultState.FundsDeposited) onlyBuyer {
-        bytes32 salt = IDPPNFT(nftContract).getUIDSalt(tokenId);
-        bytes32 expectedHash = keccak256(abi.encodePacked(salt, plainUidCode));
-        bytes32 storedHash = IDPPNFT(nftContract).getUIDHash(tokenId);
-        if (expectedHash != storedHash) revert UIDHashMismatch();
-
+    )
+        external
+        onlyInState(VaultState.FundsDeposited)
+        onlyBuyer
+        onlyCorrectUIDCode(plainUidCode)
+    {
         state = VaultState.DeliveryConfirmed;
 
         emit ReceiptConfirmed(msg.sender);
@@ -187,18 +195,60 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         emit TradeCompleted();
     }
 
-    function cancelTrade() external onlyParticipant {
-        if (state != VaultState.Listed && state != VaultState.Cancelled)
-            revert InvalidState(VaultState.Listed, state);
+    function cancelTrade(
+        string calldata plainUidCode
+    )
+        external
+        onlyParticipant
+        onlyInState(VaultState.FundsDeposited)
+        onlyCorrectUIDCode(plainUidCode)
+    {
+        if (buyer == address(0) || seller == address(0)) {
+            revert ZeroAddress();
+        }
 
+        // 4. Transfer NFT back to seller using UID code
+        IDPPNFT(nftContract).transferOwnershipWithUID(
+            tokenId,
+            seller,
+            plainUidCode
+        );
+
+        // 5. Refund buyer
+        (bool success, ) = buyer.call{value: priceInLYX}("");
+        if (!success) revert TransferFailed();
+
+        // 6. Reset state
+        buyer = address(0);
         state = VaultState.Cancelled;
+
         emit TradeCancelled(msg.sender);
     }
 
-    function relist() external onlySeller {
-        if (state != VaultState.Cancelled)
-            revert InvalidState(VaultState.Cancelled, state);
+    function unlist(
+        string calldata plainUidCode
+    ) external onlySeller onlyInState(VaultState.Listed) {
+        if (seller == address(0)) revert ZeroAddress();
 
+        IDPPNFT(nftContract).transferOwnershipWithUID(
+            tokenId,
+            seller,
+            plainUidCode
+        );
+
+        state = VaultState.Initialized;
+
+        emit TradeCancelled(msg.sender);
+    }
+
+    function relist(
+        string calldata plainUidCode
+    )
+        external
+        onlySeller
+        onlyInState(VaultState.Cancelled)
+        onlyCorrectUIDCode(plainUidCode)
+    {
         state = VaultState.Listed;
         emit TradeRelisted(msg.sender);
     }

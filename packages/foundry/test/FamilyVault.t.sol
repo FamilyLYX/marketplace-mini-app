@@ -180,8 +180,7 @@ contract FamilyVaultTest is Test {
                 FamilyVault.VaultState.Initialized
             )
         );
-        (bool success, ) = address(vault).call{value: priceInLYX}("");
-        assertTrue(!success);
+        address(vault).call{value: priceInLYX}("");
     }
 
     function test_receive_revertsIfIncorrectPayment() public {
@@ -196,24 +195,26 @@ contract FamilyVaultTest is Test {
                 priceInLYX - 1
             )
         );
-        (bool success, ) = address(vault).call{value: priceInLYX - 1}("");
-        assertTrue(!success);
+        address(vault).call{value: priceInLYX - 1}("");
     }
 
     function test_receive_acceptsCorrectPayment_andEmitsEvent() public {
-        _initAndList();
+        _initAndList(); // Vault state is Listed, priceInLYX is set
 
         vm.deal(buyer, priceInLYX);
         vm.prank(buyer);
 
-        vm.expectEmit(true, false, false, true);
-        (bool success, ) = address(vault).call{value: priceInLYX}("");
-        assertTrue(success);
+        vm.expectEmit(true, false, false, true); // Expects FundsDeposited(address indexed buyer, uint256 amount)
+        emit FamilyVault.FundsDeposited(buyer, priceInLYX); // Specify the event being expected
 
-        assertEq(vault.buyer(), buyer);
+        (bool success, ) = address(vault).call{value: priceInLYX}("");
+        assertTrue(success, "LYX deposit call failed"); // Add a message for clarity if it fails
+
+        assertEq(vault.buyer(), buyer, "Buyer address not set correctly");
         assertEq(
             uint(vault.state()),
-            uint(FamilyVault.VaultState.FundsDeposited)
+            uint(FamilyVault.VaultState.FundsDeposited),
+            "Vault state not FundsDeposited"
         );
     }
 
@@ -315,28 +316,33 @@ contract FamilyVaultTest is Test {
         mockNft.setHash(bytes32(0));
 
         vm.prank(buyer);
-        vm.expectRevert(FamilyVault.UIDHashMismatch.selector);
+        vm.expectRevert(FamilyVault.InvalidUIDCode.selector);
         vault.confirmReceipt(plainUidCode);
     }
 
     function test_confirmReceipt_success_emitsEvents_andSettlesTrade() public {
-        _setupFundsDeposited();
+        _setupFundsDeposited(); // state: FundsDeposited. UID salt/hash set. mockNft.owner is vault.
 
-        vm.prank(buyer);
-        vm.expectEmit(true, false, false, true);
+        uint256 sellerBalanceBefore = seller.balance;
+        uint256 buyerBalanceBefore = buyer.balance; // For checking gas costs if needed, not strictly required by logic
+
+        vm.prank(buyer); // This prank is for the vault.confirmReceipt call
+
+        vm.expectEmit(true, false, false, true); // For ReceiptConfirmed(buyer)
         emit FamilyVault.ReceiptConfirmed(buyer);
 
-        vm.expectEmit(false, false, false, true);
+        vm.expectEmit(false, false, false, true); // For TradeCompleted()
         emit FamilyVault.TradeCompleted();
 
-        // Patch seller address with a payable account with balance for the call
-        vm.deal(seller, 0);
+        // vm.deal(seller, 0); // Not strictly needed if seller already has funds from setUp for gas.
+        // The important check is that seller's balance increases by priceInLYX.
 
-        // We'll also intercept call to transferOwnershipWithUID on mockNft (it sets a flag)
-        vm.prank(buyer);
-        vault.confirmReceipt(plainUidCode);
+        vault.confirmReceipt(plainUidCode); // This call uses the vm.prank(buyer)
 
         assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Completed));
+        assertTrue(mockNft.transferOwnershipWithUIDCalled()); // Check mock was called for NFT transfer
+        assertEq(mockNft.tokenOwnerOf(tokenId), buyer); // Check NFT ownership changed in mock
+        assertEq(seller.balance, sellerBalanceBefore + priceInLYX); // Check seller received payment
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -348,7 +354,7 @@ contract FamilyVaultTest is Test {
 
         vm.prank(randomUser);
         vm.expectRevert(FamilyVault.NotBuyerOrSeller.selector);
-        vault.cancelTrade();
+        vault.cancelTrade(plainUidCode);
     }
 
     function test_cancelTrade_revertsIfWrongState() public {
@@ -376,22 +382,29 @@ contract FamilyVaultTest is Test {
                 FamilyVault.VaultState.FundsDeposited
             )
         );
-        vault.cancelTrade();
+        vault.cancelTrade(plainUidCode);
     }
 
     function test_cancelTrade_success() public {
-        _initAndList();
-
-        // Simulate buyer sending payment
+        _initAndList(); // state: Listed. mockNft owner is vault.
+        // console.log("Vault state after listing:", uint(vault.state()));
+        vm.deal(buyer, priceInLYX);
         vm.prank(buyer);
         (bool sent, ) = address(vault).call{value: priceInLYX}("");
-        require(sent, "Payment failed");
+        require(sent, "payment failed"); // state: FundsDeposited
 
-        // Now cancel as buyer
+        // Set salt and hash on mockNft for cancelTrade
+        bytes32 salt = keccak256("salt-for-cancel"); // Use a descriptive salt
+        mockNft.setSalt(salt);
+        mockNft.setHash(keccak256(abi.encodePacked(salt, plainUidCode)));
+        // mockNft.setOwner(address(vault)); // Vault should already be owner from _initAndList's universalReceiver
+
         vm.prank(buyer);
-        vault.cancelTrade();
+        vault.cancelTrade(plainUidCode);
 
         assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Cancelled));
+        assertTrue(mockNft.transferOwnershipWithUIDCalled()); // Verify mock was called
+        assertEq(mockNft.tokenOwnerOf(tokenId), seller); // NFT should be back with seller
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -403,46 +416,63 @@ contract FamilyVaultTest is Test {
 
         vm.prank(buyer);
         vm.expectRevert(FamilyVault.NotSeller.selector);
-        vault.relist();
+        vault.relist(plainUidCode);
     }
 
     function test_relist_revertsIfWrongState() public {
-        _initAndList();
+        _initAndList(); // State is Listed. Seller is vault.seller.
 
-        vm.prank(buyer);
-        vault.cancelTrade();
+        // Seller attempts to relist when state is Listed (which is not Cancelled)
+        // Setup UID for the relist attempt, as it will be checked by the modifier
+        bytes32 salt = keccak256("salt-for-relist-wrong-state");
+        mockNft.setSalt(salt);
+        mockNft.setHash(keccak256(abi.encodePacked(salt, plainUidCode)));
+        // mockNft.setOwner(address(vault)); // Vault is current owner of NFT
 
-        // Change to FundsDeposited to test revert
-        vm.prank(buyer);
+        vm.prank(seller);
         vm.expectRevert(
             abi.encodeWithSelector(
                 FamilyVault.InvalidState.selector,
-                FamilyVault.VaultState.Cancelled,
-                FamilyVault.VaultState.Cancelled
+                FamilyVault.VaultState.Cancelled, // Expected state for relist
+                FamilyVault.VaultState.Listed // Actual current state
             )
         );
-
-        vm.prank(seller);
-        vault.relist();
-
-        // Should succeed because state is Cancelled
-        // Let's break it by setting state to something else forcibly via storage hacking, but that's overkill here.
+        vault.relist(plainUidCode);
     }
 
     function test_relist_success() public {
-        _initAndList();
+        _initAndList(); // state: Listed. Vault owns NFT.
 
+        // Buyer deposits funds
+        vm.deal(buyer, priceInLYX);
         vm.prank(buyer);
         (bool sent, ) = address(vault).call{value: priceInLYX}("");
-        require(sent, "payment failed");
+        require(sent, "payment failed"); // state: FundsDeposited. vault.buyer is set.
 
-        vm.prank(buyer);
-        vault.cancelTrade();
+        // Setup UID for cancelTrade
+        bytes32 cancelSalt = keccak256("salt-for-cancel-in-relist-test");
+        mockNft.setSalt(cancelSalt);
+        mockNft.setHash(keccak256(abi.encodePacked(cancelSalt, plainUidCode)));
+        // mockNft.setOwner(address(vault)); // Vault is current owner
+
+        vm.prank(buyer); // Buyer initiates cancel
+        vault.cancelTrade(plainUidCode); // state: Cancelled. NFT is now with seller. Funds with buyer.
+        // Mock owner should be seller now due to transferOwnershipWithUID
+        // mockNft.setOwner(seller) would have been called by the mock.
+
+        // Setup UID for relist by seller
+        // Assume plainUidCode is the same, ensure salt/hash are correctly set on mockNft FOR SELLER'S ACTION
+        bytes32 relistSalt = keccak256("salt-for-relist-success"); // Can be same or different based on logic
+        // but needs to be on mockNft
+        mockNft.setSalt(relistSalt); // This salt must be what getUIDSalt returns for the relist call
+        mockNft.setHash(keccak256(abi.encodePacked(relistSalt, plainUidCode)));
+        // mockNft.setOwner(seller); // Seller is current owner
 
         vm.prank(seller);
-        vault.relist();
+        vault.relist(plainUidCode);
 
         assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Listed));
+        // Add emit check for TradeRelisted if desired
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -539,9 +569,6 @@ contract FamilyVaultTest is Test {
         );
         assertEq(vault.buyer(), buyer);
 
-        // 4. Buyer confirms receipt with valid UID
-        string memory plainUidCode = "validUID";
-
         // Mock the UID salt and hash (assuming you can mock in your test)
         bytes32 salt = IMockDPPNFT(address(mockNft)).getUIDSalt(tokenId);
         bytes32 expectedHash = keccak256(abi.encodePacked(salt, plainUidCode));
@@ -565,15 +592,23 @@ contract FamilyVaultTest is Test {
     }
 
     function test_resolveDispute_success() public {
-        _setupFundsDeposited();
+        _setupFundsDeposited(); // state: FundsDeposited. Buyer is set. Vault owns NFT.
 
-        vm.prank(buyer);
-        vault.initiateDispute();
+        vm.prank(buyer); // Buyer or seller can initiate
+        vault.initiateDispute(); // state: Disputed
 
         vm.prank(admin);
-        vm.expectEmit(true, true, true, true);
-        vault.resolveDispute(buyer, seller);
+
+        vm.expectEmit(true, false, false, true); // For TradeSettledByAdmin(admin)
+        emit FamilyVault.TradeSettledByAdmin(admin);
+
+        vm.expectEmit(false, false, false, true); // For TradeCompleted()
+        emit FamilyVault.TradeCompleted();
+
+        vault.resolveDispute(buyer, seller); // Example: NFT to buyer, payment to seller
 
         assertEq(uint(vault.state()), uint(FamilyVault.VaultState.Completed));
+        assertTrue(mockNft.transferCalled()); // Verify NFT transfer was attempted (standard transfer in resolveDispute)
+        // Add checks for recipient balances if necessary
     }
 }
