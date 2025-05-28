@@ -5,12 +5,14 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ILSP8IdentifiableDigitalAsset} from "@lukso/lsp8-contracts/contracts/ILSP8IdentifiableDigitalAsset.sol";
+import {LSP9VaultInitAbstract} from "@lukso/lsp9-contracts/contracts/LSP9VaultInitAbstract.sol";
+import {ILSP8Mintable} from "@lukso/lsp8-contracts/contracts/presets/ILSP8Mintable.sol";
 
-interface IDPPNFT {
+interface IDPPNFT is ILSP8Mintable {
     function getDataForTokenId(
         bytes32 tokenId,
-        bytes32 key
-    ) external view returns (bytes32);
+        bytes32 dataKey
+    ) external view returns (bytes memory dataValues);
 
     function transferWithUIDRotation(
         bytes32 tokenId,
@@ -22,7 +24,7 @@ interface IDPPNFT {
     ) external;
 }
 
-contract FamilyVault is Initializable, OwnableUpgradeable {
+contract FamilyVault is LSP9VaultInitAbstract {
     using ECDSA for bytes32;
 
     // ===== Constants =====
@@ -30,13 +32,13 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
 
     // ===== Enums =====
     enum VaultState {
-        Initialized,
-        Listed,
-        Cancelled,
-        FundsDeposited,
-        DeliveryConfirmed,
-        Completed,
-        Disputed
+        Initialized, // 0
+        Listed, // 1
+        Cancelled, // 2
+        FundsDeposited, // 3
+        DeliveryConfirmed, // 4
+        Completed, // 5
+        Disputed // 6
     }
 
     // ===== Custom Errors =====
@@ -73,6 +75,7 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     event DisputeOpened(address indexed initiator);
     event TradeSettledByAdmin(address indexed admin);
     event TradeCancelled(address indexed cancelledBy);
+    event VaultListed(address nftContract, address vault, bytes32 tokenId);
 
     // ===== Modifiers =====
     modifier onlyBuyer() {
@@ -101,10 +104,12 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         string calldata salt
     ) {
         bytes32 expectedHash = keccak256(abi.encodePacked(salt, plainUidCode));
-        bytes32 storedHash = IDPPNFT(nftContract).getDataForTokenId(
-            tokenId,
-            DPP_UID_HASH_KEY
+
+        bytes32 storedHash = abi.decode(
+            IDPPNFT(nftContract).getDataForTokenId(tokenId, DPP_UID_HASH_KEY),
+            (bytes32)
         );
+
         if (expectedHash != storedHash) revert InvalidUIDCode();
         _;
     }
@@ -124,6 +129,7 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
      * @param _tokenId The token ID for the asset in escrow
      * @param _priceInLYX The price agreed for the asset
      */
+
     function initialize(
         address _admin,
         address _seller,
@@ -131,13 +137,15 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         bytes32 _tokenId,
         uint256 _priceInLYX
     ) external initializer {
-        __Ownable_init();
-
         if (
             _admin == address(0) ||
             _seller == address(0) ||
             _nftContract == address(0)
         ) revert ZeroAddress();
+
+        // Call the initializer of the parent LSP9VaultInitAbstract contract
+        // This is the function declared in the LSP9VaultInitAbstract.sol you provided.
+        _initialize(_seller); // Pass the seller as the initial owner of the vault
 
         admin = _admin;
         seller = _seller;
@@ -145,8 +153,6 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         tokenId = _tokenId;
         priceInLYX = _priceInLYX;
         state = VaultState.Initialized;
-
-        transferOwnership(_seller);
         emit VaultInitialized(_seller, _nftContract, _tokenId, _priceInLYX);
     }
 
@@ -156,7 +162,7 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
      * @notice Accept payment from buyer to begin escrow
      * @dev Automatically updates state to FundsDeposited
      */
-    receive() external payable onlyInState(VaultState.Listed) {
+    receive() external payable override onlyInState(VaultState.Listed) {
         if (msg.value != priceInLYX)
             revert IncorrectPayment(priceInLYX, msg.value);
 
@@ -167,21 +173,26 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     }
 
     // ===== NFT Deposit Hook =====
-
     /**
      * @notice Verifies NFT deposit into vault and moves to listed state
      */
     function universalReceiver(
-        bytes32 /*typeId*/,
-        bytes memory /*data*/
-    ) external payable returns (bytes memory) {
+        bytes32 /* typeId */,
+        bytes memory /* data */
+    ) public payable virtual override returns (bytes memory) {
         if (state == VaultState.Initialized && msg.sender == nftContract) {
             address currentOwner = ILSP8IdentifiableDigitalAsset(nftContract)
                 .tokenOwnerOf(tokenId);
-            if (currentOwner != address(this))
+
+            if (currentOwner != address(this)) {
                 revert IncorrectTokenOwner(address(this), currentOwner);
+            }
+
             state = VaultState.Listed;
+
+            emit VaultListed(nftContract, address(this), tokenId);
         }
+
         return "";
     }
 

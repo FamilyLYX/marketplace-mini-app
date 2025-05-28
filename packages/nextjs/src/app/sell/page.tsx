@@ -12,20 +12,12 @@ import { ProductCard, ProductMetadata } from "@/components/product";
 import { Label } from "@/components/ui/label";
 import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
-import {
-  encodePacked,
-  getAddress,
-  keccak256,
-  pad,
-  parseEther,
-  toBytes,
-} from "viem";
+import { getAddress, pad, parseEther } from "viem";
 import { Vault } from "@/types";
 import { useDPP } from "@/hooks/useDPP";
 import { toast } from "sonner";
 import { useUpProvider } from "@/components/up-provider";
 import { queryClient } from "@/components/marketplace-provider";
-import { v4 as uuidv4 } from "uuid";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 
 export default function SellProductPage() {
@@ -39,6 +31,7 @@ export default function SellProductPage() {
   const expectedUIDHash = searchParams.get("expectedUIDHash") || "";
   const metadataParam = searchParams.get("metadata") || "";
   let parsedMetadata: ProductMetadata | null = null;
+  console.log(nftContract, expectedUIDHash, metadataParam);
   try {
     parsedMetadata = JSON.parse(decodeURIComponent(metadataParam));
   } catch (error) {
@@ -62,7 +55,6 @@ export default function SellProductPage() {
       const res = await createVault({
         nftContract: nftContract as `0x${string}`,
         priceInLYX: parseEther(price.toString()),
-        expectedUIDHash: keccak256(toBytes(plainUIDCode)),
       });
       if (!res) {
         throw new Error("Failed to create vault");

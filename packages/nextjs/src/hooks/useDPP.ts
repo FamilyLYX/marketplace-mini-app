@@ -10,7 +10,7 @@ const readClient = createPublicClient({
 
 export const useDPP = () => {
   const { client, accounts, walletConnected } = useUpProvider();
-  const tokenId = pad("0x0", { size: 32 });  // since rn we are using a fixed tokenId of 0x0, as one quantity of product is available for sale
+  const tokenId = pad("0x0", { size: 32 }); // since rn we are using a fixed tokenId of 0x0, as one quantity of product is available for sale
 
   const transferWithUIDRotation = async ({
     dppAddress,
@@ -31,12 +31,28 @@ export const useDPP = () => {
     }
 
     try {
+      const tokenOwner = await readClient.readContract({
+        abi: NFT_ABI,
+        address: dppAddress,
+        functionName: "tokenOwnerOf",
+        args: [tokenId],
+      });
+      console.log("Token owner:", tokenOwner);
+      const request = readClient.simulateContract({
+        abi: NFT_ABI,
+        address: dppAddress,
+        functionName: "transferWithUIDRotation",
+        account: accounts[0],
+        args: [tokenId, to, "0x", salt, plainUidCode, newUidHash],
+        chain: client.chain,
+      });
+      console.log("Simulation request:", request);
       const tx = await client.writeContract({
         abi: NFT_ABI,
         address: dppAddress,
         functionName: "transferWithUIDRotation",
         account: accounts[0],
-        args: [tokenId, to, plainUidCode, salt, newUidHash],
+        args: [tokenId, to, "0x", salt, plainUidCode, newUidHash],
         chain: client.chain,
       });
 
@@ -45,7 +61,13 @@ export const useDPP = () => {
         toast.error("Transfer failed.");
         return null;
       }
-
+      const newOwner = await readClient.readContract({
+        abi: NFT_ABI,
+        address: dppAddress,
+        functionName: "tokenOwnerOf",
+        args: [tokenId],
+      });
+      console.log("Transfer successful:", receipt, "New owner:", newOwner);
       toast.success("Ownership transferred successfully!");
       return { tx };
     } catch (err) {

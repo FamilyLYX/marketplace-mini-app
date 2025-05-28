@@ -19,7 +19,6 @@ const admin = account.address;
 type CreateVaultParams = {
   nftContract: string;
   priceInLYX: bigint;
-  expectedUIDHash: string;
 };
 
 export const useFamilyVaultFactory = () => {
@@ -28,29 +27,31 @@ export const useFamilyVaultFactory = () => {
   const createVault = async ({
     nftContract,
     priceInLYX,
-    expectedUIDHash,
   }: CreateVaultParams) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
       return null;
     }
 
-    const tokenId = pad("0x1", { size: 32 }); // hardcoded tokenId as bytes32
+    const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32
 
     try {
+      const { request } = await readClient.simulateContract({
+        abi: FAMILY_VAULT_FACTORY_ABI,
+        address: FAMILY_VAULT_FACTORY_ADDRESS,
+        functionName: "createVault",
+        account: accounts[0] as `0x${string}`,
+        chain: client.chain,
+        args: [admin, nftContract, tokenId, priceInLYX],
+      });
+      console.log("Simulation request:", request);
       const tx = await client.writeContract({
         abi: FAMILY_VAULT_FACTORY_ABI,
         address: FAMILY_VAULT_FACTORY_ADDRESS,
         functionName: "createVault",
         account: accounts[0] as `0x${string}`,
         chain: client.chain,
-        args: [
-          admin,
-          nftContract,
-          tokenId,
-          priceInLYX,
-          expectedUIDHash as `0x${string}`,
-        ],
+        args: [admin, nftContract, tokenId, priceInLYX],
       });
 
       const receipt = await readClient.waitForTransactionReceipt({ hash: tx });

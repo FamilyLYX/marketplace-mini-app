@@ -565,11 +565,6 @@ contract FamilyVaultTest is Test {
         );
     }
 
-    /*///////////////////////////////////////////////////////////////
-                            relist Tests
-    ///////////////////////////////////////////////////////////////*/
-    // relist is onlySeller, onlyInState(Cancelled), onlyCorrectUIDCode(plainUidCode, salt)
-
     function _setupCancelledState() internal {
         _setupFundsDeposited(); // Ends in FundsDeposited, buyer set, NFT with vault, money with vault, UID hash set
 
@@ -587,63 +582,6 @@ contract FamilyVaultTest is Test {
         // not immediately making plainUidCode/salt invalid.
         // So, we re-set the hash on the mock to be what relist's plainUidCode/salt will verify against.
         mockNft.setHash(keccak256(abi.encodePacked(salt, plainUidCode)));
-    }
-
-    function test_relist_revertsIfNotSeller() public {
-        _setupCancelledState(); // State: Cancelled. Seller has NFT. UID hash for relist set.
-
-        vm.prank(buyer); // Not seller
-        vm.expectRevert(FamilyVault.NotSeller.selector);
-        vault.relist(plainUidCode, salt);
-    }
-
-    function test_relist_revertsIfWrongState() public {
-        _initAndList(); // State is Listed, not Cancelled
-        mockNft.setHash(keccak256(abi.encodePacked(salt, plainUidCode))); // For UID check
-
-        vm.prank(seller);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                FamilyVault.InvalidState.selector,
-                FamilyVault.VaultState.Cancelled, // Expected
-                FamilyVault.VaultState.Listed // Actual
-            )
-        );
-        vault.relist(plainUidCode, salt);
-    }
-
-    function test_relist_revertsIfUIDHashMismatch() public {
-        _setupCancelledState(); // State: Cancelled.
-
-        mockNft.setHash(bytes32(0)); // Force UID mismatch for relist
-
-        vm.prank(seller);
-        vm.expectRevert(FamilyVault.InvalidUIDCode.selector);
-        vault.relist(plainUidCode, salt);
-    }
-
-    function test_relist_success() public {
-        _setupCancelledState(); // State: Cancelled. UID hash for relist matching plainUidCode/salt is set.
-
-        vm.prank(seller);
-        vm.expectEmit(true, false, false, true);
-        emit FamilyVault.TradeRelisted(seller);
-
-        vault.relist(plainUidCode, salt);
-
-        assertEq(
-            uint(vault.state()),
-            uint(FamilyVault.VaultState.Listed),
-            "State not Listed after relist"
-        );
-        // Note: relist itself doesn't transfer the NFT, it's assumed to be with the seller already
-        // and the vault is ready to receive it again via universalReceiver if a new buyer comes.
-        // Or rather, the item is just "listed" in the vault's state. The NFT is expected to be sent to vault again.
-        // The FamilyVault.sol implies that after relist, the NFT must be sent again to trigger universalReceiver
-        // to transition from 'Listed' (after relist) -> 'Listed' (confirming NFT deposit).
-        // The current relist only changes state. The NFT is still with the seller.
-        // This seems like a potential point of confusion in the FamilyVault flow.
-        // For this test, we only check state change.
     }
 
     /*///////////////////////////////////////////////////////////////

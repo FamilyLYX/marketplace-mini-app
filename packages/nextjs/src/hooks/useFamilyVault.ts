@@ -64,6 +64,20 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
+  const getTokenId = async (): Promise<`0x${string}` | null> => {
+    try {
+      const tokenId = await readClient.readContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "tokenId",
+      });
+      return tokenId as `0x${string}`;
+    } catch (err) {
+      console.error("Error fetching token ID:", err);
+      return null;
+    }
+  };
+
   const depositFunds = async ({ priceInLYX }: { priceInLYX: bigint }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
@@ -71,6 +85,33 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
 
     try {
+      const vaultState = await getVaultState();
+      const nftContract = await getNFTContract();
+      const tokenId = await getTokenId();
+      const logs = await readClient.getLogs({
+        address: vaultAddress,
+        fromBlock: BigInt(0), // or specific block if you know when it started
+        toBlock: "latest",
+      });
+      console.log("Logs for vault:", logs);
+      if (!nftContract) {
+        toast.error("NFT contract not found.");
+        return;
+      }
+      console.log(
+        "Vault state:",
+        vaultState,
+        "NFT Contract:",
+        nftContract,
+        "Token ID:",
+        tokenId,
+      );
+      if (vaultState !== FamilyVaultState.Listed) {
+        console.log(vaultState);
+        toast.error("Vault is not in a listed state.");
+        return;
+      }
+
       const txHash = await client.sendTransaction({
         to: vaultAddress,
         value: priceInLYX,
@@ -98,7 +139,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
 
     try {
-      await readClient.simulateContract({
+      const response = await readClient.simulateContract({
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
         functionName: "confirmReceipt",
@@ -106,6 +147,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         account: accounts[0],
         chain: luksoTestnet,
       });
+      console.log("Simulation response:", response);
 
       const txHash = await client.writeContract({
         abi: FAMILY_VAULT_ABI,
