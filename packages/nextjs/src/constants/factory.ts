@@ -106,25 +106,6 @@ const FACTORY_ABI = [
   },
   {
     type: "function",
-    name: "isRegisteredNFT",
-    inputs: [
-      {
-        name: "nftAddress",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "nftContracts",
     inputs: [
       {
@@ -231,6 +212,6 @@ const FACTORY_ABI = [
 ] as Abi;
 
 const FACTORY_ADDRESS =
-  "0x214c3Bf48b95a837696d9403568E7eaa54D908aB" as `0x${string}`;
+  "0x6596ce79e61045F1b2aa3fC7217d309668264b98" as `0x${string}`;
 
 export { FACTORY_ABI, FACTORY_ADDRESS };
