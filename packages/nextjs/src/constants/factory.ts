@@ -9,26 +9,8 @@ const FACTORY_ABI = [
         type: "address",
         internalType: "address",
       },
-      {
-        name: "_admin",
-        type: "address",
-        internalType: "address",
-      },
     ],
     stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "admin",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    stateMutability: "view",
   },
   {
     type: "function",
@@ -71,7 +53,7 @@ const FACTORY_ABI = [
     ],
     outputs: [
       {
-        name: "",
+        name: "clone",
         type: "address",
         internalType: "address",
       },
@@ -196,11 +178,6 @@ const FACTORY_ABI = [
   },
   {
     type: "error",
-    name: "InvalidAdminIsZero",
-    inputs: [],
-  },
-  {
-    type: "error",
     name: "InvalidImplementationIsZero",
     inputs: [],
   },
@@ -212,6 +189,6 @@ const FACTORY_ABI = [
 ] as Abi;
 
 const FACTORY_ADDRESS =
-  "0x6596ce79e61045F1b2aa3fC7217d309668264b98" as `0x${string}`;
+  "0x138159bae45322C24AFf771adc9883D4e3e00855" as `0x${string}`;
 
 export { FACTORY_ABI, FACTORY_ADDRESS };

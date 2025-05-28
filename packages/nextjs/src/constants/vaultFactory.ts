@@ -36,11 +36,6 @@ const FAMILY_VAULT_FACTORY_ABI = [
         type: "uint256",
         internalType: "uint256",
       },
-      {
-        name: "_expectedUIDHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
     ],
     outputs: [
       {
@@ -136,12 +131,6 @@ const FAMILY_VAULT_FACTORY_ABI = [
         indexed: false,
         internalType: "uint256",
       },
-      {
-        name: "expectedUIDHash",
-        type: "bytes32",
-        indexed: false,
-        internalType: "bytes32",
-      },
     ],
     anonymous: false,
   },
@@ -167,6 +156,6 @@ const FAMILY_VAULT_FACTORY_ABI = [
   },
 ] as Abi;
 const FAMILY_VAULT_FACTORY_ADDRESS =
-  "0xeF515b10bAC748D31B3a50fE72601B7E377852d9" as `0x${string}`;
+  "0xa0b362d19A68DdA77281a92fbecc625103b20755" as `0x${string}`;
 
 export { FAMILY_VAULT_FACTORY_ABI, FAMILY_VAULT_FACTORY_ADDRESS };

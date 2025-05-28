@@ -36,20 +36,6 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
-  const getExpectedUIDHash = async (): Promise<string | null> => {
-    try {
-      const expectedUIDHash = await readClient.readContract({
-        abi: FAMILY_VAULT_ABI,
-        address: vaultAddress,
-        functionName: "expectedUIDHash",
-      });
-      return expectedUIDHash as string;
-    } catch (err) {
-      console.error("Error fetching expected UID hash:", err);
-      return null;
-    }
-  };
-
   const getNFTContract = async (): Promise<string | null> => {
     try {
       const nftContract = await readClient.readContract({
@@ -101,7 +87,11 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
-  const confirmReceipt = async (plainUidCode: string) => {
+  const confirmReceipt = async (
+    plainUidCode: string,
+    salt: string,
+    newUidHash: `0x${string}`,
+  ) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
       return;
@@ -112,7 +102,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
         functionName: "confirmReceipt",
-        args: [plainUidCode],
+        args: [plainUidCode, salt, newUidHash],
         account: accounts[0],
         chain: luksoTestnet,
       });
@@ -121,7 +111,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
         functionName: "confirmReceipt",
-        args: [plainUidCode],
+        args: [plainUidCode, salt, newUidHash],
         account: accounts[0],
         chain: client.chain,
       });
@@ -179,6 +169,9 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
   const resolveDispute = async (
     nftRecipient: string,
     paymentRecipient: string,
+    plainUidCode: string,
+    salt: string,
+    newUidHash: `0x${string}`, // Valid bytes32 string
   ) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
@@ -196,7 +189,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
         functionName: "resolveDispute",
-        args: [nftRecipient, paymentRecipient],
+        args: [nftRecipient, paymentRecipient, plainUidCode, salt, newUidHash],
         account: accounts[0],
         chain: client.chain,
       });
@@ -210,6 +203,60 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
+  const cancelTrade = async (
+    plainUidCode: string,
+    salt: string,
+    newUidHash: `0x${string}`,
+  ) => {
+    if (!client || !walletConnected || !accounts?.[0]) {
+      toast.error("Connect your Universal Profile wallet first.");
+      return;
+    }
+
+    try {
+      const txHash = await client.writeContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "cancelTrade",
+        args: [plainUidCode, salt, newUidHash],
+        account: accounts[0],
+        chain: client.chain,
+      });
+
+      await readClient.waitForTransactionReceipt({ hash: txHash });
+      toast.success("Trade cancelled.");
+      return txHash;
+    } catch (err) {
+      console.error("Error cancelling trade:", err);
+      toast.error("Failed to cancel trade.");
+    }
+  };
+
+  const relist = async (plainUidCode: string, salt: string) => {
+    if (!client || !walletConnected || !accounts?.[0]) {
+      toast.error("Connect your Universal Profile wallet first.");
+      return;
+    }
+
+    try {
+      const txHash = await client.writeContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "relist",
+        args: [plainUidCode, salt],
+        account: accounts[0],
+        chain: client.chain,
+      });
+
+      await readClient.waitForTransactionReceipt({ hash: txHash });
+      toast.success("Vault relisted.");
+      return txHash;
+    } catch (err) {
+      console.error("Error relisting vault:", err);
+      toast.error("Failed to relist vault.");
+    }
+  };
+
   return {
     getVaultState,
     depositFunds,
@@ -220,6 +267,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     connectedWallet: accounts?.[0],
     walletConnected,
     getBuyer,
-    getExpectedUIDHash,
+    cancelTrade,
+    relist,
   };
 };

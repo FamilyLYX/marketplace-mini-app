@@ -10,16 +10,20 @@ const readClient = createPublicClient({
 
 export const useDPP = () => {
   const { client, accounts, walletConnected } = useUpProvider();
-  const tokenId = pad("0x1", { size: 32 });
+  const tokenId = pad("0x0", { size: 32 });  // since rn we are using a fixed tokenId of 0x0, as one quantity of product is available for sale
 
-  const transferOwnershipWithUID = async ({
+  const transferWithUIDRotation = async ({
     dppAddress,
     to,
     plainUidCode,
+    salt,
+    newUidHash,
   }: {
     dppAddress: `0x${string}`;
     to: `0x${string}`;
     plainUidCode: string;
+    salt: string;
+    newUidHash: `0x${string}`;
   }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
@@ -30,9 +34,9 @@ export const useDPP = () => {
       const tx = await client.writeContract({
         abi: NFT_ABI,
         address: dppAddress,
-        functionName: "transferOwnershipWithUID",
+        functionName: "transferWithUIDRotation",
         account: accounts[0],
-        args: [tokenId, to, plainUidCode],
+        args: [tokenId, to, plainUidCode, salt, newUidHash],
         chain: client.chain,
       });
 
@@ -51,40 +55,8 @@ export const useDPP = () => {
     }
   };
 
-  const getPublicMetadata = async (dppAddress: `0x${string}`) => {
-    try {
-      const data = await readClient.readContract({
-        abi: NFT_ABI,
-        address: dppAddress,
-        functionName: "getPublicMetadata",
-        args: [tokenId],
-      });
-      return data as string;
-    } catch (err) {
-      console.error("Error fetching metadata:", err);
-      return null;
-    }
-  };
-
-  const getEncryptedMetadata = async (dppAddress: `0x${string}`) => {
-    try {
-      const data = await readClient.readContract({
-        abi: NFT_ABI,
-        address: dppAddress,
-        functionName: "getEncryptedMetadata",
-        args: [tokenId],
-      });
-      return data as string;
-    } catch (err) {
-      console.error("Error fetching encrypted metadata:", err);
-      return null;
-    }
-  };
-
   return {
-    transferOwnershipWithUID,
-    getPublicMetadata,
-    getEncryptedMetadata,
+    transferWithUIDRotation,
     connectedWallet: accounts?.[0],
     walletConnected,
   };

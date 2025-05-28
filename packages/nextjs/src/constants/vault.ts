@@ -33,7 +33,23 @@ export const FAMILY_VAULT_ABI = [
   {
     type: "function",
     name: "cancelTrade",
-    inputs: [],
+    inputs: [
+      {
+        name: "plainUidCode",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newUidHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -46,22 +62,19 @@ export const FAMILY_VAULT_ABI = [
         type: "string",
         internalType: "string",
       },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "expectedUIDHash",
-    inputs: [],
-    outputs: [
       {
-        name: "",
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newUidHash",
         type: "bytes32",
         internalType: "bytes32",
       },
     ],
-    stateMutability: "view",
+    outputs: [],
+    stateMutability: "nonpayable",
   },
   {
     type: "function",
@@ -91,11 +104,6 @@ export const FAMILY_VAULT_ABI = [
         name: "_priceInLYX",
         type: "uint256",
         internalType: "uint256",
-      },
-      {
-        name: "_expectedUIDHash",
-        type: "bytes32",
-        internalType: "bytes32",
       },
     ],
     outputs: [],
@@ -150,7 +158,18 @@ export const FAMILY_VAULT_ABI = [
   {
     type: "function",
     name: "relist",
-    inputs: [],
+    inputs: [
+      {
+        name: "plainUidCode",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+    ],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -174,6 +193,21 @@ export const FAMILY_VAULT_ABI = [
         name: "paymentRecipient",
         type: "address",
         internalType: "address",
+      },
+      {
+        name: "plainUidCode",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newUidHash",
+        type: "bytes32",
+        internalType: "bytes32",
       },
     ],
     outputs: [],
@@ -254,6 +288,29 @@ export const FAMILY_VAULT_ABI = [
       },
     ],
     stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "unlist",
+    inputs: [
+      {
+        name: "plainUidCode",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newUidHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
   },
   {
     type: "event",
@@ -458,6 +515,11 @@ export const FAMILY_VAULT_ABI = [
   },
   {
     type: "error",
+    name: "InvalidUIDCode",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "NotAdmin",
     inputs: [],
   },
@@ -479,11 +541,6 @@ export const FAMILY_VAULT_ABI = [
   {
     type: "error",
     name: "TransferFailed",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "UIDHashMismatch",
     inputs: [],
   },
   {
