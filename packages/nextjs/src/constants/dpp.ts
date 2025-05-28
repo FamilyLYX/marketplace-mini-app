@@ -2,27 +2,6 @@ import { Abi } from "viem";
 
 export const NFT_ABI = [
   {
-    type: "constructor",
-    inputs: [
-      {
-        name: "name",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "symbol",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "factoryAddress",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    stateMutability: "nonpayable",
-  },
-  {
     type: "fallback",
     stateMutability: "payable",
   },
@@ -90,19 +69,6 @@ export const NFT_ABI = [
       },
     ],
     stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "factory",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    stateMutability: "view",
   },
   {
     type: "function",
@@ -192,19 +158,6 @@ export const NFT_ABI = [
   },
   {
     type: "function",
-    name: "getEncryptedMetadata",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "getOperatorsOf",
     inputs: [
       {
@@ -224,53 +177,22 @@ export const NFT_ABI = [
   },
   {
     type: "function",
-    name: "getPublicMetadata",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getUIDHash",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "initialize",
     inputs: [
       {
-        name: "to",
+        name: "name_",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "symbol_",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newOwner",
         type: "address",
         internalType: "address",
-      },
-      {
-        name: "plainUidCode",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "publicJsonMetadata",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "encryptedPrivateMetadata",
-        type: "bytes",
-        internalType: "bytes",
       },
     ],
     outputs: [],
@@ -296,6 +218,70 @@ export const NFT_ABI = [
         name: "",
         type: "bool",
         internalType: "bool",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "mint",
+    inputs: [
+      {
+        name: "to",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
+        name: "force",
+        type: "bool",
+        internalType: "bool",
+      },
+      {
+        name: "data",
+        type: "bytes",
+        internalType: "bytes",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "mintDPP",
+    inputs: [
+      {
+        name: "to",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "publicJsonMetadata",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "uidHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "nextTokenIndex",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
       },
     ],
     stateMutability: "view",
@@ -505,27 +491,27 @@ export const NFT_ABI = [
     name: "transfer",
     inputs: [
       {
-        name: "from",
+        name: "",
         type: "address",
         internalType: "address",
       },
       {
-        name: "to",
+        name: "",
         type: "address",
         internalType: "address",
       },
       {
-        name: "tokenId",
+        name: "",
         type: "bytes32",
         internalType: "bytes32",
       },
       {
-        name: "force",
+        name: "",
         type: "bool",
         internalType: "bool",
       },
       {
-        name: "data",
+        name: "",
         type: "bytes",
         internalType: "bytes",
       },
@@ -581,17 +567,37 @@ export const NFT_ABI = [
   },
   {
     type: "function",
-    name: "transferOwnershipWithUID",
+    name: "transferWithUIDRotation",
     inputs: [
+      {
+        name: "tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
       {
         name: "to",
         type: "address",
         internalType: "address",
       },
       {
+        name: "data",
+        type: "bytes",
+        internalType: "bytes",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
         name: "plainUidCode",
         type: "string",
         internalType: "string",
+      },
+      {
+        name: "newUidHash",
+        type: "bytes32",
+        internalType: "bytes32",
       },
     ],
     outputs: [],
@@ -612,6 +618,19 @@ export const NFT_ABI = [
         type: "bytes",
         indexed: false,
         internalType: "bytes",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "Initialized",
+    inputs: [
+      {
+        name: "version",
+        type: "uint8",
+        indexed: false,
+        internalType: "uint8",
       },
     ],
     anonymous: false,
@@ -810,6 +829,11 @@ export const NFT_ABI = [
   },
   {
     type: "error",
+    name: "InvalidUID",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "LSP4TokenNameNotEditable",
     inputs: [],
   },
@@ -873,22 +897,6 @@ export const NFT_ABI = [
         name: "tokenId",
         type: "bytes32",
         internalType: "bytes32",
-      },
-    ],
-  },
-  {
-    type: "error",
-    name: "LSP8NotTokenOperator",
-    inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "caller",
-        type: "address",
-        internalType: "address",
       },
     ],
   },
@@ -1042,7 +1050,17 @@ export const NFT_ABI = [
   },
   {
     type: "error",
+    name: "NotTokenOwner",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "OwnableCannotSetZeroAddressAsOwner",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "TransferNotAllowed",
     inputs: [],
   },
 ] as Abi;

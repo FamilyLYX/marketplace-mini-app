@@ -12,18 +12,17 @@ const readClient = createPublicClient({
 export enum FamilyVaultState {
   Initialized = 0,
   Listed = 1,
-  FundsDeposited = 2,
-  DeliveryConfirmed = 3,
-  Completed = 4,
-  Disputed = 5,
-  Cancelled = 6,
+  Cancelled = 2,
+  FundsDeposited = 3,
+  DeliveryConfirmed = 4,
+  Completed = 5,
+  Disputed = 6,
 }
 
 export const useFamilyVault = (vaultAddress: `0x${string}`) => {
   const { client, accounts, walletConnected } = useUpProvider();
 
   const getVaultState = async (): Promise<FamilyVaultState | null> => {
-    if (!client) return null;
     try {
       const state = await readClient.readContract({
         abi: FAMILY_VAULT_ABI,
@@ -37,23 +36,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
-  const getExpectedUIDHash = async (): Promise<string | null> => {
-    if (!client) return null;
-    try {
-      const expectedUIDHash = await readClient.readContract({
-        abi: FAMILY_VAULT_ABI,
-        address: vaultAddress,
-        functionName: "expectedUIDHash",
-      });
-      return expectedUIDHash as string;
-    } catch (err) {
-      console.error("Error fetching expected UID hash:", err);
-      return null;
-    }
-  };
-
   const getNFTContract = async (): Promise<string | null> => {
-    if (!client) return null;
     try {
       const nftContract = await readClient.readContract({
         abi: FAMILY_VAULT_ABI,
@@ -68,7 +51,6 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
   };
 
   const getBuyer = async (): Promise<string | null> => {
-    if (!client) return null;
     try {
       const buyer = await readClient.readContract({
         abi: FAMILY_VAULT_ABI,
@@ -82,126 +64,238 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
+  const getTokenId = async (): Promise<`0x${string}` | null> => {
+    try {
+      const tokenId = await readClient.readContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "tokenId",
+      });
+      return tokenId as `0x${string}`;
+    } catch (err) {
+      console.error("Error fetching token ID:", err);
+      return null;
+    }
+  };
+
   const depositFunds = async ({ priceInLYX }: { priceInLYX: bigint }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
-      toast.error("Please connect your Universal Profile wallet.");
-      return;
-    }
-
-    try {
-      const txHash = await client.sendTransaction({
-        to: vaultAddress,
-        value: priceInLYX,
-        account: accounts[0] as `0x${string}`,
-        chain: client.chain,
-      });
-
-      const receipt = await readClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-      console.log("Transaction receipt:", receipt);
-
-      toast.success("Funds deposited!");
-      return txHash;
-    } catch (err) {
-      console.error("Error depositing funds:", err);
-      toast.error("Failed to deposit funds.");
-    }
-  };
-
-  const confirmReceipt = async (plainUidCode: string) => {
-    if (!client || !walletConnected || !accounts?.[0]) {
-      toast.error("Please connect your Universal Profile wallet.");
-      return;
-    }
-
-    try {
-      const simulation = await readClient.simulateContract({
-        abi: FAMILY_VAULT_ABI,
-        address: vaultAddress,
-        functionName: "confirmReceipt",
-        args: [plainUidCode],
-        account: accounts[0] as `0x${string}`,
-        chain: luksoTestnet,
-      });
-      console.log("Simulation result:", simulation);
-      const vault = await client.writeContract({
-        abi: FAMILY_VAULT_ABI,
-        address: vaultAddress,
-        functionName: "confirmReceipt",
-        account: accounts[0] as `0x${string}`,
-        chain: client.chain,
-        args: [plainUidCode],
-      });
-      console.log("Transaction result:", vault);
-      const receipt = await readClient.waitForTransactionReceipt({
-        hash: vault,
-      });
-      toast.success("Receipt confirmed!");
-      return receipt;
-    } catch (err) {
-      console.error("Error confirming receipt:", err);
-      toast.error("Failed to confirm receipt.");
-    }
-  };
-
-  const initiateDispute = async () => {
-    if (!client || !walletConnected || !accounts?.[0]) {
-      toast.error("Please connect your Universal Profile wallet.");
+      toast.error("Connect your Universal Profile wallet first.");
       return;
     }
 
     try {
       const vaultState = await getVaultState();
-      console.log("Vault state:", vaultState);
-      const simulation = await readClient.simulateContract({
-        abi: FAMILY_VAULT_ABI,
+      const nftContract = await getNFTContract();
+      const tokenId = await getTokenId();
+      const logs = await readClient.getLogs({
         address: vaultAddress,
-        functionName: "initiateDispute",
-        account: accounts[0] as `0x${string}`,
-        chain: luksoTestnet,
+        fromBlock: BigInt(0), // or specific block if you know when it started
+        toBlock: "latest",
       });
-      console.log("Simulation result:", simulation);
-      const vault = await client.writeContract({
-        abi: FAMILY_VAULT_ABI,
-        address: vaultAddress,
-        functionName: "initiateDispute",
-        account: accounts[0] as `0x${string}`,
+      console.log("Logs for vault:", logs);
+      if (!nftContract) {
+        toast.error("NFT contract not found.");
+        return;
+      }
+      console.log(
+        "Vault state:",
+        vaultState,
+        "NFT Contract:",
+        nftContract,
+        "Token ID:",
+        tokenId,
+      );
+      if (vaultState !== FamilyVaultState.Listed) {
+        console.log(vaultState);
+        toast.error("Vault is not in a listed state.");
+        return;
+      }
+
+      const txHash = await client.sendTransaction({
+        to: vaultAddress,
+        value: priceInLYX,
+        account: accounts[0],
         chain: client.chain,
       });
 
-      toast.success("Dispute initiated!");
-      return vault;
+      await readClient.waitForTransactionReceipt({ hash: txHash });
+      toast.success("Funds deposited successfully!");
+      return txHash;
+    } catch (err) {
+      console.error("Error depositing funds:", err);
+      toast.error("Deposit failed.");
+    }
+  };
+
+  const confirmReceipt = async (
+    plainUidCode: string,
+    salt: string,
+    newUidHash: `0x${string}`,
+  ) => {
+    if (!client || !walletConnected || !accounts?.[0]) {
+      toast.error("Connect your Universal Profile wallet first.");
+      return;
+    }
+
+    try {
+      const response = await readClient.simulateContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "confirmReceipt",
+        args: [plainUidCode, salt, newUidHash],
+        account: accounts[0],
+        chain: luksoTestnet,
+      });
+      console.log("Simulation response:", response);
+
+      const txHash = await client.writeContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "confirmReceipt",
+        args: [plainUidCode, salt, newUidHash],
+        account: accounts[0],
+        chain: client.chain,
+      });
+
+      await readClient.waitForTransactionReceipt({ hash: txHash });
+      toast.success("Receipt confirmed.");
+      return txHash;
+    } catch (err) {
+      console.error("Error confirming receipt:", err);
+      toast.error("Could not confirm receipt.");
+    }
+  };
+
+  const initiateDispute = async () => {
+    if (!client || !walletConnected || !accounts?.[0]) {
+      toast.error("Connect your Universal Profile wallet first.");
+      return;
+    }
+
+    try {
+      const vaultState = await getVaultState();
+      if (
+        vaultState !== FamilyVaultState.FundsDeposited &&
+        vaultState !== FamilyVaultState.DeliveryConfirmed
+      ) {
+        toast.error("Dispute can only be initiated in appropriate states.");
+        return;
+      }
+
+      await readClient.simulateContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "initiateDispute",
+        account: accounts[0],
+        chain: luksoTestnet,
+      });
+
+      const txHash = await client.writeContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "initiateDispute",
+        account: accounts[0],
+        chain: client.chain,
+      });
+
+      await readClient.waitForTransactionReceipt({ hash: txHash });
+      toast.success("Dispute initiated.");
+      return txHash;
     } catch (err) {
       console.error("Error initiating dispute:", err);
-      return err;
+      toast.error("Failed to initiate dispute.");
     }
   };
 
   const resolveDispute = async (
     nftRecipient: string,
     paymentRecipient: string,
+    plainUidCode: string,
+    salt: string,
+    newUidHash: `0x${string}`, // Valid bytes32 string
   ) => {
     if (!client || !walletConnected || !accounts?.[0]) {
-      toast.error("Please connect your Universal Profile wallet.");
+      toast.error("Connect your Universal Profile wallet first.");
       return;
     }
 
     try {
-      const vault = await client.writeContract({
+      const vaultState = await getVaultState();
+      if (vaultState !== FamilyVaultState.Disputed) {
+        toast.error("Vault is not in a disputed state.");
+        return;
+      }
+
+      const txHash = await client.writeContract({
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
         functionName: "resolveDispute",
-        account: accounts[0] as `0x${string}`,
+        args: [nftRecipient, paymentRecipient, plainUidCode, salt, newUidHash],
+        account: accounts[0],
         chain: client.chain,
-        args: [nftRecipient, paymentRecipient],
       });
 
-      toast.success("Dispute resolved!");
-      return vault;
+      await readClient.waitForTransactionReceipt({ hash: txHash });
+      toast.success("Dispute resolved.");
+      return txHash;
     } catch (err) {
       console.error("Error resolving dispute:", err);
-      return err;
+      toast.error("Failed to resolve dispute.");
+    }
+  };
+
+  const cancelTrade = async (
+    plainUidCode: string,
+    salt: string,
+    newUidHash: `0x${string}`,
+  ) => {
+    if (!client || !walletConnected || !accounts?.[0]) {
+      toast.error("Connect your Universal Profile wallet first.");
+      return;
+    }
+
+    try {
+      const txHash = await client.writeContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "cancelTrade",
+        args: [plainUidCode, salt, newUidHash],
+        account: accounts[0],
+        chain: client.chain,
+      });
+
+      await readClient.waitForTransactionReceipt({ hash: txHash });
+      toast.success("Trade cancelled.");
+      return txHash;
+    } catch (err) {
+      console.error("Error cancelling trade:", err);
+      toast.error("Failed to cancel trade.");
+    }
+  };
+
+  const relist = async (plainUidCode: string, salt: string) => {
+    if (!client || !walletConnected || !accounts?.[0]) {
+      toast.error("Connect your Universal Profile wallet first.");
+      return;
+    }
+
+    try {
+      const txHash = await client.writeContract({
+        abi: FAMILY_VAULT_ABI,
+        address: vaultAddress,
+        functionName: "relist",
+        args: [plainUidCode, salt],
+        account: accounts[0],
+        chain: client.chain,
+      });
+
+      await readClient.waitForTransactionReceipt({ hash: txHash });
+      toast.success("Vault relisted.");
+      return txHash;
+    } catch (err) {
+      console.error("Error relisting vault:", err);
+      toast.error("Failed to relist vault.");
     }
   };
 
@@ -215,6 +309,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     connectedWallet: accounts?.[0],
     walletConnected,
     getBuyer,
-    getExpectedUIDHash,
+    cancelTrade,
+    relist,
   };
 };

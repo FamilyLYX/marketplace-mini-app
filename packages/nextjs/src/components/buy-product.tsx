@@ -86,6 +86,10 @@ export function BuyProduct({
         <CardFooter className="flex justify-end">
           <Button
             onClick={() => {
+              if (!accounts || !accounts[0]) {
+                toast.error("Please connect your wallet to buy a product");
+                return;
+              }
               if (!canBuy) {
                 toast.error("You cannot buy your own product");
                 return;

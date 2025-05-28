@@ -3,7 +3,7 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { getAddress } from "viem";
+import { getAddress, pad } from "viem";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { ProductImageCarousel } from "./product";
 import { queryClient } from "./marketplace-provider";
 import ProductChat from "./escrow-chat";
+import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -41,13 +42,31 @@ export function ConfirmProduct({
   const [openChat, setOpenChat] = useState(false);
   const [plainUIDCode, setPlainUIDCode] = useState("");
   const { confirmReceipt } = useFamilyVault(vaultAddress as `0x${string}`);
+  const { fetchAndUpdateSalt } = useFetchSaltAndUpdate();
 
   const handleConfirmMutation = useMutation({
     mutationFn: async () => {
-      const res = await confirmReceipt(plainUIDCode);
+      if (!plainUIDCode || vault.nft_contract === undefined) {
+        throw new Error("Please enter a valid UID code");
+      }
+      const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
+        vault.nft_contract as `0x${string}`,
+        plainUIDCode,
+      );
+      const res = await confirmReceipt(plainUIDCode, currentSalt, newUidHash);
       if (!res) {
         throw new Error("Failed to create vault");
       }
+      await fetch("/api/save-salt", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tokenId: pad("0x0", { size: 32 }), // using a fixed tokenId of 0x0
+          contractAddress: vault.nft_contract,
+          salt: newSalt,
+          uidHash: newUidHash,
+        }),
+      });
       try {
         const response = await fetch(
           `/api/vault?vault_address=${vaultAddress}`,

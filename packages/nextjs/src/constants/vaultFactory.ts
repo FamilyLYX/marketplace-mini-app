@@ -2,6 +2,17 @@ import { Abi } from "viem";
 
 const FAMILY_VAULT_FACTORY_ABI = [
   {
+    type: "constructor",
+    inputs: [
+      {
+        name: "_implementation",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+  },
+  {
     type: "function",
     name: "createVault",
     inputs: [
@@ -16,19 +27,19 @@ const FAMILY_VAULT_FACTORY_ABI = [
         internalType: "address",
       },
       {
+        name: "_tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
         name: "_priceInLYX",
         type: "uint256",
         internalType: "uint256",
       },
-      {
-        name: "_expectedUIDHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
     ],
     outputs: [
       {
-        name: "",
+        name: "clone",
         type: "address",
         internalType: "address",
       },
@@ -44,6 +55,19 @@ const FAMILY_VAULT_FACTORY_ABI = [
         name: "",
         type: "address[]",
         internalType: "address[]",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "implementation",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
       },
     ],
     stateMutability: "view",
@@ -107,17 +131,31 @@ const FAMILY_VAULT_FACTORY_ABI = [
         indexed: false,
         internalType: "uint256",
       },
-      {
-        name: "expectedUIDHash",
-        type: "bytes32",
-        indexed: false,
-        internalType: "bytes32",
-      },
     ],
     anonymous: false,
   },
+  {
+    type: "error",
+    name: "InvalidAdmin",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "InvalidImplementation",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "InvalidNFTContract",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "InvalidUIDHash",
+    inputs: [],
+  },
 ] as Abi;
 const FAMILY_VAULT_FACTORY_ADDRESS =
-  "0xa4A84629e9c2C6eAC239546a16da1B535EA084e0" as `0x${string}`;
+  "0xE5f78BE4EB252f3081F4751136a784944800B95b" as `0x${string}`;
 
 export { FAMILY_VAULT_FACTORY_ABI, FAMILY_VAULT_FACTORY_ADDRESS };

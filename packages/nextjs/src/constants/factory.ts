@@ -3,12 +3,18 @@ import { Abi } from "viem";
 const FACTORY_ABI = [
   {
     type: "constructor",
-    inputs: [],
+    inputs: [
+      {
+        name: "_implementation",
+        type: "address",
+        internalType: "address",
+      },
+    ],
     stateMutability: "nonpayable",
   },
   {
     type: "function",
-    name: "allNFTs",
+    name: "allDPPs",
     inputs: [
       {
         name: "",
@@ -44,25 +50,10 @@ const FACTORY_ABI = [
         type: "address",
         internalType: "address",
       },
-      {
-        name: "plainUidCode",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "publicJsonMetadata",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "encryptedPrivateMetadata",
-        type: "bytes",
-        internalType: "bytes",
-      },
     ],
     outputs: [
       {
-        name: "",
+        name: "clone",
         type: "address",
         internalType: "address",
       },
@@ -71,7 +62,7 @@ const FACTORY_ABI = [
   },
   {
     type: "function",
-    name: "getDeployedNFTs",
+    name: "getDeployedDPPs",
     inputs: [],
     outputs: [
       {
@@ -84,19 +75,13 @@ const FACTORY_ABI = [
   },
   {
     type: "function",
-    name: "isRegisteredNFT",
-    inputs: [
-      {
-        name: "nftAddress",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    name: "implementation",
+    inputs: [],
     outputs: [
       {
         name: "",
-        type: "bool",
-        internalType: "bool",
+        type: "address",
+        internalType: "address",
       },
     ],
     stateMutability: "view",
@@ -135,6 +120,13 @@ const FACTORY_ABI = [
   },
   {
     type: "function",
+    name: "renounceOwnership",
+    inputs: [],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
     name: "transferOwnership",
     inputs: [
       {
@@ -145,25 +137,6 @@ const FACTORY_ABI = [
     ],
     outputs: [],
     stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "usedUIDs",
-    inputs: [
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
-    stateMutability: "view",
   },
   {
     type: "event",
@@ -203,9 +176,19 @@ const FACTORY_ABI = [
     ],
     anonymous: false,
   },
+  {
+    type: "error",
+    name: "InvalidImplementationIsZero",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "InvalidInitialOwner",
+    inputs: [],
+  },
 ] as Abi;
 
 const FACTORY_ADDRESS =
-  "0xDd81de06A0df360AD8435d72021a53A512dfa3CD" as `0x${string}`;
+  "0x138159bae45322C24AFf771adc9883D4e3e00855" as `0x${string}`;
 
 export { FACTORY_ABI, FACTORY_ADDRESS };

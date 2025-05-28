@@ -12,23 +12,26 @@ import { ProductCard, ProductMetadata } from "@/components/product";
 import { Label } from "@/components/ui/label";
 import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
-import { getAddress, keccak256, parseEther, toBytes } from "viem";
+import { getAddress, pad, parseEther } from "viem";
 import { Vault } from "@/types";
 import { useDPP } from "@/hooks/useDPP";
 import { toast } from "sonner";
 import { useUpProvider } from "@/components/up-provider";
 import { queryClient } from "@/components/marketplace-provider";
+import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 
 export default function SellProductPage() {
   const { accounts } = useUpProvider();
   const router = useRouter();
   const { createVault } = useFamilyVaultFactory();
-  const { transferOwnershipWithUID } = useDPP();
+  const { transferWithUIDRotation } = useDPP();
+  const { fetchAndUpdateSalt } = useFetchSaltAndUpdate();
   const searchParams = useSearchParams();
   const nftContract = searchParams.get("nftContract") || "";
   const expectedUIDHash = searchParams.get("expectedUIDHash") || "";
   const metadataParam = searchParams.get("metadata") || "";
   let parsedMetadata: ProductMetadata | null = null;
+  console.log(nftContract, expectedUIDHash, metadataParam);
   try {
     parsedMetadata = JSON.parse(decodeURIComponent(metadataParam));
   } catch (error) {
@@ -45,23 +48,38 @@ export default function SellProductPage() {
       if (!nftContract || !expectedUIDHash) {
         throw new Error("Missing required parameters");
       }
+      const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
+        nftContract as `0x${string}`,
+        plainUIDCode,
+      );
       const res = await createVault({
         nftContract: nftContract as `0x${string}`,
         priceInLYX: parseEther(price.toString()),
-        expectedUIDHash: keccak256(toBytes(plainUIDCode)),
       });
       if (!res) {
         throw new Error("Failed to create vault");
       }
       const { tx, vaultAddress } = res;
-      const transferDPP = await transferOwnershipWithUID({
+      const transferDPP = await transferWithUIDRotation({
         dppAddress: nftContract as `0x${string}`,
         to: vaultAddress,
         plainUidCode: plainUIDCode,
+        salt: currentSalt,
+        newUidHash: newUidHash as `0x${string}`,
       });
       if (!transferDPP) {
         throw new Error("Failed to transfer ownership");
       }
+      await fetch("/api/save-salt", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tokenId: pad("0x0", { size: 32 }), // using a fixed tokenId of 0x0
+          contractAddress: nftContract,
+          salt: newSalt,
+          uidHash: newUidHash,
+        }),
+      });
       try {
         const response = await fetch("/api/vault", {
           method: "POST",
