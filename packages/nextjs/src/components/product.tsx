@@ -58,12 +58,10 @@ export function ProductImageCarousel({ images }: { images: string[] }) {
 export function ProductCard({
   metadata,
   nftAddress,
-  expectedUIDHash,
   showSellButton = true,
 }: {
   metadata: ProductMetadata;
   nftAddress: `0x${string}` | string;
-  expectedUIDHash: `0x${string}` | string;
   showSellButton?: boolean;
 }) {
   const { push } = useRouter();
@@ -91,7 +89,6 @@ export function ProductCard({
             onClick={() => {
               const params = new URLSearchParams({
                 nftContract: nftAddress,
-                expectedUIDHash,
                 metadata: JSON.stringify(metadata),
               });
               push(`/sell?${params.toString()}`);

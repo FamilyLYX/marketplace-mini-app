@@ -14,8 +14,8 @@ import { useUpProvider } from "@/components/up-provider";
 import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 import AdminProductChats from "@/components/admin-product-chats";
 const adminAddress =
-  process.env.NEXT_PUBLIC_ADMIN_ADDRESS ||
-  "0x9dD1084ac41e6234931680Cc1214691C4f098C01";
+  (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
+
 const Inventory = () => {
   const { accounts } = useUpProvider();
 
@@ -97,11 +97,16 @@ const Inventory = () => {
     if (!products || !accounts || accounts.length === 0) return [];
 
     const userAddress = getAddress(accounts[0]);
-
+    console.log(products);
     return products.filter((product: { nftAddress: string }) => {
       const vault = nftAddressToVaultMap.get(product.nftAddress);
-      if (!vault) return true;
-      return vault.seller.toLowerCase() !== userAddress.toLowerCase();
+      if (!vault) return true; // Keep products that don't have a vault (e.g., user's own NFTs not yet in marketplace)
+
+      // For products with a vault, include them if the user is either the seller or the buyer
+      const isSeller = vault.seller.toLowerCase() === userAddress.toLowerCase();
+      const isBuyer = vault.buyer?.toLowerCase() === userAddress.toLowerCase();
+
+      return isSeller || isBuyer;
     });
   }, [products, nftAddressToVaultMap, accounts]);
 
@@ -280,7 +285,6 @@ const Inventory = () => {
                       key={`add-${index}`}
                       metadata={product.decodedMetadata}
                       nftAddress={product.nftAddress}
-                      expectedUIDHash={product.expectedUIDHash}
                     />
                   ))}
                 </div>

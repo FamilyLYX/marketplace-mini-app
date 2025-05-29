@@ -28,10 +28,9 @@ export default function SellProductPage() {
   const { fetchAndUpdateSalt } = useFetchSaltAndUpdate();
   const searchParams = useSearchParams();
   const nftContract = searchParams.get("nftContract") || "";
-  const expectedUIDHash = searchParams.get("expectedUIDHash") || "";
   const metadataParam = searchParams.get("metadata") || "";
   let parsedMetadata: ProductMetadata | null = null;
-  console.log(nftContract, expectedUIDHash, metadataParam);
+  console.log(nftContract, metadataParam);
   try {
     parsedMetadata = JSON.parse(decodeURIComponent(metadataParam));
   } catch (error) {
@@ -45,7 +44,7 @@ export default function SellProductPage() {
 
   const handleSellMutation = useMutation({
     mutationFn: async () => {
-      if (!nftContract || !expectedUIDHash) {
+      if (!nftContract) {
         throw new Error("Missing required parameters");
       }
       const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
@@ -144,7 +143,6 @@ export default function SellProductPage() {
           <ProductCard
             metadata={parsedMetadata as ProductMetadata}
             nftAddress={nftContract}
-            expectedUIDHash={expectedUIDHash as `0x${string}`}
             showSellButton={false}
           />
         </div>

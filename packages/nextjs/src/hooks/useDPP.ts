@@ -12,6 +12,30 @@ export const useDPP = () => {
   const { client, accounts, walletConnected } = useUpProvider();
   const tokenId = pad("0x0", { size: 32 }); // since rn we are using a fixed tokenId of 0x0, as one quantity of product is available for sale
 
+  const getTokenOwner = async (
+    dppAddress: `0x${string}`,
+  ): Promise<string | null> => {
+    if (!client || !walletConnected || !accounts?.[0]) {
+      toast.error("Please connect your Universal Profile wallet.");
+      return null;
+    }
+
+    try {
+      const owner = await readClient.readContract({
+        abi: NFT_ABI,
+        address: dppAddress,
+        functionName: "tokenOwnerOf",
+        args: [tokenId],
+      });
+      console.log("Token owner:", owner);
+      return owner as string;
+    } catch (err) {
+      console.error("Error fetching token owner:", err);
+      toast.error("Failed to fetch token owner.");
+      return null;
+    }
+  };
+
   const transferWithUIDRotation = async ({
     dppAddress,
     to,
@@ -81,5 +105,6 @@ export const useDPP = () => {
     transferWithUIDRotation,
     connectedWallet: accounts?.[0],
     walletConnected,
+    getTokenOwner,
   };
 };

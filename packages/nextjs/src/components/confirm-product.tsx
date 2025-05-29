@@ -144,7 +144,7 @@ export function ConfirmProduct({
             className="w-1/2"
             onClick={() => setOpenChat(!openChat)}
           >
-            Raise Dispute
+            Open Chat 
           </Button>
           <Button className="w-1/2" onClick={() => setModalOpen(true)}>
             Confirm

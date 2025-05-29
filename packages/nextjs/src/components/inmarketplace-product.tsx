@@ -70,7 +70,7 @@ export function AlreadyInMarketplace({
               setOpenChat(true);
             }}
           >
-            Raise Dispute
+            Open Chat 
           </Button>
         )}
         <Dialog open={openChat} onOpenChange={setOpenChat}>

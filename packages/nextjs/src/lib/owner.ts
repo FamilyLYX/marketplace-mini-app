@@ -75,9 +75,9 @@ export async function getAllNFTMetadata(): Promise<
       const owner = (await readClient.readContract({
         abi: NFT_ABI,
         address: nftAddress as `0x${string}`,
-        functionName: "owner",
+        functionName: "tokenOwnerOf",
+        args: [tokenId],
       })) as `0x${string}`;
-
       if (!ownerMap[owner]) {
         ownerMap[owner] = [];
       }
@@ -86,6 +86,7 @@ export async function getAllNFTMetadata(): Promise<
         decodedMetadata,
       });
     }
+    console.log(ownerMap);
     return ownerMap;
   } catch (error) {
     console.error("Error fetching NFT metadata:", error);
