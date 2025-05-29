@@ -189,6 +189,6 @@ const FACTORY_ABI = [
 ] as Abi;
 
 const FACTORY_ADDRESS =
-  "0x7C0cA432AD14cb4bE05a75D3454DB801C473C23c" as `0x${string}`;
+  "0x1Af01429c7Fd86c4629aA093ec5F6BDCb1b429F7" as `0x${string}`;
 
 export { FACTORY_ABI, FACTORY_ADDRESS };
