@@ -46,12 +46,11 @@ const Inventory = () => {
         (p: Vault) =>
           (p.order_status === "pending" &&
             p.buyer === getAddress(accounts[0])) ||
-          (p.order_status === "disputed" &&
-            p.buyer === getAddress(accounts[0])),
+          (p.order_status === "disputed" && p.buyer === getAddress(accounts[0]))
       )
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
   }, [marketplace, accounts]);
 
@@ -60,11 +59,11 @@ const Inventory = () => {
     return marketplace
       .filter(
         (p: Vault) =>
-          p.order_status === "confirmed" && p.buyer === getAddress(accounts[0]),
+          p.order_status === "confirmed" && p.buyer === getAddress(accounts[0])
       )
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
   }, [marketplace, accounts]);
 
@@ -74,7 +73,7 @@ const Inventory = () => {
       .filter((p: Vault) => p.order_status === null)
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
   }, [marketplace]);
 
@@ -114,7 +113,7 @@ const Inventory = () => {
   const alreadyInMarketplaceProducts = React.useMemo(() => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
     return marketplace.filter(
-      (p: Vault) => p.seller === getAddress(accounts[0]),
+      (p: Vault) => p.seller === getAddress(accounts[0])
     );
   }, [marketplace, accounts]);
 
@@ -158,7 +157,7 @@ const Inventory = () => {
           height={64}
           className="mt-2 w-16 h-16"
         />
-        <h1 className="font-serif text-5xl font-black tracking-tight">
+        <h1 className="font-serif text-5xl font-black tracking-tight title">
           Universal Goods
         </h1>
         <p className="mt-2 text-xs text-gray-500">
@@ -281,7 +280,7 @@ const Inventory = () => {
             adminAddress.toLowerCase() && (
             <TabsContent value="admin">
               <div className="flex flex-col gap-10 max-w-6xl w-full">
-                <h2 className="text-2xl font-semibold">Admin Section</h2>
+                <h2 className="text-2xl font-semibold title">Admin Section</h2>
                 <p className="text-sm text-muted-foreground">
                   This section is for admin purposes only.
                 </p>
