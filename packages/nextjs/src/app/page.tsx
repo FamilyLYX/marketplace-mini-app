@@ -201,7 +201,12 @@ const Inventory = () => {
               </TabsTrigger>
             )}
         </TabsList>
-        <TabsContent value="marketplace">
+        <TabsContent
+          value="marketplace"
+          style={{
+            width: "100%",
+          }}
+        >
           {isMarketplaceLoading ? (
             <div className="flex flex-col items-center justify-center w-full h-[300px]">
               <p className="text-muted-foreground text-center text-sm">

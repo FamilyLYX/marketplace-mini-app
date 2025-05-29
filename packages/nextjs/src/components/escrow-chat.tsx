@@ -15,6 +15,26 @@ import {
   SelectContent,
   SelectItem,
 } from "./ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import {
+  AlertTriangle,
+  X,
+  CheckCircle,
+  Send,
+  MessageCircle,
+} from "lucide-react";
+import { Textarea } from "./ui/textarea";
+import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
+import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
+import { pad } from "viem";
 
 interface ChatMessage {
   from: string;
@@ -30,6 +50,619 @@ interface ProductChatProps {
 const adminAddress =
   (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
 
+// Header Components
+const UserPills = ({
+  isAdmin,
+  firstName,
+}: {
+  isAdmin: boolean;
+  firstName?: string;
+}) => (
+  <div className="flex items-center justify-center px-4 py-3">
+    <div className="flex items-center gap-2">
+      <MessageCircle className="h-5 w-5 text-gray-600" />
+      <Badge
+        variant={isAdmin ? "default" : "secondary"}
+        className="rounded-full"
+      >
+        Family
+      </Badge>
+      <Badge variant="outline" className="rounded-full">
+        Seller
+      </Badge>
+      <span className="text-gray-400 text-sm">and</span>
+      <Badge
+        variant={!isAdmin ? "default" : "secondary"}
+        className="rounded-full"
+      >
+        {firstName || "User"}
+      </Badge>
+    </div>
+  </div>
+);
+
+const ConfirmTradeDialog = ({
+  isOpen,
+  onOpenChange,
+  vault,
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  vault: Vault;
+}) => {
+  const vaultAddress = vault.vault_address;
+  const [plainUIDCode, setPlainUIDCode] = useState("");
+  const { confirmReceipt } = useFamilyVault(vaultAddress as `0x${string}`);
+  const { fetchAndUpdateSalt } = useFetchSaltAndUpdate();
+
+  const handleConfirmMutation = useMutation({
+    mutationFn: async () => {
+      if (!plainUIDCode || vault.nft_contract === undefined) {
+        throw new Error("Please enter a valid UID code");
+      }
+      const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
+        vault.nft_contract as `0x${string}`,
+        plainUIDCode,
+      );
+      const res = await confirmReceipt(plainUIDCode, currentSalt, newUidHash);
+      if (!res) {
+        throw new Error("Failed to create vault");
+      }
+      await fetch("/api/save-salt", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tokenId: pad("0x0", { size: 32 }), // using a fixed tokenId of 0x0
+          contractAddress: vault.nft_contract,
+          salt: newSalt,
+          uidHash: newUidHash,
+        }),
+      });
+      try {
+        const response = await fetch(
+          `/api/vault?vault_address=${vaultAddress}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order_status: "confirmed",
+            } as Vault),
+          },
+        );
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Vault listing update failed: ${errorText}`);
+        }
+      } catch (error) {
+        console.error("Vault listing update failed:", error);
+      }
+      return { res };
+    },
+    onSuccess: (data) => {
+      console.log("Confirm Product", data);
+      toast.success("Product delivery confirmed!");
+      queryClient.invalidateQueries({
+        queryKey: ["marketplaceProducts", "allNfts"],
+      });
+      onOpenChange(false);
+    },
+    onError: (error) => {
+      console.error("Error during buy mutation:", error);
+    },
+  });
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-lg">Confirm Delivery</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          This confirms that you have received the product. You will now receive
+          its digital trace, and the funds will be released to the seller.
+        </p>
+        <div className="flex justify-between mt-4 gap-2">
+          <Input
+            id="plain-uid-code"
+            value={plainUIDCode}
+            onChange={(e) => setPlainUIDCode(e.target.value)}
+            className="w-full"
+            placeholder="Enter UID code"
+          />
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              handleConfirmMutation.mutate();
+            }}
+            disabled={handleConfirmMutation.isPending}
+          >
+            {handleConfirmMutation.isPending ? "Processing..." : "Confirm"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const CancelTradeDialog = ({
+  isOpen,
+  onOpenChange,
+  onCancel,
+  reason,
+  onReasonChange,
+  vault,
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCancel: () => void;
+  reason: string;
+  onReasonChange: (reason: string) => void;
+  vault: Vault;
+}) => {
+  const [plainUIDCode, setPlainUIDCode] = useState("");
+  const { cancelTrade } = useFamilyVault(vault.vault_address as `0x${string}`);
+  const { fetchAndUpdateSalt } = useFetchSaltAndUpdate();
+
+  const handleCancelMutation = useMutation({
+    mutationFn: async () => {
+      if (!plainUIDCode || vault.nft_contract === undefined) {
+        throw new Error("Please enter a valid UID code");
+      }
+      const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
+        vault.nft_contract as `0x${string}`,
+        plainUIDCode,
+      );
+      const res = await cancelTrade(plainUIDCode, currentSalt, newUidHash);
+      if (!res) {
+        throw new Error("Failed to create vault");
+      }
+      await fetch("/api/save-salt", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tokenId: pad("0x0", { size: 32 }), // using a fixed tokenId of 0x0
+          contractAddress: vault.nft_contract,
+          salt: newSalt,
+          uidHash: newUidHash,
+        }),
+      });
+      try {
+        const response = await fetch(
+          `/api/vault?vault_address=${vault.vault_address}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order_status: "confirmed",
+            } as Vault),
+          },
+        );
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Vault listing update failed: ${errorText}`);
+        }
+      } catch (error) {
+        console.error("Vault listing update failed:", error);
+      }
+      return { res };
+    },
+    onSuccess: (data) => {
+      console.log("Cancel Product", data);
+      toast.success("Product delivery confirmed!");
+      queryClient.invalidateQueries({
+        queryKey: ["marketplaceProducts", "allNfts"],
+      });
+      onCancel();
+    },
+    onError: (error) => {
+      console.error("Error during buy mutation:", error);
+    },
+  });
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Cancel Trade</DialogTitle>
+          <DialogDescription>
+            Please provide a reason for cancelling this trade. This will be
+            shared in the chat.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col py-4 gap-4">
+          <Input
+            value={plainUIDCode}
+            onChange={(e) => setPlainUIDCode(e.target.value)}
+            className="w-full"
+            placeholder="Enter UID code"
+          />
+          <Textarea
+            placeholder="Enter your reason for cancellation..."
+            value={reason}
+            onChange={(e) => onReasonChange(e.target.value)}
+            className="min-h-[100px]"
+          />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => handleCancelMutation.mutate()}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Cancel Trade
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const ResolveDisputeDialog = ({
+  isOpen,
+  onOpenChange,
+  onResolve,
+  selectedWinner,
+  onWinnerChange,
+  selectedTraceReceiver,
+  onTraceReceiverChange,
+  buyer,
+  seller,
+}: {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onResolve: () => void;
+  selectedWinner: string;
+  onWinnerChange: (winner: string) => void;
+  selectedTraceReceiver: string;
+  onTraceReceiverChange: (receiver: string) => void;
+  buyer: string;
+  seller: string;
+}) => (
+  <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Resolve Dispute</DialogTitle>
+        <DialogDescription>
+          Select where to send the funds and trace information to resolve this
+          dispute.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Send Funds To:</label>
+          <Select value={selectedWinner} onValueChange={onWinnerChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select recipient for funds" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={buyer}>Buyer</SelectItem>
+              <SelectItem value={seller}>Seller</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Send Trace To:</label>
+          <Select
+            value={selectedTraceReceiver}
+            onValueChange={onTraceReceiverChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select recipient for trace" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={buyer}>Buyer</SelectItem>
+              <SelectItem value={seller}>Seller</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          Cancel
+        </Button>
+        <Button
+          onClick={onResolve}
+          disabled={!selectedWinner || !selectedTraceReceiver}
+        >
+          <CheckCircle className="h-4 w-4 mr-2" />
+          Resolve Dispute
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
+const ActionButtons = ({
+  isBuyer,
+  isSeller,
+  isAdmin,
+  alreadyInDispute,
+  onConfirmOpen,
+  onCancelOpen,
+  onDispute,
+  onResolveOpen,
+}: {
+  isBuyer: boolean;
+  isSeller: boolean;
+  isAdmin: boolean;
+  alreadyInDispute: boolean;
+  onConfirmOpen: () => void;
+  onCancelOpen: () => void;
+  onDispute: () => void;
+  onResolveOpen: () => void;
+}) => (
+  <div className="flex items-center gap-2">
+    {/* Buyer Confirm Button */}
+    {isBuyer && !alreadyInDispute && (
+      <Button
+        size="sm"
+        variant="outline"
+        className="rounded-full"
+        onClick={onConfirmOpen}
+      >
+        <CheckCircle className="h-4 w-4 mr-1" />
+        Confirm
+      </Button>
+    )}
+
+    {/* Seller Cancel Button */}
+    {isSeller && !alreadyInDispute && (
+      <Button
+        size="sm"
+        variant="outline"
+        className="rounded-full"
+        onClick={onCancelOpen}
+      >
+        <X className="h-4 w-4 mr-1" />
+        Cancel
+      </Button>
+    )}
+
+    {/* Dispute Button */}
+    {!isAdmin && !alreadyInDispute && (isBuyer || isSeller) && (
+      <Button
+        size="sm"
+        variant="destructive"
+        className="rounded-full"
+        onClick={onDispute}
+      >
+        <AlertTriangle className="h-4 w-4 mr-1" />
+        Dispute
+      </Button>
+    )}
+
+    {/* Admin Resolve Button */}
+    {isAdmin && alreadyInDispute && (
+      <Button
+        size="sm"
+        variant="default"
+        className="rounded-full"
+        onClick={onResolveOpen}
+      >
+        <CheckCircle className="h-4 w-4 mr-1" />
+        Resolve
+      </Button>
+    )}
+  </div>
+);
+
+const ChatHeader = ({
+  isAdmin,
+  firstName,
+  isBuyer,
+  isSeller,
+  alreadyInDispute,
+  onConfirmOpen,
+  onCancelOpen,
+  onDispute,
+  onResolveOpen,
+}: {
+  isAdmin: boolean;
+  firstName?: string;
+  isBuyer: boolean;
+  isSeller: boolean;
+  alreadyInDispute: boolean;
+  onConfirmOpen: () => void;
+  onCancelOpen: () => void;
+  onDispute: () => void;
+  onResolveOpen: () => void;
+}) => (
+  <div className="border-b bg-gray-50/50 rounded-t-lg">
+    {/* First Row - User Pills */}
+    <UserPills isAdmin={isAdmin} firstName={firstName} />
+
+    {/* Second Row - Action Buttons */}
+    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+      <span className="text-sm font-medium text-gray-700">DETAILS</span>
+      <ActionButtons
+        isBuyer={isBuyer}
+        isSeller={isSeller}
+        isAdmin={isAdmin}
+        alreadyInDispute={alreadyInDispute}
+        onConfirmOpen={onConfirmOpen}
+        onCancelOpen={onCancelOpen}
+        onDispute={onDispute}
+        onResolveOpen={onResolveOpen}
+      />
+    </div>
+  </div>
+);
+
+// Message Components
+const DateSeparator = ({ date }: { date: string }) => (
+  <div className="flex justify-center my-4">
+    <Badge variant="secondary" className="text-xs px-3 py-1">
+      {date}
+    </Badge>
+  </div>
+);
+
+const MessageBubble = ({
+  message,
+  isFromCurrentUser,
+  pillLabel,
+  pillVariant,
+  adminAddress,
+}: {
+  message: ChatMessage;
+  isFromCurrentUser: boolean;
+  pillLabel: string;
+  pillVariant: "default" | "secondary" | "outline";
+  adminAddress: string;
+}) => {
+  const align = isFromCurrentUser ? "end" : "start";
+  const bubbleBg = isFromCurrentUser
+    ? "bg-black text-white"
+    : message.from === "system"
+      ? "bg-blue-50 text-blue-800 border border-blue-200"
+      : "bg-gray-100 text-gray-800";
+
+  return (
+    <div
+      className={clsx(
+        "flex flex-col mb-3",
+        align === "end" ? "items-end" : "items-start",
+      )}
+    >
+      <div className={clsx("mb-2", align === "end" ? "mr-2" : "ml-2")}>
+        <Badge variant={pillVariant} className="rounded-full">
+          {pillLabel}
+        </Badge>
+      </div>
+      <div
+        className={clsx(
+          "max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm whitespace-pre-line",
+          bubbleBg,
+          align === "end" ? "rounded-br-md" : "rounded-bl-md",
+        )}
+      >
+        {message.content}
+        <div
+          className={clsx(
+            "text-[10px] text-right mt-2",
+            isFromCurrentUser ? "text-gray-300" : "text-gray-400",
+          )}
+        >
+          {new Date(message.timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChatMessages = ({
+  messages,
+  userAddress,
+  adminAddress,
+  seller,
+  buyer,
+  firstName,
+}: {
+  messages: ChatMessage[];
+  userAddress: string;
+  adminAddress: string;
+  seller?: string;
+  buyer?: string;
+  firstName?: string;
+}) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  let lastDate = "";
+
+  return (
+    <div className="flex-1 overflow-y-auto px-4 py-4 bg-white">
+      {messages.map((msg, idx) => {
+        const isFromCurrentUser =
+          msg.from.toLowerCase() === userAddress.toLowerCase();
+
+        // Determine sender label
+        let pillLabel = "";
+        if (msg.from.toLowerCase() === adminAddress.toLowerCase()) {
+          pillLabel = "Family";
+        } else if (msg.from.toLowerCase() === seller?.toLowerCase()) {
+          pillLabel = "Seller";
+        } else if (msg.from.toLowerCase() === buyer?.toLowerCase()) {
+          pillLabel = firstName || "User";
+        } else if (msg.from === "system") {
+          pillLabel = "System";
+        } else {
+          pillLabel = "User";
+        }
+
+        const pillVariant =
+          isFromCurrentUser ||
+          msg.from.toLowerCase() === adminAddress.toLowerCase()
+            ? "default"
+            : msg.from === "system"
+              ? "secondary"
+              : "outline";
+
+        const dateStr = msg.timestamp.slice(0, 10);
+        const showDate = dateStr !== lastDate;
+        lastDate = dateStr;
+
+        return (
+          <React.Fragment key={idx}>
+            {showDate && <DateSeparator date={dateStr} />}
+            <MessageBubble
+              message={msg}
+              isFromCurrentUser={isFromCurrentUser}
+              pillLabel={pillLabel}
+              pillVariant={pillVariant}
+              adminAddress={adminAddress}
+            />
+          </React.Fragment>
+        );
+      })}
+      <div ref={messagesEndRef} />
+    </div>
+  );
+};
+
+const ChatInput = ({
+  newMsg,
+  onMsgChange,
+  onSend,
+}: {
+  newMsg: string;
+  onMsgChange: (msg: string) => void;
+  onSend: (e: React.FormEvent) => void;
+}) => (
+  <form
+    onSubmit={onSend}
+    className="flex items-center gap-3 border-t px-4 py-4 bg-gray-50/50 rounded-b-lg"
+  >
+    <input
+      type="text"
+      placeholder="Type your message..."
+      className="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+      value={newMsg}
+      onChange={(e) => onMsgChange(e.target.value)}
+    />
+    <Button
+      type="submit"
+      disabled={!newMsg.trim()}
+      size="sm"
+      className="rounded-full px-4"
+    >
+      <Send className="h-4 w-4" />
+    </Button>
+  </form>
+);
+
+// Main Component
 export default function ProductChat({
   vault,
   alreadyInDispute,
@@ -37,21 +670,27 @@ export default function ProductChat({
   const { buyer, seller, vault_address: vaultAddress, first_name } = vault;
   const { accounts } = useUpProvider();
   const userAddress = accounts[0] || "";
-  const { initiateDispute } = useFamilyVault(vaultAddress as `0x${string}`);
+  const { initiateDispute, cancelTrade } = useFamilyVault(
+    vaultAddress as `0x${string}`,
+  );
+  const { fetchAndUpdateSalt } = useFetchSaltAndUpdate();
+
+  // State
   const [selectedWinner, setSelectedWinner] = useState("");
   const [selectedTraceReceiver, setSelectedTraceReceiver] = useState("");
+  const [cancelReason, setCancelReason] = useState("");
+  const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [newMsg, setNewMsg] = useState("");
+
+  // User role checks
   const isAdmin = userAddress.toLowerCase() === adminAddress.toLowerCase();
   const isBuyer = userAddress.toLowerCase() === buyer?.toLowerCase();
   const isSeller = userAddress.toLowerCase() === seller?.toLowerCase();
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMsg, setNewMsg] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
+  // Data fetching
   async function fetchChat() {
     const { data, error } = await supabase
       .from("product_chats")
@@ -73,6 +712,7 @@ export default function ProductChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vaultAddress, userAddress]);
 
+  // Message sending
   async function sendMessage(
     content: string,
     from: "user" | "admin" | "system" = "user",
@@ -105,6 +745,7 @@ export default function ProductChat({
     }
   }
 
+  // Action handlers
   async function sendDisputeMessage() {
     let raisedBy = "";
     if (userAddress.toLowerCase() === buyer?.toLowerCase()) {
@@ -115,8 +756,16 @@ export default function ProductChat({
       raisedBy = "";
     }
     await sendMessage(
-      `Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by :${raisedBy}`,
+      `Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by: ${raisedBy}`,
       "admin",
+    );
+  }
+
+  async function sendCancelMessage(reason: string) {
+    const canceledBy = isSeller ? "Seller" : "Buyer";
+    await sendMessage(
+      `Trade has been cancelled by ${canceledBy}. Reason: ${reason}`,
+      "system",
     );
   }
 
@@ -137,23 +786,68 @@ export default function ProductChat({
       console.error("Vault listing update failed:", error);
     }
   }
+
   const handleRaiseDispute = async () => {
     await initiateDisputeMutation.mutateAsync();
   };
+
+  const handleCancelTrade = async () => {
+    if (!cancelReason.trim()) {
+      toast.error("Please provide a reason for cancellation");
+      return;
+    }
+
+    try {
+      await sendCancelMessage(cancelReason);
+      toast.success("Trade cancelled successfully");
+      setIsCancelModalOpen(false);
+      setCancelReason("");
+    } catch (error) {
+      console.error("Failed to cancel trade:", error);
+      toast.error("Failed to cancel trade");
+    }
+  };
+
+  const handleResolveDispute = async () => {
+    if (!selectedWinner || !selectedTraceReceiver) {
+      toast.error("Please select both winner and trace receiver");
+      return;
+    }
+
+    try {
+      toast.success("Dispute resolved successfully!");
+      setIsResolveModalOpen(false);
+      setSelectedWinner("");
+      setSelectedTraceReceiver("");
+    } catch (err) {
+      console.error("Dispute resolution failed", err);
+      toast.error("Dispute resolution failed.");
+    }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMsg.trim()) return;
+    await sendMessage(newMsg.trim(), isAdmin ? "admin" : "user");
+    setNewMsg("");
+  };
+
+  // Mutations
   const initiateDisputeMutation = useMutation({
     mutationFn: initiateDispute,
     onSuccess: () => {
-      markDisputeMutation.mutate(); // Trigger next step
+      markDisputeMutation.mutate();
     },
     onError: (err) => {
       console.error("Failed to initiate dispute onchain:", err);
       toast.error("Dispute onchain transaction failed.");
     },
   });
+
   const markDisputeMutation = useMutation({
     mutationFn: markDisputeInDB,
     onSuccess: () => {
-      sendDisputeMessageMutation.mutate(); // Trigger next step
+      sendDisputeMessageMutation.mutate();
     },
     onError: (err) => {
       console.error("Failed to mark dispute in DB:", err);
@@ -177,215 +871,74 @@ export default function ProductChat({
     },
   });
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMsg.trim()) return;
-    await sendMessage(newMsg.trim(), isAdmin ? "admin" : "user");
-    setNewMsg("");
-  };
-
-  // Helper for pills
-  const Pill = ({
-    label,
-    active,
-    asLink,
-    href,
-  }: {
-    label: string;
-    active?: boolean;
-    asLink?: boolean;
-    href?: string;
-  }) =>
-    asLink && href ? (
-      <a
-        href={href}
-        className={clsx(
-          "px-3 py-1 rounded-full text-sm font-medium underline-offset-2",
-          active ? "bg-black text-white" : "bg-gray-200 text-gray-700",
-          "hover:underline cursor-pointer",
-        )}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {label}
-      </a>
-    ) : (
-      <span
-        className={clsx(
-          "px-3 py-1 rounded-full text-sm font-medium",
-          active ? "bg-black text-white" : "bg-gray-200 text-gray-700",
-        )}
-      >
-        {label}
-      </span>
+  if (!userAddress) {
+    return (
+      <div className="flex items-center justify-center h-[600px] max-w-md bg-white rounded-lg border">
+        <p className="text-gray-500">
+          Please connect your wallet to view the chat.
+        </p>
+      </div>
     );
+  }
 
-  // Helper for date separator
-  const DateSeparator = ({ date }: { date: string }) => (
-    <div className="flex justify-center my-2">
-      <span className="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full">
-        {date}
-      </span>
-    </div>
-  );
-
-  if (!userAddress)
-    return <div>Please connect your wallet to view the chat.</div>;
-
-  // --- HEADER ---
   return (
-    <div className="max-w-md flex flex-col h-[600px] bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
-        <div className="flex-1 flex items-center justify-center gap-2">
-          <Pill label="Family" active={isAdmin} />
-          <Pill label="Seller" asLink href="/seller-profile" />
-          <span className="text-gray-400">and</span>
-          <Pill label={first_name || "User"} active={!isAdmin} />
-        </div>
-        {/* Header right actions */}
-        <div className="flex items-center gap-2">
-          {!isAdmin && !alreadyInDispute && (isBuyer || isSeller) && (
-            <button
-              onClick={handleRaiseDispute}
-              className="flex items-center bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 text-sm font-medium"
-            >
-              <span className="mr-1">✖</span> Dispute
-            </button>
-          )}
-          {isAdmin && alreadyInDispute && (
-            <div className="flex items-center gap-2">
-              <div className="flex flex-col gap-1">
-                <Select
-                  value={selectedWinner}
-                  onValueChange={setSelectedWinner}
-                >
-                  <SelectTrigger className="w-28 h-8 text-xs">
-                    <SelectValue placeholder="Funds to" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={buyer as string}>Buyer</SelectItem>
-                    <SelectItem value={seller as string}>Seller</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={selectedTraceReceiver}
-                  onValueChange={setSelectedTraceReceiver}
-                >
-                  <SelectTrigger className="w-28 h-8 text-xs">
-                    <SelectValue placeholder="Trace to" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={buyer as string}>Buyer</SelectItem>
-                    <SelectItem value={seller as string}>Seller</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                size="sm"
-                className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded text-xs font-medium"
-                disabled={!selectedWinner || !selectedTraceReceiver}
-                onClick={async () => {
-                  try {
-                    toast.success("Dispute resolved successfully!");
-                  } catch (err) {
-                    console.error("Dispute resolution failed", err);
-                    toast.error("Dispute resolution failed.");
-                  }
-                }}
-              >
-                ✅ Resolve
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="max-w-md flex flex-col h-[600px] bg-white rounded-lg border shadow-sm">
+      <ChatHeader
+        isAdmin={isAdmin}
+        firstName={first_name}
+        isBuyer={isBuyer}
+        isSeller={isSeller}
+        alreadyInDispute={alreadyInDispute || false}
+        onConfirmOpen={() => setIsConfirmModalOpen(true)}
+        onCancelOpen={() => setIsCancelModalOpen(true)}
+        onDispute={handleRaiseDispute}
+        onResolveOpen={() => setIsResolveModalOpen(true)}
+      />
 
-      {/* Chat Window */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 bg-white">
-        {(() => {
-          let lastDate = "";
-          return messages.map((msg, idx) => {
-            const isFromCurrentUser =
-              msg.from.toLowerCase() === userAddress.toLowerCase();
-            // Determine sender label
-            let pillLabel = "";
-            if (msg.from.toLowerCase() === adminAddress.toLowerCase()) {
-              pillLabel = "Family";
-            } else if (msg.from.toLowerCase() === seller?.toLowerCase()) {
-              pillLabel = "Seller";
-            } else if (msg.from.toLowerCase() === buyer?.toLowerCase()) {
-              pillLabel = first_name || "User";
-            } else {
-              pillLabel = "User";
-            }
-            const align = isFromCurrentUser ? "end" : "start";
-            const bubbleBg = isFromCurrentUser
-              ? "bg-black text-white"
-              : "bg-gray-100 text-gray-800";
-            const pillActive =
-              isFromCurrentUser ||
-              msg.from.toLowerCase() === adminAddress.toLowerCase();
-            const dateStr = msg.timestamp.slice(0, 10);
-            const showDate = dateStr !== lastDate;
-            lastDate = dateStr;
-            return (
-              <React.Fragment key={idx}>
-                {showDate && <DateSeparator date={dateStr} />}
-                <div
-                  className={clsx(
-                    "flex flex-col mb-2",
-                    align === "end" ? "items-end" : "items-start",
-                  )}
-                >
-                  <span
-                    className={clsx("mb-1", align === "end" ? "mr-2" : "ml-2")}
-                  >
-                    <Pill label={pillLabel} active={pillActive} />
-                  </span>
-                  <div
-                    className={clsx(
-                      "max-w-[80%] px-4 py-2 rounded-2xl text-sm shadow whitespace-pre-line",
-                      bubbleBg,
-                      align === "end" ? "rounded-br-md" : "rounded-bl-md",
-                    )}
-                  >
-                    {msg.content}
-                    <div className="text-[10px] text-right text-gray-400 mt-1">
-                      {new Date(msg.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </React.Fragment>
-            );
-          });
-        })()}
-        <div ref={messagesEndRef} />
-      </div>
+      <ChatMessages
+        messages={messages}
+        userAddress={userAddress}
+        adminAddress={adminAddress}
+        seller={seller}
+        buyer={buyer}
+        firstName={first_name}
+      />
 
-      {/* Input */}
-      <form
-        onSubmit={handleSend}
-        className="flex items-center gap-2 border-t px-4 py-3 bg-gray-50"
-      >
-        <input
-          type="text"
-          placeholder="Write your message"
-          className="flex-1 border-none outline-none bg-transparent text-sm px-2 py-2"
-          value={newMsg}
-          onChange={(e) => setNewMsg(e.target.value)}
+      <ChatInput newMsg={newMsg} onMsgChange={setNewMsg} onSend={handleSend} />
+
+      {/* Dialogs */}
+      {isBuyer && (
+        <ConfirmTradeDialog
+          isOpen={isConfirmModalOpen}
+          onOpenChange={setIsConfirmModalOpen}
+          vault={vault}
         />
-        <button
-          type="submit"
-          disabled={!newMsg.trim()}
-          className="bg-black text-white px-4 py-2 rounded-full disabled:opacity-40 hover:bg-gray-800"
-        >
-          ➤
-        </button>
-      </form>
+      )}
+
+      {isSeller && (
+        <CancelTradeDialog
+          isOpen={isCancelModalOpen}
+          onOpenChange={setIsCancelModalOpen}
+          onCancel={handleCancelTrade}
+          reason={cancelReason}
+          onReasonChange={setCancelReason}
+          vault={vault}
+        />
+      )}
+
+      {isAdmin && (
+        <ResolveDisputeDialog
+          isOpen={isResolveModalOpen}
+          onOpenChange={setIsResolveModalOpen}
+          onResolve={handleResolveDispute}
+          selectedWinner={selectedWinner}
+          onWinnerChange={setSelectedWinner}
+          selectedTraceReceiver={selectedTraceReceiver}
+          onTraceReceiverChange={setSelectedTraceReceiver}
+          buyer={buyer as string}
+          seller={seller as string}
+        />
+      )}
     </div>
   );
 }
