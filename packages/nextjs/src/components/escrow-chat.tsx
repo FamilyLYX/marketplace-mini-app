@@ -120,9 +120,16 @@ export default function ProductChat({
   }
 
   async function sendDisputeMessage() {
+    let raisedBy = '';
+    if (userAddress.toLowerCase() === buyer?.toLowerCase()) {
+      raisedBy = vault.first_name || 'Buyer';
+    } else if (userAddress.toLowerCase() === seller?.toLowerCase()) {
+      raisedBy = 'Seller';
+    } else {
+      raisedBy = '';
+    }
     await sendMessage(
-      "Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by :" +
-        userAddress,
+      `Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by :${raisedBy}`,
       "admin",
     );
   }

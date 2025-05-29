@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BuyProduct } from "@/components/buy-product";
-import { ArrowLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { getAddress, parseEther } from "viem";
@@ -14,6 +12,14 @@ import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import { queryClient } from "@/components/marketplace-provider";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "@/components/ui/carousel";
+import { ArrowLeft } from "lucide-react";
 
 // Updated BuyFormData
 interface BuyFormData {
@@ -30,15 +36,16 @@ interface BuyFormData {
 }
 
 export default function BuyPage() {
+  const router = useRouter();
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState<BuyFormData>({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
-    country: "",
-    state: "",
-    city: "",
+    country: "United States",
+    state: "California",
+    city: "Los Angeles",
     zip: "",
     address1: "",
     address2: "",
@@ -48,11 +55,32 @@ export default function BuyPage() {
   const back = () => setStep((s) => s - 1);
 
   return (
-    <div className="p-4 min-h-screen">
-      {step === 1 && (
-        <CombinedForm data={formData} setData={setFormData} onNext={next} />
-      )}
-      {step === 2 && <PaymentStep data={formData} onBack={back} />}
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-white">
+      <Button
+        variant="ghost"
+        className="absolute top-4 left-4 z-10 p-2"
+        onClick={() => router.push("/")}
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+      <div className="flex-1 flex flex-col justify-center items-center w-full h-full">
+        {step === 1 && (
+          <PersonalDetailsForm
+            data={formData}
+            setData={setFormData}
+            onNext={next}
+          />
+        )}
+        {step === 2 && (
+          <ShippingAddressForm
+            data={formData}
+            setData={setFormData}
+            onNext={next}
+            onBack={back}
+          />
+        )}
+        {step === 3 && <PaymentStep data={formData} onBack={back} />}
+      </div>
     </div>
   );
 }
@@ -64,123 +92,181 @@ interface BuyFormProps {
   onBack?: () => void;
 }
 
-function CombinedForm({ data, setData, onNext }: BuyFormProps) {
-  const { push } = useRouter();
+function PersonalDetailsForm({ data, setData, onNext }: BuyFormProps) {
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <Button
-        variant="ghost"
-        className="absolute top-4 left-4 z-10 p-2"
-        onClick={() => push("/")}
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
-      <h1 className="text-3xl font-bold text-center">Buy Product</h1>
-      <p className="text-muted-foreground text-center">
-        Enter your personal and shipping details
+    <div className="w-full flex flex-col justify-center items-center">
+      <h1 className="text-4xl font-black leading-tight mb-2 w-full text-left">
+        Buy Product
+      </h1>
+      <p className="text-lg text-[#888] mb-8 w-full text-left">
+        Enter your personal details
       </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4 w-full">
         <div>
-          <Label>First name</Label>
+          <Label className="font-bold">First name</Label>
           <Input
             value={data.firstName}
             onChange={(e) =>
               setData((prev) => ({ ...prev, firstName: e.target.value }))
             }
             placeholder="Enter first name"
+            className="mt-1"
           />
         </div>
         <div>
-          <Label>Last name</Label>
+          <Label className="font-bold">Last name</Label>
           <Input
             value={data.lastName}
             onChange={(e) =>
               setData((prev) => ({ ...prev, lastName: e.target.value }))
             }
             placeholder="Enter last name"
+            className="mt-1"
           />
         </div>
         <div>
-          <Label>Email</Label>
+          <Label className="font-bold">E-mail</Label>
           <Input
             value={data.email}
             onChange={(e) =>
               setData((prev) => ({ ...prev, email: e.target.value }))
             }
-            placeholder="Enter email"
+            placeholder="Enter your e-mail"
+            className="mt-1"
           />
         </div>
         <div>
-          <Label>Phone</Label>
+          <Label className="font-bold">Phone</Label>
           <Input
             value={data.phone}
             onChange={(e) =>
               setData((prev) => ({ ...prev, phone: e.target.value }))
             }
-            placeholder="Enter phone"
+            placeholder="Enter your phone"
+            className="mt-1"
           />
         </div>
+      </div>
+      <Button
+        onClick={onNext}
+        className="w-full mt-10 h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
+      >
+        Next <span className="ml-2">→</span>
+      </Button>
+    </div>
+  );
+}
+
+function ShippingAddressForm({ data, setData, onNext, onBack }: BuyFormProps) {
+  const countries = ["United States", "Canada", "India"];
+  const states = ["California", "Texas", "New York"];
+  const cities = ["Los Angeles", "San Francisco", "New York City"];
+  return (
+    <div className="w-full flex flex-col justify-center items-center">
+      <h1 className="text-4xl font-black leading-tight mb-2 w-full text-left">
+        Buy Product
+      </h1>
+      <p className="text-lg text-[#888] mb-8 w-full text-left">
+        Add shipping address
+      </p>
+      <div className="grid grid-cols-2 gap-4 w-full">
         <div>
-          <Label>Country</Label>
-          <Input
+          <Label className="font-bold">Country or region</Label>
+          <select
+            className="mt-1 w-full border rounded-md px-3 py-2 text-gray-900"
             value={data.country}
             onChange={(e) =>
               setData((prev) => ({ ...prev, country: e.target.value }))
             }
-          />
+          >
+            {countries.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
-          <Label>State</Label>
-          <Input
+          <Label className="font-bold">State</Label>
+          <select
+            className="mt-1 w-full border rounded-md px-3 py-2 text-gray-900"
             value={data.state}
             onChange={(e) =>
               setData((prev) => ({ ...prev, state: e.target.value }))
             }
-          />
+          >
+            {states.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
-          <Label>City</Label>
-          <Input
+          <Label className="font-bold">City</Label>
+          <select
+            className="mt-1 w-full border rounded-md px-3 py-2 text-gray-900"
             value={data.city}
             onChange={(e) =>
               setData((prev) => ({ ...prev, city: e.target.value }))
             }
-          />
+          >
+            {cities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
-          <Label>ZIP</Label>
+          <Label className="font-bold">ZIP</Label>
           <Input
             value={data.zip}
             onChange={(e) =>
               setData((prev) => ({ ...prev, zip: e.target.value }))
             }
+            placeholder="ZIP"
+            className="mt-1"
           />
         </div>
-        <div className="md:col-span-2">
-          <Label>Address line 1</Label>
+        <div className="col-span-2">
+          <Label className="font-bold">Address line 1</Label>
           <Input
             value={data.address1}
             onChange={(e) =>
               setData((prev) => ({ ...prev, address1: e.target.value }))
             }
+            placeholder="Street address"
+            className="mt-1"
           />
         </div>
-        <div className="md:col-span-2">
-          <Label>Address line 2</Label>
+        <div className="col-span-2">
+          <Label className="font-bold">Address line 2</Label>
           <Input
             value={data.address2}
             onChange={(e) =>
               setData((prev) => ({ ...prev, address2: e.target.value }))
             }
-            placeholder="Apt, suite, etc. (optional)"
+            placeholder="Apt., suite, unit number, etc. (optional)"
+            className="mt-1"
           />
         </div>
       </div>
-
-      <Button onClick={onNext} className="w-full mt-6">
-        Proceed to Pay →
-      </Button>
+      <div className="flex justify-between w-full mt-10">
+        <Button
+          variant="outline"
+          onClick={onBack}
+          className="rounded-full px-6 h-12 text-lg font-semibold"
+        >
+          ← Back
+        </Button>
+        <Button
+          onClick={onNext}
+          className="rounded-full px-6 h-12 text-lg font-semibold bg-black hover:bg-gray-900 transition"
+        >
+          Select payment method
+        </Button>
+      </div>
     </div>
   );
 }
@@ -196,13 +282,9 @@ function PaymentStep({
   const router = useRouter();
   const searchParams = useSearchParams();
   const metadataParam = searchParams.get("metadata") || "";
-  const parsedMetadata = JSON.parse(metadataParam);
+  const parsedMetadata = metadataParam ? JSON.parse(metadataParam) : {};
   const vaultAddress = searchParams.get("vaultAddress") || "";
-  const condition = searchParams.get("condition") || "";
-  const location = searchParams.get("location") || "";
-  const sellerAddress = searchParams.get("sellerAddress") || "";
   const price = searchParams.get("price") || "";
-
   const { depositFunds } = useFamilyVault(vaultAddress as `0x${string}`);
 
   const handleBuyMutation = useMutation({
@@ -239,7 +321,7 @@ function PaymentStep({
           const errorText = await response.text();
           console.error(`Vault listing update failed: ${errorText}`);
           queryClient.invalidateQueries({
-            queryKey: ["marketplaceProducts","allNfts"],
+            queryKey: ["marketplaceProducts", "allNfts"],
           });
         }
       } catch (error) {
@@ -258,39 +340,73 @@ function PaymentStep({
   });
 
   return (
-    <div>
-      <Label className="text-2xl font-bold mb-4">Your Order Summary</Label>
-      <div className="flex flex-col items-center mb-4">
-        <BuyProduct
-          metadata={parsedMetadata}
-          vaultAddress={vaultAddress}
-          condition={condition}
-          location={location}
-          sellerAddress={sellerAddress}
-          priceInLYX={price}
-          showBuyButton={false}
-        />
+    <div className="w-full max-w-md flex flex-col justify-center items-center h-full">
+      <div className="flex flex-col items-center w-full pt-4 pb-8">
+        <div className="w-64 h-64 rounded-2xl overflow-hidden mb-6 bg-gray-100 flex items-center justify-center relative">
+          {Array.isArray(parsedMetadata?.images) ? (
+            <Carousel className="w-full h-full">
+              <CarouselContent className="h-full">
+                {parsedMetadata.images.map((img: string, idx: number) => (
+                  <CarouselItem
+                    key={idx}
+                    className="flex items-center justify-center w-full h-64"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img}
+                      alt={parsedMetadata.name}
+                      className="object-fit w-full h-full"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              {parsedMetadata.images.length > 1 && (
+                <>
+                  <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 z-10" />
+                  <CarouselNext className="right-2 top-1/2 -translate-y-1/2 z-10" />
+                </>
+              )}
+            </Carousel>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              No Images
+            </div>
+          )}
+        </div>
+        <div className="text-3xl font-black mb-2 text-center mt-2">
+          {parsedMetadata?.title || "Product"}
+        </div>
+        <div className="text-base text-[#888] mb-6 text-center">
+          Select payment method
+        </div>
+        <Button
+          className="w-full h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition mb-4"
+          size="lg"
+          onClick={() => handleBuyMutation.mutate()}
+          disabled={!accounts?.[0] || handleBuyMutation.isPending}
+        >
+          {handleBuyMutation.isPending ? "Processing..." : "LYX Payment"}
+        </Button>
+        <Button
+          className="w-full h-12 text-lg font-semibold rounded-full border-2 border-black bg-white text-black opacity-50 cursor-not-allowed"
+          size="lg"
+          disabled
+        >
+          Fiat Payment
+        </Button>
       </div>
-
-      <div className="flex items-center justify-between border-t pt-6">
-        <Button variant="outline" onClick={onBack} className="rounded-full">
+      <div className="flex w-full justify-between items-center px-2 mt-auto">
+        <Button
+          variant="outline"
+          onClick={onBack}
+          className="rounded-full px-6 h-12 text-lg font-semibold"
+        >
           ← Back
         </Button>
-        <div className="text-right">
-          <p className="text-2xl font-extrabold text-gray-900">
-            Price: <span className="text-primary">{price} LYX</span>
-          </p>
+        <div className="text-2xl font-extrabold text-gray-900 p-2 bg-white rounded-xl shadow">
+          Price: <span className="text-primary">{price} LYX</span>
         </div>
       </div>
-
-      <Button
-        className="w-full mt-6 py-4 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
-        size="lg"
-        onClick={() => handleBuyMutation.mutate()}
-        disabled={!accounts?.[0] || handleBuyMutation.isPending}
-      >
-        {handleBuyMutation.isPending ? "Processing..." : "Buy Now"}
-      </Button>
     </div>
   );
 }

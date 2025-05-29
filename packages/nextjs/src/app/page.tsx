@@ -13,6 +13,7 @@ import { getAddress } from "viem";
 import { useUpProvider } from "@/components/up-provider";
 import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 import AdminProductChats from "@/components/admin-product-chats";
+import Image from "next/image";
 const adminAddress =
   (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
 
@@ -119,16 +120,19 @@ const Inventory = () => {
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-[cursive] italic text-black mb-2">
-          family
-        </h2>
+      <div className=" flex flex-col items-center justify-center text-center mb-6">
+        <Image
+          src="/family_logo_white_bg.svg"
+          alt="Family Logo"
+          width={64}
+          height={64}
+          className="mt-2 w-16 h-16"
+        />
         <h1 className="font-serif text-5xl font-black tracking-tight">
-          Marketplace
+          Universal Goods
         </h1>
         <p className="mt-2 text-xs text-gray-500">
-          Manage your products, orders, and marketplace listings all in one
-          place.
+          Marketplace for digitally traced products with escrow management
         </p>
       </div>
 
@@ -147,13 +151,13 @@ const Inventory = () => {
             value="products"
             className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
           >
-            Your Products
+            Inventory
           </TabsTrigger>
           <TabsTrigger
             value="orders"
             className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
           >
-            Orders
+            Escrow
           </TabsTrigger>
           {accounts &&
             accounts.length > 0 &&
