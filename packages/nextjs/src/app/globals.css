@@ -120,3 +120,18 @@
     @apply bg-background text-foreground;
   }
 }
+@font-face {
+  font-family: 'TuskerGrotesk'; /*Can be any text*/
+  src: local('TuskerGrotesk'),
+    url('/fonts/TuskerGrotesk-3600Semibold.ttf') format('truetype');
+}
+
+
+.title {
+  font-family: 'TuskerGrotesk';
+}
+
+*,
+body {
+  font-family: 'IBM Plex Mono', monospace;
+}

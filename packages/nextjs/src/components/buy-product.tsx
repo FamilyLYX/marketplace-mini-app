@@ -47,7 +47,9 @@ export function BuyProduct({
       <ProductImageCarousel images={metadata.images} />
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold truncate">{metadata.title}</h3>
+          <h3 className="text-lg font-semibold truncate title">
+            {metadata.title}
+          </h3>
           <Badge variant="outline" className="text-xs">
             {metadata.category}
           </Badge>
@@ -70,7 +72,9 @@ export function BuyProduct({
           <div className="col-span-2 gap-2">
             <p className="text-xs text-muted-foreground">Product By</p>
             <a
-              href={`https://universaleverything.io/${getAddress(sellerAddress)}?network=testnet&assetGroup=tokens`}
+              href={`https://universaleverything.io/${getAddress(
+                sellerAddress
+              )}?network=testnet&assetGroup=tokens`}
               target="_blank"
               rel="noreferrer"
               className="text-sm font-medium text-blue-600 hover:underline truncate block"

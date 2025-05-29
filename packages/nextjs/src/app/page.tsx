@@ -45,12 +45,11 @@ const Inventory = () => {
         (p: Vault) =>
           (p.order_status === "pending" &&
             p.buyer === getAddress(accounts[0])) ||
-          (p.order_status === "disputed" &&
-            p.buyer === getAddress(accounts[0])),
+          (p.order_status === "disputed" && p.buyer === getAddress(accounts[0]))
       )
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
   }, [marketplace, accounts]);
 
@@ -59,11 +58,11 @@ const Inventory = () => {
     return marketplace
       .filter(
         (p: Vault) =>
-          p.order_status === "confirmed" && p.buyer === getAddress(accounts[0]),
+          p.order_status === "confirmed" && p.buyer === getAddress(accounts[0])
       )
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
   }, [marketplace, accounts]);
 
@@ -73,7 +72,7 @@ const Inventory = () => {
       .filter((p: Vault) => p.order_status === null)
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
   }, [marketplace]);
 
@@ -108,7 +107,7 @@ const Inventory = () => {
   const alreadyInMarketplaceProducts = React.useMemo(() => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
     return marketplace.filter(
-      (p: Vault) => p.seller === getAddress(accounts[0]),
+      (p: Vault) => p.seller === getAddress(accounts[0])
     );
   }, [marketplace, accounts]);
 
@@ -118,7 +117,7 @@ const Inventory = () => {
         <h2 className="text-xl font-[cursive] italic text-black mb-2">
           family
         </h2>
-        <h1 className="font-serif text-5xl font-black tracking-tight">
+        <h1 className="font-serif text-5xl font-black tracking-tight title">
           Marketplace
         </h1>
         <p className="mt-2 text-xs text-gray-500">
@@ -201,7 +200,7 @@ const Inventory = () => {
           <div className="flex flex-col gap-10 max-w-6xl w-full">
             {/* Shipping Section */}
             <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold">Shipping</h2>
+              <h2 className="text-2xl font-semibold title">Shipping</h2>
               {isMarketplaceLoading ? (
                 <p className="text-sm text-muted-foreground">
                   Loading your orders...
@@ -235,7 +234,7 @@ const Inventory = () => {
 
             {/* Delivered Section */}
             <div className="flex flex-col gap-4">
-              <h2 className="text-2xl font-semibold">Delivered</h2>
+              <h2 className="text-2xl font-semibold title">Delivered</h2>
               {isMarketplaceLoading ? (
                 <p className="text-sm text-muted-foreground">
                   Loading delivered products...
@@ -268,7 +267,9 @@ const Inventory = () => {
           <div className="flex flex-col gap-10 max-w-6xl w-full">
             {/* Place in Marketplace Section */}
             <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold">Place in Marketplace</h2>
+              <h2 className="text-2xl font-semibold title">
+                Place in Marketplace
+              </h2>
               {isNFTsLoading ? (
                 <p className="text-sm text-muted-foreground">
                   Loading your products...
@@ -293,7 +294,7 @@ const Inventory = () => {
 
             {/* In Marketplace Section */}
             <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold">In Marketplace</h2>
+              <h2 className="text-2xl font-semibold title">In Marketplace</h2>
               {isMarketplaceLoading ? (
                 <p className="text-sm text-muted-foreground">
                   Loading your marketplace listings...
@@ -317,7 +318,7 @@ const Inventory = () => {
                           vault={vault}
                         />
                       );
-                    },
+                    }
                   )}
                 </div>
               ) : (
@@ -335,7 +336,7 @@ const Inventory = () => {
             adminAddress.toLowerCase() && (
             <TabsContent value="admin">
               <div className="flex flex-col gap-10 max-w-6xl w-full">
-                <h2 className="text-2xl font-semibold">Admin Section</h2>
+                <h2 className="text-2xl font-semibold title">Admin Section</h2>
                 <p className="text-sm text-muted-foreground">
                   This section is for admin purposes only.
                 </p>
