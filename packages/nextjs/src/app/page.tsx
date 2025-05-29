@@ -142,7 +142,9 @@ const Inventory = () => {
       data: vault,
     }));
     return [...shippingProducts, ...deliveredProducts].sort(
-      (a, b) => new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime()
+      (a, b) =>
+        new Date(b.data.created_at).getTime() -
+        new Date(a.data.created_at).getTime(),
     );
   }, [orderedProducts, confirmedProducts]);
 
@@ -190,7 +192,7 @@ const Inventory = () => {
           {accounts &&
             accounts.length > 0 &&
             getAddress(accounts[0]).toLowerCase() ===
-            adminAddress.toLowerCase() && (
+              adminAddress.toLowerCase() && (
               <TabsTrigger
                 value="admin"
                 className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
@@ -218,7 +220,12 @@ const Inventory = () => {
             </div>
           )}
         </TabsContent>
-        <TabsContent value="orders">
+        <TabsContent
+          value="orders"
+          style={{
+            width: "100%",
+          }}
+        >
           <div className="flex flex-col gap-10 max-w-6xl w-full">
             {isMarketplaceLoading ? (
               <p className="text-sm text-muted-foreground">
@@ -229,10 +236,8 @@ const Inventory = () => {
                 <div className="flex flex-col gap-4 w-full">
                   <h2 className="text-md font-semibold">Your Orders</h2>
                   {orderedProducts.length > 0 ||
-                    confirmedProducts.length > 0 ? (
-                    <OrdersCarousel
-                      orders={allOrders}
-                    />
+                  confirmedProducts.length > 0 ? (
+                    <OrdersCarousel orders={allOrders} />
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       No orders found.
@@ -243,7 +248,12 @@ const Inventory = () => {
             )}
           </div>
         </TabsContent>
-        <TabsContent value="products">
+        <TabsContent
+          value="products"
+          style={{
+            width: "100%",
+          }}
+        >
           <div className="flex flex-col gap-10 w-full">
             <h2 className="text-md font-semibold">Manage your inventory</h2>
             {isNFTsLoading || isMarketplaceLoading ? (
@@ -263,7 +273,7 @@ const Inventory = () => {
         {accounts &&
           accounts.length > 0 &&
           getAddress(accounts[0]).toLowerCase() ===
-          adminAddress.toLowerCase() && (
+            adminAddress.toLowerCase() && (
             <TabsContent value="admin">
               <div className="flex flex-col gap-10 max-w-6xl w-full">
                 <h2 className="text-2xl font-semibold">Admin Section</h2>

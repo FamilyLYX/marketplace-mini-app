@@ -1,4 +1,4 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { ProductCard } from "@/components/product";
 import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
@@ -9,22 +9,9 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from "@/components/ui/carousel";
-import { cn } from "@/lib/utils";
 
 export default function InventoryCarousel({ products }: { products: any[] }) {
-  const [api, setApi] = React.useState<CarouselApi>();
-  const [current, setCurrent] = React.useState(0);
-
-  React.useEffect(() => {
-    if (!api) return;
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
-  }, [api]);
-
   const renderProduct = (item: any) => {
     if (item.type === "add") {
       return (
@@ -47,34 +34,24 @@ export default function InventoryCarousel({ products }: { products: any[] }) {
   };
 
   return (
-    <div className="w-full flex items-center justify-center">
+    <div className="w-full max-w-[700px] mx-auto flex flex-col items-center">
       <Carousel
-        setApi={setApi}
-        className="w-full max-w-[700px]"
+        className="w-full"
         opts={{
           align: "center",
           loop: true,
+          skipSnaps: false,
         }}
       >
-        <CarouselContent className="gap-4">
+        <CarouselContent>
           {products.map((product, index) => (
-            <CarouselItem key={index} 
-            className="pl-4 md:pl-6 basis-1/3">
-              <div
-                className={cn(
-                  "m-6 transition-all duration-300",
-                  current === index
-                    ? "scale-100"
-                    : "scale-90 opacity-30 blur-md",
-                )}
-              >
-                {renderProduct(product)}
-              </div>
+            <CarouselItem key={index} className="flex">
+              {renderProduct(product)}
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="left-0" />
-        <CarouselNext className="right-0" />
+        <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer" />
+        <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer" />
       </Carousel>
     </div>
   );

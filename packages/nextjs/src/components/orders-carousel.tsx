@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 import React from "react";
 import { ConfirmProduct } from "@/components/confirm-product";
 import { PurchasedProductCard } from "@/components/purchased-product";
@@ -9,27 +8,13 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from "@/components/ui/carousel";
-import { cn } from "@/lib/utils";
-
 type OrderItem = {
   type: "shipping" | "delivered";
   data: Vault;
 };
 
 export default function OrdersCarousel({ orders }: { orders: OrderItem[] }) {
-  const [api, setApi] = React.useState<CarouselApi>();
-  const [current, setCurrent] = React.useState(0);
-
-  React.useEffect(() => {
-    if (!api) return;
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
-  }, [api]);
-
   const renderOrder = (item: OrderItem) => {
     const metadata = {
       title: item.data.title ?? "",
@@ -38,7 +23,6 @@ export default function OrdersCarousel({ orders }: { orders: OrderItem[] }) {
       category: item.data.category ?? "",
       brand: item.data.brand ?? "",
     };
-
     if (item.type === "shipping") {
       return (
         <ConfirmProduct
@@ -55,40 +39,32 @@ export default function OrdersCarousel({ orders }: { orders: OrderItem[] }) {
     }
     return null;
   };
-
   if (orders.length === 0) {
-    return null;
+    return (
+      <div className="w-full max-w-[700px] mx-auto text-center p-4">
+        <p className="text-gray-500">No orders found.</p>
+      </div>
+    );
   }
-
   return (
-    <div className="w-full flex items-center justify-center">
+    <div className="w-full max-w-[700px] mx-auto flex flex-col items-center">
       <Carousel
-        setApi={setApi}
-        className="w-full max-w-[700px]"
+        className="w-full"
         opts={{
           align: "center",
           loop: true,
+          skipSnaps: false,
         }}
       >
-        <CarouselContent className="gap-4">
+        <CarouselContent>
           {orders.map((order, index) => (
-            <CarouselItem key={index} 
-            className="pl-4 md:pl-6 basis-1/3">
-              <div
-                className={cn(
-                  "m-6 transition-all duration-300",
-                  current === index
-                    ? "scale-100"
-                    : "scale-90 opacity-30 blur-md",
-                )}
-              >
-                {renderOrder(order)}
-              </div>
+            <CarouselItem key={index} className="flex ">
+              {renderOrder(order)}
             </CarouselItem>
           ))}
         </CarouselContent>
-            <CarouselPrevious className="left-0" />
-            <CarouselNext className="right-0" />
+        <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer" />
+        <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer" />
       </Carousel>
     </div>
   );

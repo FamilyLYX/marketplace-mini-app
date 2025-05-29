@@ -27,7 +27,8 @@ interface ProductChatProps {
   alreadyInDispute?: boolean;
 }
 
-const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}` || "";
+const adminAddress =
+  (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
 
 export default function ProductChat({
   vault,
@@ -47,20 +48,6 @@ export default function ProductChat({
   const [newMsg, setNewMsg] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const getUserRoleLabel = (address: string) => {
-    if (address === adminAddress) return "Admin";
-    if (address.toLowerCase() === buyer?.toLowerCase()) return "Buyer";
-    if (address.toLowerCase() === seller?.toLowerCase()) return "Seller";
-    if (address === "system") return "System";
-    return "System";
-  };
-
-  const getBubbleAlignment = (from: string) => {
-    if (from === adminAddress || from === "system") return "center";
-    if (from.toLowerCase() === userAddress.toLowerCase()) return "end";
-    return "start";
-  };
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -73,7 +60,6 @@ export default function ProductChat({
       .single();
 
     if (error) {
-      console.error("Fetch chat error:", error);
       setMessages([]);
     } else {
       setMessages(data?.content || []);
@@ -120,13 +106,13 @@ export default function ProductChat({
   }
 
   async function sendDisputeMessage() {
-    let raisedBy = '';
+    let raisedBy = "";
     if (userAddress.toLowerCase() === buyer?.toLowerCase()) {
-      raisedBy = vault.first_name || 'Buyer';
+      raisedBy = vault.first_name || "Buyer";
     } else if (userAddress.toLowerCase() === seller?.toLowerCase()) {
-      raisedBy = 'Seller';
+      raisedBy = "Seller";
     } else {
-      raisedBy = '';
+      raisedBy = "";
     }
     await sendMessage(
       `Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by :${raisedBy}`,
