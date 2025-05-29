@@ -14,6 +14,7 @@ import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 import AdminProductChats from "@/components/admin-product-chats";
 import Image from "next/image";
 import ProductMarketplaceCarousel from "@/components/product-marketplace-carousel";
+import InventoryCarousel from "@/components/inventory-carousel";
 
 const adminAddress =
   (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
@@ -118,6 +119,18 @@ const Inventory = () => {
       (p: Vault) => p.seller === getAddress(accounts[0]),
     );
   }, [marketplace, accounts]);
+
+  const allInventoryProducts = React.useMemo(() => {
+    const addProducts = addToMarketplaceProducts.map((product: any) => ({
+      type: "add",
+      data: product,
+    }));
+    const inMarketplaceProducts = alreadyInMarketplaceProducts.map((vault: Vault) => ({
+      type: "in-marketplace",
+      data: vault,
+    }));
+    return [...addProducts, ...inMarketplaceProducts];
+  }, [addToMarketplaceProducts, alreadyInMarketplaceProducts]);
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
@@ -260,65 +273,18 @@ const Inventory = () => {
         </TabsContent>
         <TabsContent value="products">
           <div className="flex flex-col gap-10 max-w-6xl w-full">
-            {/* Place in Marketplace Section */}
-            <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold">Place in Marketplace</h2>
-              {isNFTsLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading your products...
-                </p>
-              ) : addToMarketplaceProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {addToMarketplaceProducts.map((product, index) => (
-                    <ProductCard
-                      key={`add-${index}`}
-                      metadata={product.decodedMetadata}
-                      nftAddress={product.nftAddress}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Tokenize products to add to the marketplace.
-                </p>
-              )}
-            </div>
-
-            {/* In Marketplace Section */}
-            <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold">In Marketplace</h2>
-              {isMarketplaceLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading your marketplace listings...
-                </p>
-              ) : alreadyInMarketplaceProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {alreadyInMarketplaceProducts.map(
-                    (vault: Vault, index: number) => {
-                      const metadata: ProductMetadata = {
-                        title: vault.title,
-                        description: vault.description ?? "",
-                        category: vault.category ?? "",
-                        brand: vault.brand ?? "",
-                        images: vault.images ?? [],
-                      };
-
-                      return (
-                        <AlreadyInMarketplace
-                          key={`in-marketplace-${index}`}
-                          metadata={metadata}
-                          vault={vault}
-                        />
-                      );
-                    },
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No products currently listed in marketplace.
-                </p>
-              )}
-            </div>
+            <h2 className="text-2xl font-semibold">Your Inventory</h2>
+            {isNFTsLoading || isMarketplaceLoading ? (
+              <p className="text-sm text-muted-foreground">
+                Loading your products...
+              </p>
+            ) : allInventoryProducts.length > 0 ? (
+              <InventoryCarousel products={allInventoryProducts} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Tokenize products to add to the marketplace.
+              </p>
+            )}
           </div>
         </TabsContent>
         {/* Admin Section */}

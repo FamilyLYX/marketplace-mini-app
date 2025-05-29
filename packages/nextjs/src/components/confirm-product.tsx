@@ -107,7 +107,7 @@ export function ConfirmProduct({
       <ProductCardShell
         image={metadata.images?.[0] || ""}
         title={metadata.title}
-        subtitle={metadata.description}
+        subtitle={metadata.brand}
         status={vault.order_status ? vault.order_status.charAt(0).toUpperCase() + vault.order_status.slice(1) : ""}
       >
         <Button

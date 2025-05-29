@@ -80,7 +80,7 @@ export function AlreadyInMarketplace({
     <ProductCardShell
       image={metadata.images?.[0] || ""}
       title={metadata.title}
-      subtitle={"001 — Black Forest»"}
+      subtitle={metadata.brand}
       status={vault.order_status ? vault.order_status.charAt(0).toUpperCase() + vault.order_status.slice(1) : "Listed"}
     >
       {hasBuyer ? (
