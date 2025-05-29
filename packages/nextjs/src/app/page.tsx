@@ -46,11 +46,12 @@ const Inventory = () => {
         (p: Vault) =>
           (p.order_status === "pending" &&
             p.buyer === getAddress(accounts[0])) ||
-          (p.order_status === "disputed" && p.buyer === getAddress(accounts[0]))
+          (p.order_status === "disputed" &&
+            p.buyer === getAddress(accounts[0])),
       )
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
   }, [marketplace, accounts]);
 
@@ -59,11 +60,11 @@ const Inventory = () => {
     return marketplace
       .filter(
         (p: Vault) =>
-          p.order_status === "confirmed" && p.buyer === getAddress(accounts[0])
+          p.order_status === "confirmed" && p.buyer === getAddress(accounts[0]),
       )
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
   }, [marketplace, accounts]);
 
@@ -73,7 +74,7 @@ const Inventory = () => {
       .filter((p: Vault) => p.order_status === null)
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
   }, [marketplace]);
 
@@ -113,7 +114,7 @@ const Inventory = () => {
   const alreadyInMarketplaceProducts = React.useMemo(() => {
     if (!marketplace || !accounts || accounts.length === 0) return [];
     return marketplace.filter(
-      (p: Vault) => p.seller === getAddress(accounts[0])
+      (p: Vault) => p.seller === getAddress(accounts[0]),
     );
   }, [marketplace, accounts]);
 

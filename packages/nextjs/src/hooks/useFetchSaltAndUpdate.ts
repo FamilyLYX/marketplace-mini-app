@@ -38,9 +38,10 @@ export const useFetchSaltAndUpdate = () => {
     newSalt: string;
     newUidHash: `0x${string}`;
   }> => {
-    const response = await fetch(`/api/get-data?dppAddress=${dppAddress}`);
-    const data = await response.json();
-    const plainUIDCode = data.plainUIDCode;
+    const response = await fetch(`/api/get-all?dppAddress=${dppAddress}`);
+    const res = await response.json();
+    const data = res.data;
+    const plainUIDCode = data.uid_code;
     if (!plainUIDCode) {
       throw new Error("Failed to fetch plain UID code");
     }

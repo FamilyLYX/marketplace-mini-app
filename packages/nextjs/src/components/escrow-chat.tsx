@@ -236,7 +236,7 @@ const CancelTradeDialog = ({
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              order_status: "confirmed",
+              order_status: "cancelled",
             } as Vault),
           },
         );
@@ -312,7 +312,13 @@ const ResolveDisputeDialog = ({
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onResolve: () => void;
+  onResolve: ({
+    traceReceiver,
+    fundsReceiver,
+  }: {
+    traceReceiver: string;
+    fundsReceiver: string;
+  }) => void;
   buyer: string;
   seller: string;
   vault: Vault;
@@ -376,7 +382,10 @@ const ResolveDisputeDialog = ({
       queryClient.invalidateQueries({
         queryKey: ["marketplaceProducts", "allNfts"],
       });
-      onResolve();
+      onResolve({
+        traceReceiver: selectedTraceReceiver === buyer ? "buyer" : "seller",
+        fundsReceiver: selectedWinner === buyer ? "buyer" : "seller",
+      });
       onOpenChange(false);
     },
     onError: (error) => {
@@ -431,7 +440,7 @@ const ResolveDisputeDialog = ({
             disabled={!selectedWinner || !selectedTraceReceiver}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            Resolve Dispute
+            {handleResolveDispute.isPending ? "Resolving" : "Resolve Dispute"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -735,8 +744,6 @@ export default function ProductChat({
   const { initiateDispute } = useFamilyVault(vaultAddress as `0x${string}`);
 
   // State
-  const [selectedWinner, setSelectedWinner] = useState("");
-  const [selectedTraceReceiver, setSelectedTraceReceiver] = useState("");
   const [cancelReason, setCancelReason] = useState("");
   const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -867,17 +874,20 @@ export default function ProductChat({
     }
   };
 
-  const handleResolveDispute = async () => {
-    if (!selectedWinner || !selectedTraceReceiver) {
-      toast.error("Please select both winner and trace receiver");
-      return;
-    }
-
+  const handleResolveDispute = async ({
+    traceReceiver,
+    fundsReceiver,
+  }: {
+    traceReceiver: string;
+    fundsReceiver: string;
+  }) => {
     try {
       toast.success("Dispute resolved successfully!");
+      await sendMessage(
+        `Dispute has been resolved by admin. Funds sent to ${fundsReceiver} and trace sent to ${traceReceiver}.`,
+        "admin",
+      );
       setIsResolveModalOpen(false);
-      setSelectedWinner("");
-      setSelectedTraceReceiver("");
     } catch (err) {
       console.error("Dispute resolution failed", err);
       toast.error("Dispute resolution failed.");
