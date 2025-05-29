@@ -1,10 +1,10 @@
 import type React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
-import { Inter } from "next/font/google";
+// import { Inter } from "next/font/google";
 import { MarketPlaceAppWithProviders } from "@/components/marketplace-provider";
 
-const inter = Inter({ subsets: ["latin"] });
+// const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "FamilyLYX: Marketplace",
@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={""}>
         <MarketPlaceAppWithProviders>{children}</MarketPlaceAppWithProviders>
       </body>
     </html>

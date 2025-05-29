@@ -127,7 +127,7 @@ const Inventory = () => {
           height={64}
           className="mt-2 w-16 h-16"
         />
-        <h1 className="font-serif text-5xl font-black tracking-tight">
+        <h1 className="font-serif text-5xl font-black tracking-tight title">
           Universal Goods
         </h1>
         <p className="mt-2 text-xs text-gray-500">
