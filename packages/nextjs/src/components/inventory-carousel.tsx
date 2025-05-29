@@ -58,7 +58,8 @@ export default function InventoryCarousel({ products }: { products: any[] }) {
       >
         <CarouselContent className="gap-4">
           {products.map((product, index) => (
-            <CarouselItem key={index} className="pl-4 md:pl-6 basis-1/3">
+            <CarouselItem key={index} 
+            className="pl-4 md:pl-6 basis-1/3">
               <div
                 className={cn(
                   "m-6 transition-all duration-300",

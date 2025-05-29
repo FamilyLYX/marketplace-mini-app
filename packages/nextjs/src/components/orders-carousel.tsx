@@ -67,24 +67,19 @@ export default function OrdersCarousel({ orders }: { orders: OrderItem[] }) {
         className="w-full max-w-[700px]"
         opts={{
           align: "center",
-          loop: orders.length > 1,
+          loop: true,
         }}
       >
         <CarouselContent className="gap-4">
           {orders.map((order, index) => (
-            <CarouselItem 
-              key={index} 
-              className={cn(
-                "pl-4 md:pl-6",
-                orders.length === 1 ? "basis-full" : "basis-1/3"
-              )}
-            >
+            <CarouselItem key={index} 
+            className="pl-4 md:pl-6 basis-1/3">
               <div
                 className={cn(
                   "m-6 transition-all duration-300",
                   current === index
                     ? "scale-100"
-                    : "scale-90 opacity-30 blur-md"
+                    : "scale-90 opacity-30 blur-md",
                 )}
               >
                 {renderOrder(order)}
@@ -92,13 +87,9 @@ export default function OrdersCarousel({ orders }: { orders: OrderItem[] }) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        {orders.length > 1 && (
-          <>
             <CarouselPrevious className="left-0" />
             <CarouselNext className="right-0" />
-          </>
-        )}
       </Carousel>
     </div>
   );
-} 
+}

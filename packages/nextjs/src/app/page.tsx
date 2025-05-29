@@ -132,6 +132,20 @@ const Inventory = () => {
     return [...addProducts, ...inMarketplaceProducts];
   }, [addToMarketplaceProducts, alreadyInMarketplaceProducts]);
 
+  const allOrders = React.useMemo(() => {
+    const shippingProducts = orderedProducts.map((vault: Vault) => ({
+      type: "shipping",
+      data: vault,
+    }));
+    const deliveredProducts = confirmedProducts.map((vault: Vault) => ({
+      type: "delivered",
+      data: vault,
+    }));
+    return [...shippingProducts, ...deliveredProducts].sort(
+      (a, b) => new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime()
+    );
+  }, [orderedProducts, confirmedProducts]);
+
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className=" flex flex-col items-center justify-center text-center mb-6">
@@ -176,7 +190,7 @@ const Inventory = () => {
           {accounts &&
             accounts.length > 0 &&
             getAddress(accounts[0]).toLowerCase() ===
-              adminAddress.toLowerCase() && (
+            adminAddress.toLowerCase() && (
               <TabsTrigger
                 value="admin"
                 className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
@@ -213,20 +227,11 @@ const Inventory = () => {
             ) : (
               <>
                 <div className="flex flex-col gap-4 w-full">
-                  <h2 className="text-2xl font-semibold">Your Orders</h2>
+                  <h2 className="text-md font-semibold">Your Orders</h2>
                   {orderedProducts.length > 0 ||
-                  confirmedProducts.length > 0 ? (
+                    confirmedProducts.length > 0 ? (
                     <OrdersCarousel
-                      orders={[
-                        ...orderedProducts.map((vault: Vault) => ({
-                          type: "shipping" as const,
-                          data: vault,
-                        })),
-                        ...confirmedProducts.map((vault: Vault) => ({
-                          type: "delivered" as const,
-                          data: vault,
-                        })),
-                      ]}
+                      orders={allOrders}
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">
@@ -239,8 +244,8 @@ const Inventory = () => {
           </div>
         </TabsContent>
         <TabsContent value="products">
-          <div className="flex flex-col gap-10 max-w-6xl w-full">
-            <h2 className="text-2xl font-semibold">Your Inventory</h2>
+          <div className="flex flex-col gap-10 w-full">
+            <h2 className="text-md font-semibold">Manage your inventory</h2>
             {isNFTsLoading || isMarketplaceLoading ? (
               <p className="text-sm text-muted-foreground">
                 Loading your products...
@@ -258,7 +263,7 @@ const Inventory = () => {
         {accounts &&
           accounts.length > 0 &&
           getAddress(accounts[0]).toLowerCase() ===
-            adminAddress.toLowerCase() && (
+          adminAddress.toLowerCase() && (
             <TabsContent value="admin">
               <div className="flex flex-col gap-10 max-w-6xl w-full">
                 <h2 className="text-2xl font-semibold">Admin Section</h2>
