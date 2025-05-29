@@ -158,9 +158,6 @@ function PersonalDetailsForm({ data, setData, onNext }: BuyFormProps) {
 }
 
 function ShippingAddressForm({ data, setData, onNext, onBack }: BuyFormProps) {
-  const countries = ["United States", "Canada", "India"];
-  const states = ["California", "Texas", "New York"];
-  const cities = ["Los Angeles", "San Francisco", "New York City"];
   return (
     <div className="w-full flex flex-col justify-center items-center">
       <h1 className="text-4xl font-black leading-tight mb-2 w-full text-left">
@@ -172,59 +169,36 @@ function ShippingAddressForm({ data, setData, onNext, onBack }: BuyFormProps) {
       <div className="grid grid-cols-2 gap-4 w-full">
         <div>
           <Label className="font-bold">Country or region</Label>
-          <select
-            className="mt-1 w-full border rounded-md px-3 py-2 text-gray-900"
+          <Input
             value={data.country}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, country: e.target.value }))
-            }
-          >
-            {countries.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+            onChange={(e) => setData((prev) => ({ ...prev, country: e.target.value }))}
+            placeholder="Country or region"
+            className="mt-1"
+          />
         </div>
         <div>
           <Label className="font-bold">State</Label>
-          <select
-            className="mt-1 w-full border rounded-md px-3 py-2 text-gray-900"
+          <Input
             value={data.state}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, state: e.target.value }))
-            }
-          >
-            {states.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            onChange={(e) => setData((prev) => ({ ...prev, state: e.target.value }))}
+            placeholder="State"
+            className="mt-1"
+          />
         </div>
         <div>
           <Label className="font-bold">City</Label>
-          <select
-            className="mt-1 w-full border rounded-md px-3 py-2 text-gray-900"
+          <Input
             value={data.city}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, city: e.target.value }))
-            }
-          >
-            {cities.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+            onChange={(e) => setData((prev) => ({ ...prev, city: e.target.value }))}
+            placeholder="City"
+            className="mt-1"
+          />
         </div>
         <div>
           <Label className="font-bold">ZIP</Label>
           <Input
             value={data.zip}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, zip: e.target.value }))
-            }
+            onChange={(e) => setData((prev) => ({ ...prev, zip: e.target.value }))}
             placeholder="ZIP"
             className="mt-1"
           />
@@ -233,9 +207,7 @@ function ShippingAddressForm({ data, setData, onNext, onBack }: BuyFormProps) {
           <Label className="font-bold">Address line 1</Label>
           <Input
             value={data.address1}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, address1: e.target.value }))
-            }
+            onChange={(e) => setData((prev) => ({ ...prev, address1: e.target.value }))}
             placeholder="Street address"
             className="mt-1"
           />
@@ -244,9 +216,7 @@ function ShippingAddressForm({ data, setData, onNext, onBack }: BuyFormProps) {
           <Label className="font-bold">Address line 2</Label>
           <Input
             value={data.address2}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, address2: e.target.value }))
-            }
+            onChange={(e) => setData((prev) => ({ ...prev, address2: e.target.value }))}
             placeholder="Apt., suite, unit number, etc. (optional)"
             className="mt-1"
           />
