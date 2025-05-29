@@ -1,19 +1,19 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ProductCard, ProductMetadata } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
-import { BuyProduct } from "@/components/buy-product";
 import { Vault } from "@/types";
-import { ConfirmProduct } from "@/components/confirm-product";
-import { PurchasedProductCard } from "@/components/purchased-product";
 import { getAddress } from "viem";
 import { useUpProvider } from "@/components/up-provider";
-import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 import AdminProductChats from "@/components/admin-product-chats";
 import Image from "next/image";
+import ProductMarketplaceCarousel from "@/components/product-marketplace-carousel";
+import InventoryCarousel from "@/components/inventory-carousel";
+import OrdersCarousel from "@/components/orders-carousel";
+
 const adminAddress =
   (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
 
@@ -117,6 +117,36 @@ const Inventory = () => {
     );
   }, [marketplace, accounts]);
 
+  const allInventoryProducts = React.useMemo(() => {
+    const addProducts = addToMarketplaceProducts.map((product: any) => ({
+      type: "add",
+      data: product,
+    }));
+    const inMarketplaceProducts = alreadyInMarketplaceProducts.map(
+      (vault: Vault) => ({
+        type: "in-marketplace",
+        data: vault,
+      }),
+    );
+    return [...addProducts, ...inMarketplaceProducts];
+  }, [addToMarketplaceProducts, alreadyInMarketplaceProducts]);
+
+  const allOrders = React.useMemo(() => {
+    const shippingProducts = orderedProducts.map((vault: Vault) => ({
+      type: "shipping",
+      data: vault,
+    }));
+    const deliveredProducts = confirmedProducts.map((vault: Vault) => ({
+      type: "delivered",
+      data: vault,
+    }));
+    return [...shippingProducts, ...deliveredProducts].sort(
+      (a, b) =>
+        new Date(b.data.created_at).getTime() -
+        new Date(a.data.created_at).getTime(),
+    );
+  }, [orderedProducts, confirmedProducts]);
+
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
       <div className=" flex flex-col items-center justify-center text-center mb-6">
@@ -156,7 +186,7 @@ const Inventory = () => {
             value="orders"
             className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
           >
-            Escrow
+            Orders
           </TabsTrigger>
           {accounts &&
             accounts.length > 0 &&
@@ -170,7 +200,12 @@ const Inventory = () => {
               </TabsTrigger>
             )}
         </TabsList>
-        <TabsContent value="marketplace">
+        <TabsContent
+          value="marketplace"
+          style={{
+            width: "100%",
+          }}
+        >
           {isMarketplaceLoading ? (
             <div className="flex flex-col items-center justify-center w-full h-[300px]">
               <p className="text-muted-foreground text-center text-sm">
@@ -178,24 +213,8 @@ const Inventory = () => {
               </p>
             </div>
           ) : marketplaceProducts && marketplaceProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-              {marketplaceProducts.map((vault: Vault, index: number) => (
-                <BuyProduct
-                  key={index}
-                  metadata={{
-                    title: vault.title ?? "",
-                    description: vault.description ?? "",
-                    images: vault.images ?? [],
-                    category: vault.category ?? "",
-                    brand: vault.brand ?? "",
-                  }}
-                  vaultAddress={vault.vault_address}
-                  condition={vault.notes as string}
-                  location={vault.location as string}
-                  sellerAddress={vault.seller}
-                  priceInLYX={vault.price_in_lyx}
-                />
-              ))}
+            <div className="flex flex-col items-center w-full">
+              <ProductMarketplaceCarousel products={marketplaceProducts} />
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-[500px]">
@@ -205,136 +224,53 @@ const Inventory = () => {
             </div>
           )}
         </TabsContent>
-        <TabsContent value="orders">
+        <TabsContent
+          value="orders"
+          style={{
+            width: "100%",
+          }}
+        >
           <div className="flex flex-col gap-10 max-w-6xl w-full">
-            {/* Shipping Section */}
-            <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold title">Shipping</h2>
-              {isMarketplaceLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading your orders...
-                </p>
-              ) : orderedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {orderedProducts.map((vault: Vault, index: number) => (
-                    <ConfirmProduct
-                      key={`shipping-${index}`}
-                      vault={vault}
-                      metadata={{
-                        title: vault.title ?? "",
-                        description: vault.description ?? "",
-                        images: vault.images ?? [],
-                        category: vault.category ?? "",
-                        brand: vault.brand ?? "",
-                      }}
-                      vaultAddress={vault.vault_address}
-                      condition={vault.notes as string}
-                      location={vault.location as string}
-                      sellerAddress={vault.seller}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No products currently in shipping.
-                </p>
-              )}
-            </div>
-
-            {/* Delivered Section */}
-            <div className="flex flex-col gap-4">
-              <h2 className="text-2xl font-semibold title">Delivered</h2>
-              {isMarketplaceLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading delivered products...
-                </p>
-              ) : confirmedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {confirmedProducts.map((vault: Vault, index: number) => (
-                    <PurchasedProductCard
-                      key={`delivered-${index}`}
-                      metadata={{
-                        title: vault.title ?? "",
-                        description: vault.description ?? "",
-                        images: vault.images ?? [],
-                        category: vault.category ?? "",
-                        brand: vault.brand ?? "",
-                      }}
-                      seller={vault.seller}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No products delivered yet.
-                </p>
-              )}
-            </div>
-          </div>
-        </TabsContent>
-        <TabsContent value="products">
-          <div className="flex flex-col gap-10 max-w-6xl w-full">
-            {/* Place in Marketplace Section */}
-            <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold title">
-                Place in Marketplace
-              </h2>
-              {isNFTsLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading your products...
-                </p>
-              ) : addToMarketplaceProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {addToMarketplaceProducts.map((product, index) => (
-                    <ProductCard
-                      key={`add-${index}`}
-                      metadata={product.decodedMetadata}
-                      nftAddress={product.nftAddress}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Tokenize products to add to the marketplace.
-                </p>
-              )}
-            </div>
-
-            {/* In Marketplace Section */}
-            <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold title">In Marketplace</h2>
-              {isMarketplaceLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading your marketplace listings...
-                </p>
-              ) : alreadyInMarketplaceProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {alreadyInMarketplaceProducts.map(
-                    (vault: Vault, index: number) => {
-                      const metadata: ProductMetadata = {
-                        title: vault.title,
-                        description: vault.description ?? "",
-                        category: vault.category ?? "",
-                        brand: vault.brand ?? "",
-                        images: vault.images ?? [],
-                      };
-
-                      return (
-                        <AlreadyInMarketplace
-                          key={`in-marketplace-${index}`}
-                          metadata={metadata}
-                          vault={vault}
-                        />
-                      );
-                    }
+            {isMarketplaceLoading ? (
+              <p className="text-sm text-muted-foreground">
+                Loading your orders...
+              </p>
+            ) : (
+              <>
+                <div className="flex flex-col gap-4 w-full">
+                  <h2 className="text-md font-semibold">Your Orders</h2>
+                  {orderedProducts.length > 0 ||
+                  confirmedProducts.length > 0 ? (
+                    <OrdersCarousel orders={allOrders} />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No orders found.
+                    </p>
                   )}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No products currently listed in marketplace.
-                </p>
-              )}
-            </div>
+              </>
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent
+          value="products"
+          style={{
+            width: "100%",
+          }}
+        >
+          <div className="flex flex-col gap-10 w-full">
+            <h2 className="text-md font-semibold">Manage your inventory</h2>
+            {isNFTsLoading || isMarketplaceLoading ? (
+              <p className="text-sm text-muted-foreground">
+                Loading your products...
+              </p>
+            ) : allInventoryProducts.length > 0 ? (
+              <InventoryCarousel products={allInventoryProducts} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Tokenize products to add to the marketplace.
+              </p>
+            )}
           </div>
         </TabsContent>
         {/* Admin Section */}

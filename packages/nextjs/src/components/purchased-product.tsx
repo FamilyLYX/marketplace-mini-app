@@ -1,53 +1,89 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProductImageCarousel } from "./product";
 import { ProductMetadata } from "./buy-product";
 import { getAddress } from "viem";
+import { Vault } from "@/types";
+import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
+import ProductChat from "./escrow-chat";
+import { ProductCardShell } from "./inmarketplace-product";
+import React from "react";
 
 export function PurchasedProductCard({
   metadata,
-  seller,
+  vault,
 }: {
   metadata: ProductMetadata;
-  seller: string | `0x${string}`;
+  vault: Vault;
 }) {
+  const [openChat, setOpenChat] = React.useState(false);
+  const [infoOpen, setInfoOpen] = React.useState(false);
+
   return (
-    <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
-      <ProductImageCarousel images={metadata.images} />
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold truncate">{metadata.title}</h3>
-          <Badge variant="outline" className="text-xs">
-            {metadata.category}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {metadata.description}
-        </p>
-        <p className="text-xs">
-          <span className="font-medium">Brand: {metadata.brand}</span>
-        </p>
-        <div className="mt-4">
-          <Badge variant="outline" className="text-xs">
-            Purchased Successfully
-          </Badge>
-        </div>
-        <p className="text-sm font-medium">
-          Product by
-          <a
-            href={`https://universaleverything.io/${getAddress(seller)}?network=testnet&assetGroup=tokens`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-medium text-blue-600 hover:underline truncate block"
-          >
-            <Badge variant="outline" className="truncate">
-              {seller}
-            </Badge>
-          </a>
-        </p>
-      </CardContent>
-    </Card>
+    <>
+      <ProductCardShell
+        image={metadata.images?.[0] || ""}
+        title={metadata.title}
+        subtitle={metadata.brand}
+        status={"Purchased"}
+      >
+        <Button
+          variant="outline"
+          className="w-1/2"
+          onClick={() => setOpenChat(true)}
+        >
+          Open Chat
+        </Button>
+        <Button className="w-1/2" onClick={() => setInfoOpen(true)}>
+          More Info
+        </Button>
+      </ProductCardShell>
+      <Dialog open={openChat} onOpenChange={setOpenChat}>
+        <DialogTitle></DialogTitle>
+        <DialogContent className="max-w-2xl w-full">
+          <ProductChat
+            vault={vault}
+            alreadyInDispute={vault.order_status === "disputed"}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogTitle className="text-lg"></DialogTitle>
+        <DialogContent className="max-w-md">
+          <ProductImageCarousel images={metadata.images} />
+          <div className="flex flex-col gap-2 mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <Badge variant="outline" className="text-xs">
+                {metadata.category}
+              </Badge>
+              <span className="text-xs font-medium">Brand: {metadata.brand}</span>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Condition: </span>
+              <Badge className="whitespace-pre-wrap">{vault.notes}</Badge>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Location: </span>
+              <Badge>{vault.location}</Badge>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Product By</span>
+              <a
+                href={`https://universaleverything.io/${getAddress(vault.seller)}?network=testnet&assetGroup=tokens`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-blue-600 hover:underline truncate block"
+              >
+                <Badge variant="outline" className="truncate">
+                  {vault.seller}
+                </Badge>
+              </a>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

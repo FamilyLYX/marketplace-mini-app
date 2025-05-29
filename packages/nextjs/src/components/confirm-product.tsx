@@ -11,10 +11,12 @@ import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { toast } from "sonner";
-import { ProductImageCarousel } from "./product";
 import { queryClient } from "./marketplace-provider";
 import ProductChat from "./escrow-chat";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
+import { ProductCardShell } from "./inmarketplace-product";
+import { ProductImageCarousel } from "./product";
+
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -40,6 +42,7 @@ export function ConfirmProduct({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [openChat, setOpenChat] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [plainUIDCode, setPlainUIDCode] = useState("");
   const { confirmReceipt } = useFamilyVault(vaultAddress as `0x${string}`);
   const { fetchAndUpdateSalt } = useFetchSaltAndUpdate();
@@ -101,56 +104,23 @@ export function ConfirmProduct({
   });
   return (
     <>
-      <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
-        <ProductImageCarousel images={metadata.images} />
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold truncate">{metadata.title}</h3>
-            <Badge variant="outline" className="text-xs">
-              {metadata.category}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {metadata.description}
-          </p>
-          <p className="text-xs">
-            <span className="font-medium">Brand: {metadata.brand}</span>
-          </p>
-          <div className="col-span-2">
-            <p className="text-xs text-muted-foreground">Condition</p>
-            <Badge className="whitespace-pre-wrap">{condition}</Badge>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Location</p>
-            <Badge>{location}</Badge>
-          </div>
-          <div className="col-span-2 gap-2">
-            <p className="text-xs text-muted-foreground">Product By</p>
-            <a
-              href={`https://universaleverything.io/${getAddress(sellerAddress)}?network=testnet&assetGroup=tokens`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm font-medium text-blue-600 hover:underline truncate block"
-            >
-              <Badge variant="outline" className="truncate">
-                {sellerAddress}
-              </Badge>
-            </a>
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between gap-2">
-          <Button
-            variant="outline"
-            className="w-1/2"
-            onClick={() => setOpenChat(!openChat)}
-          >
-            Open Chat 
-          </Button>
-          <Button className="w-1/2" onClick={() => setModalOpen(true)}>
-            Confirm
-          </Button>
-        </CardFooter>
-      </Card>
+      <ProductCardShell
+        image={metadata.images?.[0] || ""}
+        title={metadata.title}
+        subtitle={metadata.brand}
+        status={vault.order_status ? vault.order_status.charAt(0).toUpperCase() + vault.order_status.slice(1) : ""}
+      >
+        <Button
+          variant="outline"
+          className="w-1/2"
+          onClick={() => setOpenChat(!openChat)}
+        >
+          Open Chat
+        </Button>
+        <Button className="w-1/2" onClick={() => setInfoOpen(true)}>
+          More Info
+        </Button>
+      </ProductCardShell>
       <Dialog open={openChat} onOpenChange={setOpenChat}>
         <DialogTitle></DialogTitle>
         <DialogContent className="max-w-2xl w-full">
@@ -160,7 +130,43 @@ export function ConfirmProduct({
           />
         </DialogContent>
       </Dialog>
-      {/* Modal */}
+      {/* Info Modal */}
+      <Dialog key={infoOpen+plainUIDCode} open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogTitle className="text-lg"></DialogTitle>
+        <DialogContent className="max-w-md">
+          <ProductImageCarousel images={metadata.images} />
+          <div className="flex flex-col gap-2 mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <Badge variant="outline" className="text-xs">
+                {metadata.category}
+              </Badge>
+              <span className="text-xs font-medium">Brand: {metadata.brand}</span>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Condition: </span>
+              <Badge className="whitespace-pre-wrap">{condition}</Badge>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Location: </span>
+              <Badge>{location}</Badge>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Product By</span>
+              <a
+                href={`https://universaleverything.io/${getAddress(sellerAddress)}?network=testnet&assetGroup=tokens`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-blue-600 hover:underline truncate block"
+              >
+                <Badge variant="outline" className="truncate">
+                  {sellerAddress}
+                </Badge>
+              </a>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Confirm Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogTitle></DialogTitle>
         <DialogContent className="max-w-md">

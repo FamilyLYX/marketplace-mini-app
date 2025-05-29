@@ -23,3 +23,19 @@ export async function getSalt(dppAddress: string): Promise<string | null> {
 
   return data.salt;
 }
+
+export async function getAllData(dppAddress: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("dpp_salts")
+    .select("*")
+    .eq("token_id", tokenId)
+    .eq("contract_address", dppAddress)
+    .single();
+
+  if (error) {
+    console.error("Error fetching salt:", error.message);
+    return null;
+  }
+
+  return data;
+}
