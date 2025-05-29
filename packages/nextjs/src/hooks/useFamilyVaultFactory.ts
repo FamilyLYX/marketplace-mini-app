@@ -7,14 +7,11 @@ import {
 } from "@/constants/vaultFactory";
 import { createPublicClient, http, pad, parseEventLogs } from "viem";
 import { luksoTestnet } from "viem/chains";
-import { account } from "@/lib/owner";
 
 const readClient = createPublicClient({
   chain: luksoTestnet,
   transport: http("https://rpc.testnet.lukso.network"),
 });
-
-const admin = account.address;
 
 type CreateVaultParams = {
   nftContract: string;
@@ -42,7 +39,7 @@ export const useFamilyVaultFactory = () => {
         functionName: "createVault",
         account: accounts[0] as `0x${string}`,
         chain: client.chain,
-        args: [admin, nftContract, tokenId, priceInLYX],
+        args: [nftContract, tokenId, priceInLYX],
       });
       console.log("Simulation request:", request);
       const tx = await client.writeContract({
@@ -51,7 +48,7 @@ export const useFamilyVaultFactory = () => {
         functionName: "createVault",
         account: accounts[0] as `0x${string}`,
         chain: client.chain,
-        args: [admin, nftContract, tokenId, priceInLYX],
+        args: [nftContract, tokenId, priceInLYX],
       });
 
       const receipt = await readClient.waitForTransactionReceipt({ hash: tx });

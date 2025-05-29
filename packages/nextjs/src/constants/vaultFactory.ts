@@ -9,18 +9,31 @@ const FAMILY_VAULT_FACTORY_ABI = [
         type: "address",
         internalType: "address",
       },
-    ],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "createVault",
-    inputs: [
       {
         name: "_admin",
         type: "address",
         internalType: "address",
       },
+    ],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "admin",
+    inputs: [],
+    outputs: [
+      {
+        name: "",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "createVault",
+    inputs: [
       {
         name: "_nftContract",
         type: "address",
@@ -156,6 +169,6 @@ const FAMILY_VAULT_FACTORY_ABI = [
   },
 ] as Abi;
 const FAMILY_VAULT_FACTORY_ADDRESS =
-  "0xE5f78BE4EB252f3081F4751136a784944800B95b" as `0x${string}`;
+  "0xd5469F57B94F4B8B971203c1C7e10194f1A2880F" as `0x${string}`;
 
 export { FAMILY_VAULT_FACTORY_ABI, FAMILY_VAULT_FACTORY_ADDRESS };

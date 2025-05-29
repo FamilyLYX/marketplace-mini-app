@@ -16,7 +16,7 @@ contract FamilyVaultFactory {
 
     /// @notice Address of the FamilyVault implementation contract used for cloning
     address public immutable implementation;
-
+    address public immutable admin;
     /// @notice List of deployed vault clone addresses
     address[] public vaults;
 
@@ -62,9 +62,11 @@ contract FamilyVaultFactory {
 
     /// @notice Sets the address of the FamilyVault implementation contract
     /// @param _implementation The FamilyVault logic contract used for cloning
-    constructor(address _implementation) {
+    constructor(address _implementation, address _admin) {
         if (_implementation == address(0)) revert InvalidImplementation();
         implementation = _implementation;
+        if (_admin == address(0)) revert InvalidAdmin();
+        admin = _admin;
     }
 
     /* -------------------------------------------------------------------------- */
@@ -72,18 +74,15 @@ contract FamilyVaultFactory {
     /* -------------------------------------------------------------------------- */
 
     /// @notice Creates a new FamilyVault clone and initializes it
-    /// @param _admin Admin address for the vault (e.g., marketplace admin)
     /// @param _nftContract NFT contract address for the vault asset
     /// @param _tokenId Token ID of the NFT (bytes32)
     /// @param _priceInLYX Price of the item in LYX
     /// @return clone The address of the deployed FamilyVault clone
     function createVault(
-        address _admin,
         address _nftContract,
         bytes32 _tokenId,
         uint256 _priceInLYX
     ) external returns (address clone) {
-        if (_admin == address(0)) revert InvalidAdmin();
         if (_nftContract == address(0)) revert InvalidNFTContract();
 
         // Deploy a minimal proxy clone of the FamilyVault implementation
@@ -91,7 +90,7 @@ contract FamilyVaultFactory {
 
         // Initialize the clone with the provided parameters
         FamilyVault(payable(clone)).initialize(
-            _admin,
+            admin,
             msg.sender,
             _nftContract,
             _tokenId,
@@ -104,7 +103,7 @@ contract FamilyVaultFactory {
         // Emit creation event
         emit VaultCreated(
             clone,
-            _admin,
+            admin,
             msg.sender,
             _nftContract,
             _tokenId,
