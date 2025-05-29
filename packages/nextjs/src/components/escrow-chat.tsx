@@ -306,76 +306,138 @@ const ResolveDisputeDialog = ({
   isOpen,
   onOpenChange,
   onResolve,
-  selectedWinner,
-  onWinnerChange,
-  selectedTraceReceiver,
-  onTraceReceiverChange,
   buyer,
   seller,
+  vault,
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onResolve: () => void;
-  selectedWinner: string;
-  onWinnerChange: (winner: string) => void;
-  selectedTraceReceiver: string;
-  onTraceReceiverChange: (receiver: string) => void;
   buyer: string;
   seller: string;
-}) => (
-  <Dialog open={isOpen} onOpenChange={onOpenChange}>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Resolve Dispute</DialogTitle>
-        <DialogDescription>
-          Select where to send the funds and trace information to resolve this
-          dispute.
-        </DialogDescription>
-      </DialogHeader>
-      <div className="space-y-4 py-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Send Funds To:</label>
-          <Select value={selectedWinner} onValueChange={onWinnerChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select recipient for funds" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={buyer}>Buyer</SelectItem>
-              <SelectItem value={seller}>Seller</SelectItem>
-            </SelectContent>
-          </Select>
+  vault: Vault;
+}) => {
+  const vaultAddress = vault.vault_address;
+  const { resolveDispute } = useFamilyVault(vaultAddress as `0x${string}`);
+  const { fetchDataAndUpdateSalt } = useFetchSaltAndUpdate();
+  const [selectedWinner, setSelectedWinner] = useState("");
+  const [selectedTraceReceiver, setSelectedTraceReceiver] = useState("");
+
+  const handleResolveDispute = useMutation({
+    mutationFn: async () => {
+      if (vault.nft_contract === undefined) {
+        throw new Error("Please enter a valid UID code");
+      }
+      const { plainUIDCode, currentSalt, newSalt, newUidHash } =
+        await fetchDataAndUpdateSalt(vault.nft_contract as `0x${string}`);
+      const res = await resolveDispute(
+        selectedTraceReceiver,
+        selectedWinner,
+        plainUIDCode,
+        currentSalt,
+        newUidHash,
+      );
+
+      if (!res) {
+        throw new Error("Failed to create vault");
+      }
+      await fetch("/api/save-salt", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tokenId: pad("0x0", { size: 32 }), // using a fixed tokenId of 0x0
+          contractAddress: vault.nft_contract,
+          salt: newSalt,
+          uidHash: newUidHash,
+        }),
+      });
+      try {
+        const response = await fetch(
+          `/api/vault?vault_address=${vaultAddress}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order_status: "resolved",
+            } as Vault),
+          },
+        );
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Vault listing update failed: ${errorText}`);
+        }
+      } catch (error) {
+        console.error("Vault listing update failed:", error);
+      }
+      return { res };
+    },
+    onSuccess: (data) => {
+      console.log("Resolve by admin ", data);
+      queryClient.invalidateQueries({
+        queryKey: ["marketplaceProducts", "allNfts"],
+      });
+      onResolve();
+      onOpenChange(false);
+    },
+    onError: (error) => {
+      console.error("Error during buy mutation:", error);
+    },
+  });
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Resolve Dispute</DialogTitle>
+          <DialogDescription>
+            Select where to send the funds and trace information to resolve this
+            dispute.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Send Funds To:</label>
+            <Select value={selectedWinner} onValueChange={setSelectedWinner}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select recipient for funds" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={buyer}>Buyer</SelectItem>
+                <SelectItem value={seller}>Seller</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Send Trace To:</label>
+            <Select
+              value={selectedTraceReceiver}
+              onValueChange={setSelectedTraceReceiver}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select recipient for trace" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={buyer}>Buyer</SelectItem>
+                <SelectItem value={seller}>Seller</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Send Trace To:</label>
-          <Select
-            value={selectedTraceReceiver}
-            onValueChange={onTraceReceiverChange}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => handleResolveDispute.mutate()}
+            disabled={!selectedWinner || !selectedTraceReceiver}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select recipient for trace" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={buyer}>Buyer</SelectItem>
-              <SelectItem value={seller}>Seller</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
-          Cancel
-        </Button>
-        <Button
-          onClick={onResolve}
-          disabled={!selectedWinner || !selectedTraceReceiver}
-        >
-          <CheckCircle className="h-4 w-4 mr-2" />
-          Resolve Dispute
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-);
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Resolve Dispute
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const ActionButtons = ({
   isBuyer,
@@ -603,7 +665,7 @@ const ChatMessages = ({
 
         const pillVariant =
           isFromCurrentUser ||
-          msg.from.toLowerCase() === adminAddress.toLowerCase()
+            msg.from.toLowerCase() === adminAddress.toLowerCase()
             ? "default"
             : msg.from === "system"
               ? "secondary"
@@ -670,10 +732,7 @@ export default function ProductChat({
   const { buyer, seller, vault_address: vaultAddress, first_name } = vault;
   const { accounts } = useUpProvider();
   const userAddress = accounts[0] || "";
-  const { initiateDispute, cancelTrade } = useFamilyVault(
-    vaultAddress as `0x${string}`,
-  );
-  const { fetchAndUpdateSalt } = useFetchSaltAndUpdate();
+  const { initiateDispute } = useFamilyVault(vaultAddress as `0x${string}`);
 
   // State
   const [selectedWinner, setSelectedWinner] = useState("");
@@ -931,12 +990,9 @@ export default function ProductChat({
           isOpen={isResolveModalOpen}
           onOpenChange={setIsResolveModalOpen}
           onResolve={handleResolveDispute}
-          selectedWinner={selectedWinner}
-          onWinnerChange={setSelectedWinner}
-          selectedTraceReceiver={selectedTraceReceiver}
-          onTraceReceiverChange={setSelectedTraceReceiver}
           buyer={buyer as string}
           seller={seller as string}
+          vault={vault}
         />
       )}
     </div>

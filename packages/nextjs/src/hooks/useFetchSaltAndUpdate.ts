@@ -30,5 +30,33 @@ export const useFetchSaltAndUpdate = () => {
     };
   };
 
-  return { fetchAndUpdateSalt };
+  const fetchDataAndUpdateSalt = async (
+    dppAddress: `0x${string}`,
+  ): Promise<{
+    plainUIDCode: string;
+    currentSalt: string;
+    newSalt: string;
+    newUidHash: `0x${string}`;
+  }> => {
+    const response = await fetch(`/api/get-data?dppAddress=${dppAddress}`);
+    const data = await response.json();
+    const plainUIDCode = data.plainUIDCode;
+    if (!plainUIDCode) {
+      throw new Error("Failed to fetch plain UID code");
+    }
+    const currentSalt = data.salt;
+    const newSalt = uuidv4();
+    const newUidHash = keccak256(
+      encodePacked(["string", "string"], [newSalt, plainUIDCode]),
+    );
+
+    return {
+      plainUIDCode,
+      currentSalt,
+      newSalt,
+      newUidHash,
+    };
+  };
+
+  return { fetchAndUpdateSalt, fetchDataAndUpdateSalt };
 };
