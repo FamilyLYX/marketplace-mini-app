@@ -1,20 +1,18 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ProductCard, ProductMetadata } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
 import { Vault } from "@/types";
-import { ConfirmProduct } from "@/components/confirm-product";
-import { PurchasedProductCard } from "@/components/purchased-product";
 import { getAddress } from "viem";
 import { useUpProvider } from "@/components/up-provider";
-import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 import AdminProductChats from "@/components/admin-product-chats";
 import Image from "next/image";
 import ProductMarketplaceCarousel from "@/components/product-marketplace-carousel";
 import InventoryCarousel from "@/components/inventory-carousel";
+import OrdersCarousel from "@/components/orders-carousel";
 
 const adminAddress =
   (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
@@ -125,10 +123,12 @@ const Inventory = () => {
       type: "add",
       data: product,
     }));
-    const inMarketplaceProducts = alreadyInMarketplaceProducts.map((vault: Vault) => ({
-      type: "in-marketplace",
-      data: vault,
-    }));
+    const inMarketplaceProducts = alreadyInMarketplaceProducts.map(
+      (vault: Vault) => ({
+        type: "in-marketplace",
+        data: vault,
+      }),
+    );
     return [...addProducts, ...inMarketplaceProducts];
   }, [addToMarketplaceProducts, alreadyInMarketplaceProducts]);
 
@@ -206,69 +206,36 @@ const Inventory = () => {
         </TabsContent>
         <TabsContent value="orders">
           <div className="flex flex-col gap-10 max-w-6xl w-full">
-            {/* Shipping Section */}
-            <div className="flex flex-col gap-4 w-full">
-              <h2 className="text-2xl font-semibold">Shipping</h2>
-              {isMarketplaceLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading your orders...
-                </p>
-              ) : orderedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {orderedProducts.map((vault: Vault, index: number) => (
-                    <ConfirmProduct
-                      key={`shipping-${index}`}
-                      vault={vault}
-                      metadata={{
-                        title: vault.title ?? "",
-                        description: vault.description ?? "",
-                        images: vault.images ?? [],
-                        category: vault.category ?? "",
-                        brand: vault.brand ?? "",
-                      }}
-                      vaultAddress={vault.vault_address}
-                      condition={vault.notes as string}
-                      location={vault.location as string}
-                      sellerAddress={vault.seller}
+            {isMarketplaceLoading ? (
+              <p className="text-sm text-muted-foreground">
+                Loading your orders...
+              </p>
+            ) : (
+              <>
+                <div className="flex flex-col gap-4 w-full">
+                  <h2 className="text-2xl font-semibold">Your Orders</h2>
+                  {orderedProducts.length > 0 ||
+                  confirmedProducts.length > 0 ? (
+                    <OrdersCarousel
+                      orders={[
+                        ...orderedProducts.map((vault: Vault) => ({
+                          type: "shipping" as const,
+                          data: vault,
+                        })),
+                        ...confirmedProducts.map((vault: Vault) => ({
+                          type: "delivered" as const,
+                          data: vault,
+                        })),
+                      ]}
                     />
-                  ))}
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No orders found.
+                    </p>
+                  )}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No products currently in shipping.
-                </p>
-              )}
-            </div>
-
-            {/* Delivered Section */}
-            <div className="flex flex-col gap-4">
-              <h2 className="text-2xl font-semibold">Delivered</h2>
-              {isMarketplaceLoading ? (
-                <p className="text-sm text-muted-foreground">
-                  Loading delivered products...
-                </p>
-              ) : confirmedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {confirmedProducts.map((vault: Vault, index: number) => (
-                    <PurchasedProductCard
-                      key={`delivered-${index}`}
-                      metadata={{
-                        title: vault.title ?? "",
-                        description: vault.description ?? "",
-                        images: vault.images ?? [],
-                        category: vault.category ?? "",
-                        brand: vault.brand ?? "",
-                      }}
-                      vault={vault}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No products delivered yet.
-                </p>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </TabsContent>
         <TabsContent value="products">

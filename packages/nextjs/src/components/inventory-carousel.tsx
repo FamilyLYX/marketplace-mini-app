@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import React from "react";
 import { ProductCard } from "@/components/product";
 import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
@@ -40,12 +41,7 @@ export default function InventoryCarousel({ products }: { products: any[] }) {
         brand: item.data.brand ?? "",
         images: item.data.images ?? [],
       };
-      return (
-        <AlreadyInMarketplace
-          metadata={metadata}
-          vault={item.data}
-        />
-      );
+      return <AlreadyInMarketplace metadata={metadata} vault={item.data} />;
     }
     return null;
   };
@@ -60,13 +56,17 @@ export default function InventoryCarousel({ products }: { products: any[] }) {
           loop: true,
         }}
       >
-        <CarouselContent className="-ml-4 md:-ml-6">
+        <CarouselContent className="gap-4">
           {products.map((product, index) => (
             <CarouselItem key={index} className="pl-4 md:pl-6 basis-1/3">
-              <div className={cn(
-                "m-6 transition-all duration-300",
-                current === index ? "scale-100" : "scale-90 opacity-30 blur-md"
-              )}>
+              <div
+                className={cn(
+                  "m-6 transition-all duration-300",
+                  current === index
+                    ? "scale-100"
+                    : "scale-90 opacity-30 blur-md",
+                )}
+              >
                 {renderProduct(product)}
               </div>
             </CarouselItem>
@@ -77,4 +77,4 @@ export default function InventoryCarousel({ products }: { products: any[] }) {
       </Carousel>
     </div>
   );
-} 
+}

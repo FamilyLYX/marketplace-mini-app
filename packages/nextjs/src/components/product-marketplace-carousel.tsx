@@ -76,14 +76,15 @@ export default function ProductMarketplaceCarousel({
           ) : null}
         </div>
         {/* Center Product */}
-        <div className="w-1/2 h-full flex flex-col items-center justify-center">
+        <div className="w-1/2 h-full flex flex-col items-center justify-center mt-4">
           <ProductCardShell
             image={products[activeIndex].images?.[0] || "/placeholder.png"}
             title={products[activeIndex].title}
             subtitle={`Price: ${products[activeIndex].price_in_lyx} LYX`}
           >
             <Button
-              className="rounded-full px-8 py-2 text-lg font-semibold"
+              variant="default"
+              className="w-1/2"
               onClick={() => handleBuy(products[activeIndex])}
             >
               Buy
@@ -92,7 +93,7 @@ export default function ProductMarketplaceCarousel({
               open={
                 dialogOpen &&
                 dialogProduct?.vault_address ===
-                  products[activeIndex].vault_address
+                products[activeIndex].vault_address
               }
               onOpenChange={(open) => {
                 setDialogOpen(open);
@@ -102,7 +103,7 @@ export default function ProductMarketplaceCarousel({
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="rounded-full px-8 py-2 text-lg font-semibold"
+                  className="w-1/2"
                   onClick={() => {
                     setDialogProduct(products[activeIndex]);
                     setDialogOpen(true);

@@ -1,10 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // Toast import here
-import { ProductImageCarousel } from "./product";
-import { BuyerInfo, Vault } from "@/types";
+import { Vault } from "@/types";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import ProductChat from "./escrow-chat";
@@ -35,22 +32,23 @@ export function ProductCardShell({
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <div className="relative w-[340px] h-[340px] mb-4 rounded-[2.5rem] shadow-lg border bg-white flex items-center justify-center overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={image || "/placeholder.png"}
           alt={title}
           className="w-full h-full object-fit"
         />
         {status && (
-        <span
-          className="absolute left-1/2 -translate-x-1/2 bottom-4 px-4 py-1 rounded-full text-xs font-semibold shadow-lg bg-gray-200 text-gray-700"
-        >
+          <span className="absolute left-1/2 -translate-x-1/2 bottom-4 px-4 py-1 rounded-full text-xs font-semibold shadow-lg bg-gray-200 text-gray-700">
             {status}
           </span>
         )}
       </div>
-      <h3 className="text-3xl font-bold mb-1 text-center font-[inherit]">{title}</h3>
+      <h3 className="text-3xl font-bold mb-1 text-center font-[inherit]">
+        {title}
+      </h3>
       {subtitle && (
-        <div className="text-base mb-4 font-normal text-center text-gray-700">
+        <div className="text-sm mb-4 font-normal text-center text-gray-700">
           {subtitle}
         </div>
       )}
@@ -81,26 +79,34 @@ export function AlreadyInMarketplace({
       image={metadata.images?.[0] || ""}
       title={metadata.title}
       subtitle={metadata.brand}
-      status={vault.order_status ? vault.order_status.charAt(0).toUpperCase() + vault.order_status.slice(1) : "Listed"}
+      status={
+        vault.order_status
+          ? vault.order_status.charAt(0).toUpperCase() +
+          vault.order_status.slice(1)
+          : "Listed"
+      }
     >
       {hasBuyer ? (
         <>
           <Button
             variant="default"
-            className="rounded-full px-8 py-2 text-lg font-semibold w-1/2"
+            className="w-1/2"
             onClick={() => setOpenChat(true)}
           >
             Open Chat
           </Button>
           <Dialog open={openChat} onOpenChange={setOpenChat}>
             <DialogContent className="max-w-2xl w-full">
-              <ProductChat vault={vault} alreadyInDispute={vault.order_status === "disputed"} />
+              <ProductChat
+                vault={vault}
+                alreadyInDispute={vault.order_status === "disputed"}
+              />
             </DialogContent>
           </Dialog>
           <Dialog open={isBuyerModalOpen} onOpenChange={setIsBuyerModalOpen}>
             <Button
               variant="outline"
-              className="rounded-full px-8 py-2 text-lg font-semibold w-1/2"
+              className="w-1/2"
               onClick={() => setIsBuyerModalOpen(true)}
             >
               More Info
@@ -140,13 +146,14 @@ export function AlreadyInMarketplace({
           </Dialog>
         </>
       ) : (
-        <Button
-          variant="default"
-          className="rounded-full px-8 py-2 text-lg font-semibold w-full"
-          onClick={handleRemove}
-        >
-          Unlist
-        </Button>
+        <>
+          <Button variant="default" className="w-1/2" onClick={handleRemove}>
+            Unlist
+          </Button>
+          <Button variant="outline" className="w-1/2">
+            Open Info
+          </Button>
+        </>
       )}
     </ProductCardShell>
   );
