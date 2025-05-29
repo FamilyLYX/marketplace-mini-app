@@ -1,42 +1,6 @@
 import { Abi } from "viem";
 export const FAMILY_VAULT_ABI = [
   {
-    type: "constructor",
-    inputs: [
-      {
-        name: "_admin",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_seller",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_nftContract",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "_priceInLYX",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "_expectedUIDHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    stateMutability: "nonpayable",
-  },
-  {
     type: "fallback",
     stateMutability: "payable",
   },
@@ -66,19 +30,6 @@ export const FAMILY_VAULT_ABI = [
         name: "",
         type: "uint256",
         internalType: "uint256",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "VERSION",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "string",
-        internalType: "string",
       },
     ],
     stateMutability: "view",
@@ -137,12 +88,45 @@ export const FAMILY_VAULT_ABI = [
   },
   {
     type: "function",
+    name: "cancelTrade",
+    inputs: [
+      {
+        name: "plainUidCode",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newUidHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
     name: "confirmReceipt",
     inputs: [
       {
         name: "plainUidCode",
         type: "string",
         internalType: "string",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newUidHash",
+        type: "bytes32",
+        internalType: "bytes32",
       },
     ],
     outputs: [],
@@ -218,19 +202,6 @@ export const FAMILY_VAULT_ABI = [
   },
   {
     type: "function",
-    name: "expectedUIDHash",
-    inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
     name: "getData",
     inputs: [
       {
@@ -266,6 +237,39 @@ export const FAMILY_VAULT_ABI = [
       },
     ],
     stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "initialize",
+    inputs: [
+      {
+        name: "_admin",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "_seller",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "_nftContract",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "_tokenId",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+      {
+        name: "_priceInLYX",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
   },
   {
     type: "function",
@@ -346,6 +350,21 @@ export const FAMILY_VAULT_ABI = [
         name: "paymentRecipient",
         type: "address",
         internalType: "address",
+      },
+      {
+        name: "plainUidCode",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newUidHash",
+        type: "bytes32",
+        internalType: "bytes32",
       },
     ],
     outputs: [],
@@ -463,12 +482,12 @@ export const FAMILY_VAULT_ABI = [
     name: "universalReceiver",
     inputs: [
       {
-        name: "typeId",
+        name: "",
         type: "bytes32",
         internalType: "bytes32",
       },
       {
-        name: "data",
+        name: "",
         type: "bytes",
         internalType: "bytes",
       },
@@ -481,6 +500,29 @@ export const FAMILY_VAULT_ABI = [
       },
     ],
     stateMutability: "payable",
+  },
+  {
+    type: "function",
+    name: "unlist",
+    inputs: [
+      {
+        name: "plainUidCode",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "salt",
+        type: "string",
+        internalType: "string",
+      },
+      {
+        name: "newUidHash",
+        type: "bytes32",
+        internalType: "bytes32",
+      },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
   },
   {
     type: "event",
@@ -597,6 +639,19 @@ export const FAMILY_VAULT_ABI = [
   },
   {
     type: "event",
+    name: "Initialized",
+    inputs: [
+      {
+        name: "version",
+        type: "uint8",
+        indexed: false,
+        internalType: "uint8",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
     name: "OwnershipRenounced",
     inputs: [],
     anonymous: false,
@@ -656,6 +711,19 @@ export const FAMILY_VAULT_ABI = [
     type: "event",
     name: "RenounceOwnershipStarted",
     inputs: [],
+    anonymous: false,
+  },
+  {
+    type: "event",
+    name: "TradeCancelled",
+    inputs: [
+      {
+        name: "cancelledBy",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
     anonymous: false,
   },
   {
@@ -746,6 +814,31 @@ export const FAMILY_VAULT_ABI = [
     anonymous: false,
   },
   {
+    type: "event",
+    name: "VaultListed",
+    inputs: [
+      {
+        name: "nftContract",
+        type: "address",
+        indexed: false,
+        internalType: "address",
+      },
+      {
+        name: "vault",
+        type: "address",
+        indexed: false,
+        internalType: "address",
+      },
+      {
+        name: "tokenId",
+        type: "bytes32",
+        indexed: false,
+        internalType: "bytes32",
+      },
+    ],
+    anonymous: false,
+  },
+  {
     type: "error",
     name: "ERC725X_ContractDeploymentFailed",
     inputs: [],
@@ -814,6 +907,59 @@ export const FAMILY_VAULT_ABI = [
   },
   {
     type: "error",
+    name: "IncorrectPayment",
+    inputs: [
+      {
+        name: "expected",
+        type: "uint256",
+        internalType: "uint256",
+      },
+      {
+        name: "actual",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "IncorrectTokenOwner",
+    inputs: [
+      {
+        name: "expected",
+        type: "address",
+        internalType: "address",
+      },
+      {
+        name: "actual",
+        type: "address",
+        internalType: "address",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "InvalidState",
+    inputs: [
+      {
+        name: "expected",
+        type: "uint8",
+        internalType: "enum FamilyVault.VaultState",
+      },
+      {
+        name: "actual",
+        type: "uint8",
+        internalType: "enum FamilyVault.VaultState",
+      },
+    ],
+  },
+  {
+    type: "error",
+    name: "InvalidUIDCode",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "LSP14CallerNotPendingOwner",
     inputs: [
       {
@@ -873,6 +1019,26 @@ export const FAMILY_VAULT_ABI = [
   },
   {
     type: "error",
+    name: "NotAdmin",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "NotBuyer",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "NotBuyerOrSeller",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "NotSeller",
+    inputs: [],
+  },
+  {
+    type: "error",
     name: "OwnableCallerNotTheOwner",
     inputs: [
       {
@@ -881,5 +1047,15 @@ export const FAMILY_VAULT_ABI = [
         internalType: "address",
       },
     ],
+  },
+  {
+    type: "error",
+    name: "TransferFailed",
+    inputs: [],
+  },
+  {
+    type: "error",
+    name: "ZeroAddress",
+    inputs: [],
   },
 ] as Abi;

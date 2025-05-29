@@ -7,7 +7,6 @@ import { Vault } from "@/types";
 import { toast } from "sonner";
 import clsx from "clsx";
 import { queryClient } from "./marketplace-provider";
-import { Label } from "@radix-ui/react-label";
 import { Button } from "./ui/button";
 import {
   Select,
@@ -28,15 +27,13 @@ interface ProductChatProps {
   alreadyInDispute?: boolean;
 }
 
-const adminAddress =
-  process.env.NEXT_PUBLIC_ADMIN_ADDRESS ||
-  "0x9dD1084ac41e6234931680Cc1214691C4f098C01";
+const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}` || "";
 
 export default function ProductChat({
   vault,
   alreadyInDispute,
 }: ProductChatProps) {
-  const { buyer, seller, vault_address: vaultAddress } = vault;
+  const { buyer, seller, vault_address: vaultAddress, first_name } = vault;
   const { accounts } = useUpProvider();
   const userAddress = accounts[0] || "";
   const { initiateDispute } = useFamilyVault(vaultAddress as `0x${string}`);
@@ -123,9 +120,16 @@ export default function ProductChat({
   }
 
   async function sendDisputeMessage() {
+    let raisedBy = '';
+    if (userAddress.toLowerCase() === buyer?.toLowerCase()) {
+      raisedBy = vault.first_name || 'Buyer';
+    } else if (userAddress.toLowerCase() === seller?.toLowerCase()) {
+      raisedBy = 'Seller';
+    } else {
+      raisedBy = '';
+    }
     await sendMessage(
-      "Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by :" +
-        userAddress,
+      `Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by :${raisedBy}`,
       "admin",
     );
   }
@@ -194,104 +198,96 @@ export default function ProductChat({
     setNewMsg("");
   };
 
+  // Helper for pills
+  const Pill = ({
+    label,
+    active,
+    asLink,
+    href,
+  }: {
+    label: string;
+    active?: boolean;
+    asLink?: boolean;
+    href?: string;
+  }) =>
+    asLink && href ? (
+      <a
+        href={href}
+        className={clsx(
+          "px-3 py-1 rounded-full text-sm font-medium underline-offset-2",
+          active ? "bg-black text-white" : "bg-gray-200 text-gray-700",
+          "hover:underline cursor-pointer",
+        )}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {label}
+      </a>
+    ) : (
+      <span
+        className={clsx(
+          "px-3 py-1 rounded-full text-sm font-medium",
+          active ? "bg-black text-white" : "bg-gray-200 text-gray-700",
+        )}
+      >
+        {label}
+      </span>
+    );
+
+  // Helper for date separator
+  const DateSeparator = ({ date }: { date: string }) => (
+    <div className="flex justify-center my-2">
+      <span className="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full">
+        {date}
+      </span>
+    </div>
+  );
+
   if (!userAddress)
     return <div>Please connect your wallet to view the chat.</div>;
 
+  // --- HEADER ---
   return (
-    <div className="max-w-md p-4 flex flex-col h-[600px] ">
-      <div className="text-center font-semibold text-lg mb-3 border-b pb-2">
-        Family Marketplace Chat
-      </div>
-
-      {/* Chat Window */}
-      <div className="flex-1 overflow-y-auto space-y-3 mb-4 p-2 bg-gray-50 rounded">
-        {messages.map((msg, idx) => {
-          const role = getUserRoleLabel(msg.from);
-          const align = getBubbleAlignment(msg.from);
-          return (
-            <div
-              key={idx}
-              className={clsx("flex flex-col", {
-                "items-end": align === "end",
-                "items-start": align === "start",
-                "items-center": align === "center",
-              })}
-            >
-              {role !== "System" && (
-                <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full mb-1">
-                  {role}
-                </span>
-              )}
-              <div
-                className={clsx(
-                  "max-w-[80%] px-4 py-2 rounded-lg text-sm shadow-sm whitespace-pre-line",
-                  {
-                    "bg-yellow-100 text-gray-700": role === "System",
-                    "bg-black text-white": align === "end",
-                    "bg-gray-200 text-gray-800": align === "start",
-                  },
-                )}
-              >
-                {msg.content}
-                <div className="text-[10px] text-right text-gray-500 mt-1">
-                  {new Date(msg.timestamp).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Dispute actions */}
-      <div className="mb-2 text-center">
-        {!isAdmin && !alreadyInDispute && (isBuyer || isSeller) && (
-          <div className="mb-2 text-center">
+    <div className="max-w-md flex flex-col h-[600px] bg-white">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+        <div className="flex-1 flex items-center justify-center gap-2">
+          <Pill label="Family" active={isAdmin} />
+          <Pill label="Seller" asLink href="/seller-profile" />
+          <span className="text-gray-400">and</span>
+          <Pill label={first_name || "User"} active={!isAdmin} />
+        </div>
+        {/* Header right actions */}
+        <div className="flex items-center gap-2">
+          {!isAdmin && !alreadyInDispute && (isBuyer || isSeller) && (
             <button
               onClick={handleRaiseDispute}
-              className="bg-red-100 text-red-600 px-4 py-1 rounded hover:bg-red-200 text-sm"
+              className="flex items-center bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 text-sm font-medium"
             >
-              ⚠️ Raise Dispute
+              <span className="mr-1">✖</span> Dispute
             </button>
-          </div>
-        )}
-
-        {isAdmin && alreadyInDispute && (
-          <div className="space-y-4">
-            <div className="text-sm font-medium text-gray-700">
-              Resolve dispute:
-            </div>
-
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label htmlFor="winner">Who receives funds</Label>
+          )}
+          {isAdmin && alreadyInDispute && (
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-1">
                 <Select
                   value={selectedWinner}
                   onValueChange={setSelectedWinner}
                 >
-                  <SelectTrigger id="winner" className="w-full">
-                    <SelectValue placeholder="Select a party" />
+                  <SelectTrigger className="w-28 h-8 text-xs">
+                    <SelectValue placeholder="Funds to" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={buyer as string}>Buyer</SelectItem>
                     <SelectItem value={seller as string}>Seller</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="traceReceiver">
-                  Who receives product trace
-                </Label>
                 <Select
                   value={selectedTraceReceiver}
                   onValueChange={setSelectedTraceReceiver}
                 >
-                  <SelectTrigger id="traceReceiver" className="w-full">
-                    <SelectValue placeholder="Select a party" />
+                  <SelectTrigger className="w-28 h-8 text-xs">
+                    <SelectValue placeholder="Trace to" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value={buyer as string}>Buyer</SelectItem>
@@ -299,8 +295,9 @@ export default function ProductChat({
                   </SelectContent>
                 </Select>
               </div>
-
               <Button
+                size="sm"
+                className="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded text-xs font-medium"
                 disabled={!selectedWinner || !selectedTraceReceiver}
                 onClick={async () => {
                   try {
@@ -314,23 +311,91 @@ export default function ProductChat({
                 ✅ Resolve
               </Button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      </div>
+
+      {/* Chat Window */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 bg-white">
+        {(() => {
+          let lastDate = "";
+          return messages.map((msg, idx) => {
+            const isFromCurrentUser =
+              msg.from.toLowerCase() === userAddress.toLowerCase();
+            // Determine sender label
+            let pillLabel = "";
+            if (msg.from.toLowerCase() === adminAddress.toLowerCase()) {
+              pillLabel = "Family";
+            } else if (msg.from.toLowerCase() === seller?.toLowerCase()) {
+              pillLabel = "Seller";
+            } else if (msg.from.toLowerCase() === buyer?.toLowerCase()) {
+              pillLabel = first_name || "User";
+            } else {
+              pillLabel = "User";
+            }
+            const align = isFromCurrentUser ? "end" : "start";
+            const bubbleBg = isFromCurrentUser
+              ? "bg-black text-white"
+              : "bg-gray-100 text-gray-800";
+            const pillActive =
+              isFromCurrentUser ||
+              msg.from.toLowerCase() === adminAddress.toLowerCase();
+            const dateStr = msg.timestamp.slice(0, 10);
+            const showDate = dateStr !== lastDate;
+            lastDate = dateStr;
+            return (
+              <React.Fragment key={idx}>
+                {showDate && <DateSeparator date={dateStr} />}
+                <div
+                  className={clsx(
+                    "flex flex-col mb-2",
+                    align === "end" ? "items-end" : "items-start",
+                  )}
+                >
+                  <span
+                    className={clsx("mb-1", align === "end" ? "mr-2" : "ml-2")}
+                  >
+                    <Pill label={pillLabel} active={pillActive} />
+                  </span>
+                  <div
+                    className={clsx(
+                      "max-w-[80%] px-4 py-2 rounded-2xl text-sm shadow whitespace-pre-line",
+                      bubbleBg,
+                      align === "end" ? "rounded-br-md" : "rounded-bl-md",
+                    )}
+                  >
+                    {msg.content}
+                    <div className="text-[10px] text-right text-gray-400 mt-1">
+                      {new Date(msg.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </React.Fragment>
+            );
+          });
+        })()}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="flex space-x-2">
+      <form
+        onSubmit={handleSend}
+        className="flex items-center gap-2 border-t px-4 py-3 bg-gray-50"
+      >
         <input
           type="text"
-          placeholder="Write your message..."
-          className="flex-1 border rounded px-3 py-2 text-sm"
+          placeholder="Write your message"
+          className="flex-1 border-none outline-none bg-transparent text-sm px-2 py-2"
           value={newMsg}
           onChange={(e) => setNewMsg(e.target.value)}
         />
         <button
           type="submit"
           disabled={!newMsg.trim()}
-          className="bg-black text-white px-4 py-2 rounded disabled:opacity-40 hover:bg-gray-800"
+          className="bg-black text-white px-4 py-2 rounded-full disabled:opacity-40 hover:bg-gray-800"
         >
           ➤
         </button>

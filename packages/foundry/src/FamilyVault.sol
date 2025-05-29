@@ -5,18 +5,40 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ILSP8IdentifiableDigitalAsset} from "@lukso/lsp8-contracts/contracts/ILSP8IdentifiableDigitalAsset.sol";
+import {LSP9VaultInitAbstract} from "@lukso/lsp9-contracts/contracts/LSP9VaultInitAbstract.sol";
+import {ILSP8Mintable} from "@lukso/lsp8-contracts/contracts/presets/ILSP8Mintable.sol";
 
-contract FamilyVault is Initializable, OwnableUpgradeable {
+interface IDPPNFT is ILSP8Mintable {
+    function getDataForTokenId(
+        bytes32 tokenId,
+        bytes32 dataKey
+    ) external view returns (bytes memory dataValues);
+
+    function transferWithUIDRotation(
+        bytes32 tokenId,
+        address to,
+        bytes memory data,
+        string calldata salt,
+        string calldata plainUidCode,
+        bytes32 newUidHash
+    ) external;
+}
+
+contract FamilyVault is LSP9VaultInitAbstract {
     using ECDSA for bytes32;
 
+    // ===== Constants =====
+    bytes32 private constant DPP_UID_HASH_KEY = keccak256("DPP_UID_Hash");
+
+    // ===== Enums =====
     enum VaultState {
-        Initialized,
-        Listed,
-        Cancelled,
-        FundsDeposited,
-        DeliveryConfirmed,
-        Completed,
-        Disputed
+        Initialized, // 0
+        Listed, // 1
+        Cancelled, // 2
+        FundsDeposited, // 3
+        DeliveryConfirmed, // 4
+        Completed, // 5
+        Disputed // 6
     }
 
     // ===== Custom Errors =====
@@ -27,18 +49,17 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     error InvalidState(VaultState expected, VaultState actual);
     error IncorrectPayment(uint256 expected, uint256 actual);
     error IncorrectTokenOwner(address expected, address actual);
-    error UIDHashMismatch();
     error TransferFailed();
     error NotSeller();
+    error InvalidUIDCode();
 
-    // ===== State variables =====
+    // ===== State Variables =====
     address public admin;
     address public seller;
     address public buyer;
     address public nftContract;
     bytes32 public tokenId;
     uint256 public priceInLYX;
-    bytes32 public expectedUIDHash;
     VaultState public state;
 
     // ===== Events =====
@@ -54,7 +75,7 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     event DisputeOpened(address indexed initiator);
     event TradeSettledByAdmin(address indexed admin);
     event TradeCancelled(address indexed cancelledBy);
-    event TradeRelisted(address indexed relistedBy);
+    event VaultListed(address nftContract, address vault, bytes32 tokenId);
 
     // ===== Modifiers =====
     modifier onlyBuyer() {
@@ -73,8 +94,23 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
     }
 
     modifier onlyParticipant() {
-        if (msg.sender != buyer && msg.sender != seller)
+        if (msg.sender != seller && msg.sender != buyer)
             revert NotBuyerOrSeller();
+        _;
+    }
+
+    modifier onlyCorrectUIDCode(
+        string calldata plainUidCode,
+        string calldata salt
+    ) {
+        bytes32 expectedHash = keccak256(abi.encodePacked(salt, plainUidCode));
+
+        bytes32 storedHash = abi.decode(
+            IDPPNFT(nftContract).getDataForTokenId(tokenId, DPP_UID_HASH_KEY),
+            (bytes32)
+        );
+
+        if (expectedHash != storedHash) revert InvalidUIDCode();
         _;
     }
 
@@ -83,39 +119,50 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         _;
     }
 
-    // ===== Initializer =====
+    // ===== Initialization =====
+
+    /**
+     * @notice Initializes the vault for escrow between seller and buyer
+     * @param _admin The dispute resolver/admin
+     * @param _seller The seller who owns the token
+     * @param _nftContract The address of the NFT contract
+     * @param _tokenId The token ID for the asset in escrow
+     * @param _priceInLYX The price agreed for the asset
+     */
+
     function initialize(
         address _admin,
         address _seller,
         address _nftContract,
         bytes32 _tokenId,
-        uint256 _priceInLYX,
-        bytes32 _expectedUIDHash
+        uint256 _priceInLYX
     ) external initializer {
-        __Ownable_init();
-
         if (
             _admin == address(0) ||
             _seller == address(0) ||
             _nftContract == address(0)
         ) revert ZeroAddress();
 
+        // Call the initializer of the parent LSP9VaultInitAbstract contract
+        // This is the function declared in the LSP9VaultInitAbstract.sol you provided.
+        _initialize(_seller); // Pass the seller as the initial owner of the vault
+
         admin = _admin;
         seller = _seller;
         nftContract = _nftContract;
         tokenId = _tokenId;
         priceInLYX = _priceInLYX;
-        expectedUIDHash = _expectedUIDHash;
         state = VaultState.Initialized;
-
-        // Transfer ownership to seller to mimic LSP9Vault owner behavior
-        transferOwnership(_seller);
-
         emit VaultInitialized(_seller, _nftContract, _tokenId, _priceInLYX);
     }
 
-    // ===== Receive funds =====
-    receive() external payable onlyInState(VaultState.Listed) {
+    // ===== Buyer Deposits Funds =====
+
+    /**
+     * @notice Accept payment from buyer to begin escrow
+     * @dev Automatically updates state to FundsDeposited
+     */
+    receive() external payable override onlyInState(VaultState.Listed) {
         if (msg.value != priceInLYX)
             revert IncorrectPayment(priceInLYX, msg.value);
 
@@ -125,97 +172,142 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
         emit FundsDeposited(buyer, msg.value);
     }
 
-    // ===== Universal Receiver hook =====
+    // ===== NFT Deposit Hook =====
+    /**
+     * @notice Verifies NFT deposit into vault and moves to listed state
+     */
     function universalReceiver(
-        bytes32 /*typeId*/,
-        bytes memory /*data*/
-    ) external payable returns (bytes memory) {
+        bytes32 /* typeId */,
+        bytes memory /* data */
+    ) public payable virtual override returns (bytes memory) {
         if (state == VaultState.Initialized && msg.sender == nftContract) {
             address currentOwner = ILSP8IdentifiableDigitalAsset(nftContract)
                 .tokenOwnerOf(tokenId);
-            if (currentOwner != address(this))
+
+            if (currentOwner != address(this)) {
                 revert IncorrectTokenOwner(address(this), currentOwner);
+            }
 
             state = VaultState.Listed;
+
+            emit VaultListed(nftContract, address(this), tokenId);
         }
+
         return "";
     }
 
-    // ===== Confirm receipt and settle trade =====
+    // ===== Confirm Receipt =====
+
+    /**
+     * @notice Called by buyer to confirm delivery using UID code
+     * @param plainUidCode The unencrypted UID string
+     * @param salt The UID hash salt
+     * @param newUidHash New UID hash to rotate to
+     */
     function confirmReceipt(
-        string calldata plainUidCode
-    ) external onlyBuyer onlyInState(VaultState.FundsDeposited) {
-        if (keccak256(abi.encodePacked(plainUidCode)) != expectedUIDHash)
-            revert UIDHashMismatch();
-
+        string calldata plainUidCode,
+        string calldata salt,
+        bytes32 newUidHash
+    )
+        external
+        onlyInState(VaultState.FundsDeposited)
+        onlyBuyer
+        onlyCorrectUIDCode(plainUidCode, salt)
+    {
         state = VaultState.DeliveryConfirmed;
-
         emit ReceiptConfirmed(msg.sender);
-
-        _settleTrade();
+        _settleTrade(plainUidCode, salt, newUidHash);
     }
 
-    function _settleTrade() internal onlyInState(VaultState.DeliveryConfirmed) {
-        ILSP8IdentifiableDigitalAsset(nftContract).transfer(
-            address(this),
-            buyer,
-            tokenId,
-            true,
-            ""
-        );
+    // ===== Internal Trade Settlement =====
+    function _settleTrade(
+        string calldata plainUidCode,
+        string calldata salt,
+        bytes32 newUidHash
+    ) internal onlyInState(VaultState.DeliveryConfirmed) {
+        _safeTransfer(buyer, plainUidCode, salt, newUidHash);
 
         (bool success, ) = seller.call{value: priceInLYX}("");
         if (!success) revert TransferFailed();
 
         state = VaultState.Completed;
-
         emit TradeCompleted();
     }
 
-    function cancelTrade() external onlyParticipant {
-        if (state != VaultState.Listed && state != VaultState.Cancelled)
-            revert InvalidState(VaultState.Listed, state);
+    // ===== Cancel Trade =====
 
+    /**
+     * @notice Allows seller to cancel the trade and refund buyer
+     */
+    function cancelTrade(
+        string calldata plainUidCode,
+        string calldata salt,
+        bytes32 newUidHash
+    )
+        external
+        onlySeller
+        onlyInState(VaultState.FundsDeposited)
+        onlyCorrectUIDCode(plainUidCode, salt)
+    {
+        _safeTransfer(seller, plainUidCode, salt, newUidHash);
+
+        (bool success, ) = buyer.call{value: priceInLYX}("");
+        if (!success) revert TransferFailed();
+
+        buyer = address(0);
         state = VaultState.Cancelled;
         emit TradeCancelled(msg.sender);
     }
 
-    function relist() external onlySeller {
-        if (state != VaultState.Cancelled)
-            revert InvalidState(VaultState.Cancelled, state);
+    /**
+     * @notice Allows seller to unlist the item
+     */
+    function unlist(
+        string calldata plainUidCode,
+        string calldata salt,
+        bytes32 newUidHash
+    ) external onlySeller onlyInState(VaultState.Listed) {
+        if (seller == address(0)) revert ZeroAddress();
 
-        state = VaultState.Listed;
-        emit TradeRelisted(msg.sender);
+        _safeTransfer(seller, plainUidCode, salt, newUidHash);
+        state = VaultState.Initialized;
+
+        emit TradeCancelled(msg.sender);
     }
 
-    // ===== Dispute management =====
+    // ===== Dispute Functions =====
+
+    /**
+     * @notice Called by either buyer or seller to initiate a dispute
+     */
     function initiateDispute()
         external
-        onlyParticipant
         onlyInState(VaultState.FundsDeposited)
+        onlyParticipant
     {
         state = VaultState.Disputed;
         emit DisputeOpened(msg.sender);
     }
 
+    /**
+     * @notice Admin resolves dispute by choosing NFT and payment recipients
+     */
     function resolveDispute(
         address nftRecipient,
-        address paymentRecipient
-    ) external onlyAdmin onlyInState(VaultState.Disputed) {
+        address paymentRecipient,
+        string calldata plainUidCode,
+        string calldata salt,
+        bytes32 newUidHash
+    ) external onlyInState(VaultState.Disputed) onlyAdmin {
+        if (nftRecipient == address(0) || paymentRecipient == address(0))
+            revert ZeroAddress();
         if (
-            nftRecipient == address(0) ||
-            paymentRecipient == address(0) ||
             (nftRecipient != buyer && nftRecipient != seller) ||
             (paymentRecipient != buyer && paymentRecipient != seller)
-        ) revert ZeroAddress();
+        ) revert NotBuyerOrSeller();
 
-        ILSP8IdentifiableDigitalAsset(nftContract).transfer(
-            address(this),
-            nftRecipient,
-            tokenId,
-            true,
-            ""
-        );
+        // Transfer NFT to the recipient
+        _safeTransfer(nftRecipient, plainUidCode, salt, newUidHash);
 
         (bool sent, ) = paymentRecipient.call{value: priceInLYX}("");
         if (!sent) revert TransferFailed();
@@ -224,5 +316,25 @@ contract FamilyVault is Initializable, OwnableUpgradeable {
 
         emit TradeSettledByAdmin(msg.sender);
         emit TradeCompleted();
+    }
+
+    /**
+     * @notice Internal function to safely transfer NFT with UID rotation
+     * @dev This is used internally to ensure the NFT is transferred correctly
+     */
+    function _safeTransfer(
+        address recipient,
+        string calldata plainUidCode,
+        string calldata salt,
+        bytes32 newUidHash
+    ) internal {
+        IDPPNFT(nftContract).transferWithUIDRotation(
+            tokenId,
+            recipient,
+            "",
+            salt,
+            plainUidCode,
+            newUidHash
+        );
     }
 }

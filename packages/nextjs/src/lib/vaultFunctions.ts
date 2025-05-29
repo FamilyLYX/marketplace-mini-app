@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/initSupabase";
 import { Vault } from "@/types/index";
 
-const TABLE_NAME = "vaults";
+const TABLE_NAME = "vaults_1";
 
 export async function createVault(vault: Vault) {
   const { data, error } = await supabase
