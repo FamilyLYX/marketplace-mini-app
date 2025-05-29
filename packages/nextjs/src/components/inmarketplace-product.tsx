@@ -8,6 +8,7 @@ import { BuyerInfo, Vault } from "@/types";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import ProductChat from "./escrow-chat";
+import React from "react";
 
 export type ProductMetadata = {
   title: string;
@@ -17,6 +18,49 @@ export type ProductMetadata = {
   images: string[];
 };
 
+// Reusable shell component for product card UI
+export function ProductCardShell({
+  image,
+  title,
+  subtitle,
+  status,
+  children,
+}: {
+  image: string;
+  title: string;
+  subtitle?: string;
+  status?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center w-full">
+      <div className="relative w-[340px] h-[340px] mb-4 rounded-[2.5rem] shadow-lg border bg-white flex items-center justify-center overflow-hidden">
+        <img
+          src={image || "/placeholder.png"}
+          alt={title}
+          className="w-full h-full object-fit"
+        />
+        {status && (
+        <span
+          className="absolute left-1/2 -translate-x-1/2 bottom-4 px-4 py-1 rounded-full text-xs font-semibold shadow-lg bg-gray-200 text-gray-700"
+        >
+            {status}
+          </span>
+        )}
+      </div>
+      <h3 className="text-3xl font-bold mb-1 text-center font-[inherit]">{title}</h3>
+      {subtitle && (
+        <div className="text-base mb-4 font-normal text-center text-gray-700">
+          {subtitle}
+        </div>
+      )}
+      <div className="flex gap-4 justify-center w-full max-w-xs">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function AlreadyInMarketplace({
   metadata,
   vault,
@@ -25,142 +69,85 @@ export function AlreadyInMarketplace({
   vault: Vault;
 }) {
   const [openChat, setOpenChat] = useState(false);
-  const buyerInfo = {
-    buyer: vault.buyer,
-    first_name: vault.first_name,
-    last_name: vault.last_name,
-    email: vault.email,
-    phone: vault.phone,
-    country: vault.country,
-    state: vault.state,
-    city: vault.city,
-    zip: vault.zip,
-    address1: vault.address1,
-    address2: vault.address2,
-  } as BuyerInfo;
+  const [isBuyerModalOpen, setIsBuyerModalOpen] = useState(false);
+  const hasBuyer = Boolean(vault.buyer);
 
   function handleRemove() {
     toast("Coming soon 🚀");
   }
-  const [isBuyerModalOpen, setIsBuyerModalOpen] = useState(false);
-  const status = vault?.order_status || "Listed";
-
-  const renderAction = () => {
-    if (!vault?.order_status) {
-      // No order yet
-      return (
-        <Button
-          variant="destructive"
-          className="w-full text-xs"
-          onClick={handleRemove}
-        >
-          Remove from Marketplace
-        </Button>
-      );
-    }
-
-    // Order exists (either pending or confirmed)
-    return (
-      <div className="space-y-2">
-        {vault.order_status !== "confirmed" && (
-          <Button
-            variant="outline"
-            className="w-full text-xs"
-            onClick={() => {
-              setOpenChat(true);
-            }}
-          >
-            Open Chat 
-          </Button>
-        )}
-        <Dialog open={openChat} onOpenChange={setOpenChat}>
-          <DialogTitle></DialogTitle>
-          <DialogContent className="max-w-2xl w-full">
-            <ProductChat vault={vault} alreadyInDispute={vault.order_status === "disputed"} />
-          </DialogContent>
-        </Dialog>
-        <p className="text-sm font-medium">
-          Purchased by{" "}
-          <button
-            onClick={() => setIsBuyerModalOpen(true)}
-            className="text-sm font-medium text-blue-600 hover:underline truncate block"
-          >
-            <Badge variant="outline" className="truncate">
-              {vault.buyer}
-            </Badge>
-          </button>
-        </p>
-
-        {isBuyerModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-lg">
-              <h2 className="text-lg font-semibold mb-4">Buyer Info</h2>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Name:</strong> {buyerInfo.first_name}{" "}
-                  {buyerInfo.last_name}
-                </p>
-                <p>
-                  <strong>Email:</strong> {buyerInfo.email}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {buyerInfo.phone}
-                </p>
-                <p>
-                  <strong>Country:</strong> {buyerInfo.country}
-                </p>
-                <p>
-                  <strong>State:</strong> {buyerInfo.state}
-                </p>
-                <p>
-                  <strong>City:</strong> {buyerInfo.city}
-                </p>
-                <p>
-                  <strong>ZIP:</strong> {buyerInfo.zip}
-                </p>
-                <p>
-                  <strong>Address 1:</strong> {buyerInfo.address1}
-                </p>
-                <p>
-                  <strong>Address 2:</strong> {buyerInfo.address2}
-                </p>
-              </div>
-              <button
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                onClick={() => setIsBuyerModalOpen(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
-    <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
-      <ProductImageCarousel images={metadata.images} />
-
-      <CardContent className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold truncate">{metadata.title}</h3>
-          <Badge variant="default" className="text-xs capitalize">
-            {status}
-          </Badge>
-        </div>
-
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {metadata.description}
-        </p>
-
-        <p className="text-sm">
-          <span className="text-muted-foreground">Brand:</span>{" "}
-          <span className="font-medium">{metadata.brand}</span>
-        </p>
-
-        <div className="flex flex-col gap-2 pt-2">{renderAction()}</div>
-      </CardContent>
-    </Card>
+    <ProductCardShell
+      image={metadata.images?.[0] || ""}
+      title={metadata.title}
+      subtitle={"001 — Black Forest»"}
+      status={vault.order_status ? vault.order_status.charAt(0).toUpperCase() + vault.order_status.slice(1) : "Listed"}
+    >
+      {hasBuyer ? (
+        <>
+          <Button
+            variant="default"
+            className="rounded-full px-8 py-2 text-lg font-semibold w-1/2"
+            onClick={() => setOpenChat(true)}
+          >
+            Open Chat
+          </Button>
+          <Dialog open={openChat} onOpenChange={setOpenChat}>
+            <DialogContent className="max-w-2xl w-full">
+              <ProductChat vault={vault} alreadyInDispute={vault.order_status === "disputed"} />
+            </DialogContent>
+          </Dialog>
+          <Dialog open={isBuyerModalOpen} onOpenChange={setIsBuyerModalOpen}>
+            <Button
+              variant="outline"
+              className="rounded-full px-8 py-2 text-lg font-semibold w-1/2"
+              onClick={() => setIsBuyerModalOpen(true)}
+            >
+              More Info
+            </Button>
+            <DialogContent className="max-w-md w-full">
+              <DialogTitle>Buyer Info</DialogTitle>
+              <div className="space-y-2 text-sm">
+                <p>
+                  <strong>Name:</strong> {vault.first_name} {vault.last_name}
+                </p>
+                <p>
+                  <strong>Email:</strong> {vault.email}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {vault.phone}
+                </p>
+                <p>
+                  <strong>Country:</strong> {vault.country}
+                </p>
+                <p>
+                  <strong>State:</strong> {vault.state}
+                </p>
+                <p>
+                  <strong>City:</strong> {vault.city}
+                </p>
+                <p>
+                  <strong>ZIP:</strong> {vault.zip}
+                </p>
+                <p>
+                  <strong>Address 1:</strong> {vault.address1}
+                </p>
+                <p>
+                  <strong>Address 2:</strong> {vault.address2}
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
+      ) : (
+        <Button
+          variant="default"
+          className="rounded-full px-8 py-2 text-lg font-semibold w-full"
+          onClick={handleRemove}
+        >
+          Unlist
+        </Button>
+      )}
+    </ProductCardShell>
   );
 }

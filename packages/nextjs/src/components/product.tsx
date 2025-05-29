@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { useRef } from "react";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
+import { ProductCardShell } from "./inmarketplace-product";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
+import React from "react";
 
 export type ProductMetadata = {
   title: string;
@@ -41,14 +44,18 @@ export function ProductImageCarousel({ images }: { images: string[] }) {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious
-        ref={prevRef}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
-      />
-      <CarouselNext
-        ref={nextRef}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
-      />
+      {images.length > 1 && (
+        <>
+          <CarouselPrevious
+            ref={prevRef}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
+          />
+          <CarouselNext
+            ref={nextRef}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
+          />
+        </>
+      )}
     </Carousel>
   );
 }
@@ -65,26 +72,16 @@ export function ProductCard({
   showSellButton?: boolean;
 }) {
   const { push } = useRouter();
+  const [infoOpen, setInfoOpen] = React.useState(false);
   return (
-    <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
-      <ProductImageCarousel images={metadata.images} />
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold truncate">{metadata.title}</h3>
-          <Badge variant="outline" className="text-xs">
-            {metadata.category}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {metadata.description}
-        </p>
-        <p className="text-sm">
-          <span className="text-muted-foreground">Brand:</span>{" "}
-          <span className="font-medium">{metadata.brand}</span>
-        </p>
-      </CardContent>
-      {showSellButton && (
-        <div className="p-4 flex justify-start">
+    <>
+      <ProductCardShell
+        image={metadata.images?.[0] || ""}
+        title={metadata.title}
+        subtitle={metadata.brand}
+        status={"Not Listed"}
+      >
+        {showSellButton && (
           <Button
             onClick={() => {
               const params = new URLSearchParams({
@@ -93,11 +90,33 @@ export function ProductCard({
               });
               push(`/sell?${params.toString()}`);
             }}
+            className="w-1/2"
           >
             Sell
           </Button>
-        </div>
-      )}
-    </Card>
+        )}
+        <Button className="w-1/2" variant="outline" onClick={() => setInfoOpen(true)}>
+          More Info
+        </Button>
+      </ProductCardShell>
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogTitle className="text-lg"></DialogTitle>
+        <DialogContent className="max-w-md">
+          <ProductImageCarousel images={metadata.images} />
+          <div className="flex flex-col gap-2 mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <Badge variant="outline" className="text-xs">
+                {metadata.category}
+              </Badge>
+              <span className="text-xs font-medium">Brand: {metadata.brand}</span>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Description: </span>
+              <span className="text-sm">{metadata.description}</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

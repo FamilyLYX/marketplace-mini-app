@@ -111,3 +111,8 @@ export function BuyProduct({
     </Card>
   );
 }
+
+// New: BuyProductDetails for Dialog usage
+export function BuyProductDetails(props: Parameters<typeof BuyProduct>[0]) {
+  return <BuyProduct {...props} showBuyButton={false} />;
+}

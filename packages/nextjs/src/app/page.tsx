@@ -5,7 +5,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ProductCard, ProductMetadata } from "@/components/product";
 import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
-import { BuyProduct } from "@/components/buy-product";
 import { Vault } from "@/types";
 import { ConfirmProduct } from "@/components/confirm-product";
 import { PurchasedProductCard } from "@/components/purchased-product";
@@ -14,6 +13,8 @@ import { useUpProvider } from "@/components/up-provider";
 import { AlreadyInMarketplace } from "@/components/inmarketplace-product";
 import AdminProductChats from "@/components/admin-product-chats";
 import Image from "next/image";
+import ProductMarketplaceCarousel from "@/components/product-marketplace-carousel";
+
 const adminAddress =
   (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
 
@@ -157,7 +158,7 @@ const Inventory = () => {
             value="orders"
             className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
           >
-            Escrow
+            Orders
           </TabsTrigger>
           {accounts &&
             accounts.length > 0 &&
@@ -179,24 +180,8 @@ const Inventory = () => {
               </p>
             </div>
           ) : marketplaceProducts && marketplaceProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
-              {marketplaceProducts.map((vault: Vault, index: number) => (
-                <BuyProduct
-                  key={index}
-                  metadata={{
-                    title: vault.title ?? "",
-                    description: vault.description ?? "",
-                    images: vault.images ?? [],
-                    category: vault.category ?? "",
-                    brand: vault.brand ?? "",
-                  }}
-                  vaultAddress={vault.vault_address}
-                  condition={vault.notes as string}
-                  location={vault.location as string}
-                  sellerAddress={vault.seller}
-                  priceInLYX={vault.price_in_lyx}
-                />
-              ))}
+            <div className="flex flex-col items-center w-full">
+              <ProductMarketplaceCarousel products={marketplaceProducts} />
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-[500px]">
@@ -261,7 +246,7 @@ const Inventory = () => {
                         category: vault.category ?? "",
                         brand: vault.brand ?? "",
                       }}
-                      seller={vault.seller}
+                      vault={vault}
                     />
                   ))}
                 </div>

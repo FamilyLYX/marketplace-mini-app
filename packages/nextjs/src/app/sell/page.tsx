@@ -38,7 +38,7 @@ export default function SellProductPage() {
   }
 
   const [location, setLocation] = useState("");
-  const [notes, setNotes] = useState(parsedMetadata?.description || "");
+  const [notes, setNotes] = useState("");
   const [price, setPrice] = useState("");
   const [plainUIDCode, setPlainUIDCode] = useState("");
 
@@ -129,24 +129,14 @@ export default function SellProductPage() {
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-center mb-4">
-          <h1 className="text-4xl font-black ml-4">Sell Product</h1>
+      <div className="max-w-3xl mt-4">
+        <h1 className="text-4xl font-black text-start">Sell Product</h1>
+        <div className="mb-8">
+          <p className="text-lg text-muted-foreground">
+            To sell the product, please fill in all the fields below
+          </p>
         </div>
-        <p className="text-sm font-mono text-muted-foreground mb-8">
-          To sell the product shown below, please fill in all the fields below,
-          these fields will store additional information about the product and
-          the sale. This additional data will be displayed to users who are
-          interested in buying your product.
-        </p>
-        <div className="w-full flex items-center justify-center mb-6">
-          <ProductCard
-            metadata={parsedMetadata as ProductMetadata}
-            nftAddress={nftContract}
-            showSellButton={false}
-          />
-        </div>
-        <div className="space-y-6">
+        <div className="space-y-4">
           <Label htmlFor="location">Location</Label>
           <Input
             id="location"
@@ -154,10 +144,10 @@ export default function SellProductPage() {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
-          <Label htmlFor="Plain UID Code">Plain UID Code</Label>
+          <Label htmlFor="UID Code">Code</Label>
           <Input
             id="plainUIDCode"
-            placeholder="Plain UID Code*"
+            placeholder="Code*"
             value={plainUIDCode}
             onChange={(e) => setPlainUIDCode(e.target.value)}
           />
@@ -171,6 +161,7 @@ export default function SellProductPage() {
             rows={4}
           />
 
+          <Label htmlFor="">Price</Label>
           <div className="flex items-center border rounded-lg overflow-hidden">
             <Input
               type="number"
@@ -178,7 +169,9 @@ export default function SellProductPage() {
               onChange={(e) => setPrice(e.target.value)}
               className="border-none focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            <div className="px-3 py-2 bg-muted text-sm font-semibold">LYX</div>
+            <div className="px-3 py-2 bg-black text-white text-sm font-semibold">
+              LYX
+            </div>
           </div>
 
           <Button
@@ -188,7 +181,7 @@ export default function SellProductPage() {
             }}
             disabled={handleSellMutation.isPending}
           >
-            {handleSellMutation.isPending ? "Processing..." : "List Product"}
+            {handleSellMutation.isPending ? "Processing..." : "Sell"}
           </Button>
         </div>
       </div>
