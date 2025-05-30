@@ -30,7 +30,6 @@ export default function SellProductPage() {
   const nftContract = searchParams.get("nftContract") || "";
   const metadataParam = searchParams.get("metadata") || "";
   let parsedMetadata: ProductMetadata | null = null;
-  console.log(nftContract, metadataParam);
   try {
     parsedMetadata = JSON.parse(decodeURIComponent(metadataParam));
   } catch (error) {
@@ -174,7 +173,7 @@ export default function SellProductPage() {
               onChange={(e) => setLocation(e.target.value)}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="UID Code">Code</Label>
             <Input

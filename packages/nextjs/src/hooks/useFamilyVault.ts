@@ -127,6 +127,9 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         account: accounts[0],
         chain: luksoTestnet,
       });
+      if (!response) {
+        throw new Error(`Simulation failed: ${response}`);
+      }
 
       const txHash = await client.writeContract({
         abi: FAMILY_VAULT_ABI,
@@ -160,7 +163,9 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         vaultState !== FamilyVaultState.DeliveryConfirmed
       ) {
         toast.error("Dispute can only be initiated in appropriate states.");
-        throw new Error("Dispute can only be initiated in appropriate states. Funds must be deposited or delivery confirmed.");
+        throw new Error(
+          "Dispute can only be initiated in appropriate states. Funds must be deposited or delivery confirmed.",
+        );
       }
 
       await readClient.simulateContract({
@@ -293,5 +298,6 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     getBuyer,
     cancelTrade,
     relist,
+    getTokenId,
   };
 };

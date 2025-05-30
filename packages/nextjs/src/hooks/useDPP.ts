@@ -17,7 +17,7 @@ export const useDPP = () => {
   ): Promise<string | null> => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
-      return null;
+      throw new Error("Wallet not connected");
     }
 
     try {
@@ -27,12 +27,11 @@ export const useDPP = () => {
         functionName: "tokenOwnerOf",
         args: [tokenId],
       });
-      console.log("Token owner:", owner);
       return owner as string;
     } catch (err) {
       console.error("Error fetching token owner:", err);
       toast.error("Failed to fetch token owner.");
-      return null;
+      throw new Error("Failed to fetch token owner");
     }
   };
 
@@ -51,26 +50,10 @@ export const useDPP = () => {
   }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Please connect your Universal Profile wallet.");
-      return null;
+      throw new Error("Wallet not connected");
     }
 
     try {
-      const tokenOwner = await readClient.readContract({
-        abi: NFT_ABI,
-        address: dppAddress,
-        functionName: "tokenOwnerOf",
-        args: [tokenId],
-      });
-      console.log("Token owner:", tokenOwner);
-      const request = readClient.simulateContract({
-        abi: NFT_ABI,
-        address: dppAddress,
-        functionName: "transferWithUIDRotation",
-        account: accounts[0],
-        args: [tokenId, to, "0x", salt, plainUidCode, newUidHash],
-        chain: client.chain,
-      });
-      console.log("Simulation request:", request);
       const tx = await client.writeContract({
         abi: NFT_ABI,
         address: dppAddress,
@@ -85,19 +68,12 @@ export const useDPP = () => {
         toast.error("Transfer failed.");
         return null;
       }
-      const newOwner = await readClient.readContract({
-        abi: NFT_ABI,
-        address: dppAddress,
-        functionName: "tokenOwnerOf",
-        args: [tokenId],
-      });
-      console.log("Transfer successful:", receipt, "New owner:", newOwner);
       toast.success("Ownership transferred successfully!");
       return { tx };
     } catch (err) {
       console.error("Error transferring ownership:", err);
       toast.error("Transfer failed.");
-      return null;
+      throw new Error("Transfer failed");
     }
   };
 

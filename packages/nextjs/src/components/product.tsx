@@ -5,7 +5,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRef } from "react";
 import { Button } from "./ui/button";
@@ -95,7 +94,11 @@ export function ProductCard({
             Sell
           </Button>
         )}
-        <Button className="w-1/2" variant="outline" onClick={() => setInfoOpen(true)}>
+        <Button
+          className="w-1/2"
+          variant="outline"
+          onClick={() => setInfoOpen(true)}
+        >
           More Info
         </Button>
       </ProductCardShell>
@@ -108,10 +111,14 @@ export function ProductCard({
               <Badge variant="outline" className="text-xs">
                 {metadata.category}
               </Badge>
-              <span className="text-xs font-medium">Brand: {metadata.brand}</span>
+              <span className="text-xs font-medium">
+                Brand: {metadata.brand}
+              </span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground">Description: </span>
+              <span className="text-xs text-muted-foreground">
+                Description:{" "}
+              </span>
               <span className="text-sm">{metadata.description}</span>
             </div>
           </div>

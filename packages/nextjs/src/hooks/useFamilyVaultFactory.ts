@@ -41,7 +41,10 @@ export const useFamilyVaultFactory = () => {
         chain: client.chain,
         args: [nftContract, tokenId, priceInLYX],
       });
-      console.log("Simulation request:", request);
+      if (!request) {
+        toast.error("Simulation failed. Please check your inputs.");
+        return null;
+      }
       const tx = await client.writeContract({
         abi: FAMILY_VAULT_FACTORY_ABI,
         address: FAMILY_VAULT_FACTORY_ADDRESS,
@@ -55,7 +58,7 @@ export const useFamilyVaultFactory = () => {
 
       if (receipt.status !== "success") {
         toast.error("Transaction failed.");
-        return null;
+        throw new Error("Transaction failed");
       }
 
       toast.success("Vault created successfully!");
@@ -71,7 +74,7 @@ export const useFamilyVaultFactory = () => {
     } catch (err) {
       console.error("Error creating vault:", err);
       toast.error("Failed to create vault.");
-      return null;
+      throw err;
     }
   };
 

@@ -607,13 +607,11 @@ const MessageBubble = ({
   isFromCurrentUser,
   pillLabel,
   pillVariant,
-  adminAddress,
 }: {
   message: ChatMessage;
   isFromCurrentUser: boolean;
   pillLabel: string;
   pillVariant: "default" | "secondary" | "outline";
-  adminAddress: string;
 }) => {
   const align = isFromCurrentUser ? "end" : "start";
   const bubbleBg = isFromCurrentUser
@@ -721,7 +719,6 @@ const ChatMessages = ({
               isFromCurrentUser={isFromCurrentUser}
               pillLabel={pillLabel}
               pillVariant={pillVariant}
-              adminAddress={adminAddress}
             />
           </React.Fragment>
         );
@@ -942,20 +939,20 @@ export default function ProductChat({ vault }: ProductChatProps) {
   // Mutations
   const initiateDisputeMutation = useMutation({
     mutationFn: async () => {
-      const res = await initiateDispute()
+      const res = await initiateDispute();
       if (!res) {
-        throw new Error("Dispute onchain transaction failed.")
+        throw new Error("Dispute onchain transaction failed.");
       }
-      return res
+      return res;
     },
     onSuccess: () => {
-      markDisputeMutation.mutate()
+      markDisputeMutation.mutate();
     },
     onError: (err) => {
-      console.error("Failed to initiate dispute onchain:", err)
-      toast.error("Dispute onchain transaction failed.")
+      console.error("Failed to initiate dispute onchain:", err);
+      toast.error("Dispute onchain transaction failed.");
     },
-  })
+  });
 
   const markDisputeMutation = useMutation({
     mutationFn: markDisputeInDB,

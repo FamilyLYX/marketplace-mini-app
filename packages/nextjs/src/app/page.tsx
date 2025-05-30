@@ -98,7 +98,6 @@ const Inventory = () => {
     if (!products || !accounts || accounts.length === 0) return [];
 
     const userAddress = getAddress(accounts[0]);
-    console.log(products);
     return products.filter((product: { nftAddress: string }) => {
       const vault = nftAddressToVaultMap.get(product.nftAddress);
       if (!vault) return true; // Keep products that don't have a vault (e.g., user's own NFTs not yet in marketplace)

@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { getAddress, pad } from "viem";

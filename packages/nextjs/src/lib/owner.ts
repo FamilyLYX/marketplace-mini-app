@@ -54,7 +54,6 @@ export async function getAllNFTMetadata(): Promise<
         decodedMetadata: ProductMetadata;
       }[]
     > = {};
-    console.log("Deployed NFTs:", deployedNFTs);
     for (const nftAddress of deployedNFTs) {
       // 2. Fetch metadata for each NFT
       const metadata = await readClient.readContract({
@@ -86,7 +85,6 @@ export async function getAllNFTMetadata(): Promise<
         decodedMetadata,
       });
     }
-    console.log(ownerMap);
     return ownerMap;
   } catch (error) {
     console.error("Error fetching NFT metadata:", error);
