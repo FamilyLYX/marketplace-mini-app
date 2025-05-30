@@ -243,6 +243,17 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
 
     try {
+      const vaultState = await getVaultState();
+      if (
+        vaultState === FamilyVaultState.Completed ||
+        FamilyVaultState.Cancelled ||
+        FamilyVaultState.Disputed
+      ) {
+        toast.error("Trade cannot be cancelled in this state.");
+        throw new Error(
+          "Trade cannot be cancelled in this state." + vaultState,
+        );
+      }
       const txHash = await client.writeContract({
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
@@ -262,26 +273,32 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     }
   };
 
-  const relist = async (plainUidCode: string, salt: string) => {
+  const unlist = async (
+    plainUidCode: string,
+    salt: string,
+    newUidHash: `0x${string}`,
+  ) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
-      return;
+      throw new Error("Wallet not connected.");
     }
 
     try {
       const txHash = await client.writeContract({
         abi: FAMILY_VAULT_ABI,
         address: vaultAddress,
-        functionName: "relist",
-        args: [plainUidCode, salt],
+        functionName: "unlist",
+        args: [plainUidCode, salt, newUidHash],
         account: accounts[0],
         chain: client.chain,
       });
 
       await readClient.waitForTransactionReceipt({ hash: txHash });
-      toast.success("Vault relisted.");
+      toast.success("Unlisted.");
       return txHash;
     } catch (err) {
+      console.error("Error unlisting", err);
+      toast.error("Failed to unlist");
       throw err;
     }
   };
@@ -297,7 +314,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     walletConnected,
     getBuyer,
     cancelTrade,
-    relist,
+    unlist,
     getTokenId,
   };
 };

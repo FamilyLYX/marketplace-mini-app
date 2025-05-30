@@ -118,6 +118,7 @@ export function ConfirmProduct({
           variant="outline"
           className="w-1/2"
           onClick={() => setOpenChat(!openChat)}
+          disabled={true}
         >
           Open Chat
         </Button>
@@ -125,18 +126,13 @@ export function ConfirmProduct({
           More Info
         </Button>
       </ProductCardShell>
-      <Dialog open={openChat} onOpenChange={setOpenChat}>
+      <Dialog open={false} onOpenChange={setOpenChat}>
         <DialogTitle></DialogTitle>
         <DialogContent className="max-w-2xl w-full">
           <ProductChat vault={vault} />
         </DialogContent>
       </Dialog>
-      {/* Info Modal */}
-      <Dialog
-        key={infoOpen + plainUIDCode}
-        open={infoOpen}
-        onOpenChange={setInfoOpen}
-      >
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
         <DialogTitle className="text-lg"></DialogTitle>
         <DialogContent className="max-w-md">
           <ProductImageCarousel images={metadata.images} />
@@ -150,30 +146,14 @@ export function ConfirmProduct({
               </span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground">Condition: </span>
-              <Badge className="whitespace-pre-wrap">{condition}</Badge>
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground">Location: </span>
-              <Badge>{location}</Badge>
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground">Product By</span>
-              <a
-                href={`https://universaleverything.io/${getAddress(sellerAddress)}?network=testnet&assetGroup=tokens`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-medium text-blue-600 hover:underline truncate block"
-              >
-                <Badge variant="outline" className="truncate">
-                  {sellerAddress}
-                </Badge>
-              </a>
+              <span className="text-xs text-muted-foreground">
+                Description:{" "}
+              </span>
+              <span className="text-sm">{metadata.description}</span>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-      {/* Confirm Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogTitle></DialogTitle>
         <DialogContent className="max-w-md">

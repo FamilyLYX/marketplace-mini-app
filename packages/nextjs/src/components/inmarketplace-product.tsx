@@ -6,6 +6,13 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import ProductChat from "./escrow-chat";
 import React from "react";
+import { useFamilyVault } from "@/hooks/useFamilyVault";
+import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
+import { useMutation } from "@tanstack/react-query";
+import { getAddress, pad } from "viem";
+import { queryClient } from "./marketplace-provider";
+import { ProductImageCarousel } from "./product";
+import { Badge } from "./ui/badge";
 
 export type ProductMetadata = {
   title: string;
@@ -78,13 +85,68 @@ export function AlreadyInMarketplace({
   metadata: ProductMetadata;
   vault: Vault;
 }) {
+  const [infoOpen, setInfoOpen] = useState(false);
   const [openChat, setOpenChat] = useState(false);
   const [isBuyerModalOpen, setIsBuyerModalOpen] = useState(false);
   const hasBuyer = Boolean(vault.buyer);
+  const { cancelTrade } = useFamilyVault(vault.vault_address as `0x${string}`);
+  const { fetchDataAndUpdateSalt } = useFetchSaltAndUpdate();
 
-  function handleRemove() {
-    toast("Coming soon 🚀");
-  }
+  const handleUnlistMutation = useMutation({
+    mutationFn: async () => {
+      if (vault.nft_contract === undefined) {
+        throw new Error("Please enter a valid UID code");
+      }
+      const { plainUIDCode, currentSalt, newSalt, newUidHash } =
+        await fetchDataAndUpdateSalt(vault.nft_contract as `0x${string}`);
+      let res = undefined;
+      try {
+        res = await cancelTrade(plainUIDCode, currentSalt, newUidHash);
+      } catch (error) {
+        console.error("Error during cancelTrade:", error);
+        throw new Error("Failed to cancel trade");
+      }
+      if (!res) {
+        throw new Error("Failed to Unlist");
+      }
+      try {
+        await fetch("/api/save-salt", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tokenId: pad("0x0", { size: 32 }),
+            contractAddress: vault.nft_contract,
+            salt: newSalt,
+            uidHash: newUidHash,
+          }),
+        });
+        const response = await fetch(
+          `/api/vault?vault_address=${vault.vault_address}`,
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Vault listing delete failed: ${errorText}`);
+        }
+      } catch (error) {
+        console.error("Vault listing delete failed:", error);
+      }
+      return { res };
+    },
+    onSuccess: (data) => {
+      console.log("Unlisted Product", data);
+      toast.success("Product unlisted");
+      queryClient.invalidateQueries({
+        queryKey: ["marketplaceProducts", "allNfts"],
+      });
+    },
+    onError: (error) => {
+      console.error("Error during unlist mutation:", error);
+    },
+  });
 
   return (
     <ProductCardShell
@@ -98,7 +160,7 @@ export function AlreadyInMarketplace({
           : "Listed"
       }
     >
-      {hasBuyer ? (
+      {hasBuyer && vault.order_status !== "cancelled" ? (
         <>
           <Button
             variant="default"
@@ -109,9 +171,7 @@ export function AlreadyInMarketplace({
           </Button>
           <Dialog open={openChat} onOpenChange={setOpenChat}>
             <DialogContent className="max-w-2xl w-full">
-              <ProductChat
-                vault={vault}
-              />
+              <ProductChat vault={vault} />
             </DialogContent>
           </Dialog>
           <Dialog open={isBuyerModalOpen} onOpenChange={setIsBuyerModalOpen}>
@@ -158,12 +218,43 @@ export function AlreadyInMarketplace({
         </>
       ) : (
         <>
-          <Button variant="default" className="w-1/2" onClick={handleRemove}>
+          <Button
+            variant="default"
+            className="w-1/2"
+            onClick={() => handleUnlistMutation.mutate()}
+            disabled={handleUnlistMutation.isPending}
+          >
             Unlist
           </Button>
-          <Button variant="outline" className="w-1/2">
-            Open Info
+          <Button
+            variant="outline"
+            className="w-1/2"
+            onClick={() => setInfoOpen(true)}
+          >
+            More Info
           </Button>
+          <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+            <DialogTitle className="text-lg"></DialogTitle>
+            <DialogContent className="max-w-md">
+              <ProductImageCarousel images={metadata.images} />
+              <div className="flex flex-col gap-2 mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Badge variant="outline" className="text-xs">
+                    {metadata.category}
+                  </Badge>
+                  <span className="text-xs font-medium">
+                    Brand: {metadata.brand}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">
+                    Description:{" "}
+                  </span>
+                  <span className="text-sm">{metadata.description}</span>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </ProductCardShell>
