@@ -31,7 +31,7 @@ export function ProductCardShell({
 }) {
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      <div className="relative w-[340px] h-[340px] mb-4 rounded-[2.5rem] shadow-lg border bg-white flex items-center justify-center overflow-hidden">
+      <div className="relative w-[340px] h-[480px] mb-4 rounded-[2.5rem] shadow-lg border bg-white flex items-center justify-center overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={image || "/placeholder.png"}
@@ -39,7 +39,19 @@ export function ProductCardShell({
           className="w-full h-full object-fit"
         />
         {status && (
-          <span className="absolute left-1/2 -translate-x-1/2 bottom-4 px-4 py-1 rounded-full text-xs font-semibold shadow-lg bg-gray-200 text-gray-700">
+          <span
+            className={`absolute left-1/2 -translate-x-1/2 bottom-4 px-4 py-1 rounded-full text-xs font-semibold shadow-lg ${
+              status === "Pending" || status === "Listed"
+                ? "bg-yellow-500 text-yellow-900"
+                : status === "Confirmed" ||
+                    status === "Completed" ||
+                    status === "Purchased"
+                  ? "bg-green-500 text-white"
+                  : status === "Disputed" || status === "Cancelled"
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-200 text-gray-700"
+            }`}
+          >
             {status}
           </span>
         )}
@@ -82,7 +94,7 @@ export function AlreadyInMarketplace({
       status={
         vault.order_status
           ? vault.order_status.charAt(0).toUpperCase() +
-          vault.order_status.slice(1)
+            vault.order_status.slice(1)
           : "Listed"
       }
     >

@@ -239,7 +239,6 @@ const Inventory = () => {
             ) : (
               <>
                 <div className="flex flex-col gap-4 w-full">
-                  <h2 className="text-md font-semibold">Your Orders</h2>
                   {orderedProducts.length > 0 ||
                   confirmedProducts.length > 0 ? (
                     <OrdersCarousel orders={allOrders} />
@@ -260,7 +259,6 @@ const Inventory = () => {
           }}
         >
           <div className="flex flex-col gap-10 w-full">
-            <h2 className="text-md font-semibold">Manage your inventory</h2>
             {isNFTsLoading || isMarketplaceLoading ? (
               <p className="text-sm text-muted-foreground">
                 Loading your products...

@@ -66,7 +66,7 @@ export default function BuyPage() {
       <div className="flex-1 flex flex-col w-full h-full mt-14">
         {step === 1 && (
           <div className="w-full mx-auto">
-            <PersonalDetailsForm
+            <CombinedForm
               data={formData}
               setData={setFormData}
               onNext={next}
@@ -74,21 +74,11 @@ export default function BuyPage() {
           </div>
         )}
         {step === 2 && (
-          <div className="w-full mx-auto">
-            <ShippingAddressForm
-              data={formData}
-              setData={setFormData}
-              onNext={next}
-              onBack={back}
-            />
+          <div className="flex-1 flex flex-col w-full h-full items-center justify-center">
+            <PaymentStep data={formData} onBack={back} />
           </div>
         )}
       </div>
-      {step === 3 && (
-        <div className="flex-1 flex flex-col w-full h-full items-center justify-center">
-          <PaymentStep data={formData} onBack={back} />
-        </div>
-      )}
     </div>
   );
 }
@@ -100,14 +90,14 @@ interface BuyFormProps {
   onBack?: () => void;
 }
 
-function PersonalDetailsForm({ data, setData, onNext }: BuyFormProps) {
+function CombinedForm({ data, setData, onNext }: BuyFormProps) {
   return (
     <div className="w-full flex flex-col justify-between items-center">
       <h1 className="text-4xl font-black leading-tight mb-2 w-full text-left">
         Buy Product
       </h1>
       <p className="text-lg text-[#888] mb-8 w-full text-left">
-        Enter your personal details
+        Enter your details
       </p>
       <div className="space-y-4 w-full">
         <div>
@@ -154,72 +144,55 @@ function PersonalDetailsForm({ data, setData, onNext }: BuyFormProps) {
             className="mt-1"
           />
         </div>
-      </div>
-      <Button
-        onClick={onNext}
-        className="w-full mt-24 h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
-      >
-        Next <span className="ml-2">→</span>
-      </Button>
-    </div>
-  );
-}
-
-function ShippingAddressForm({ data, setData, onNext, onBack }: BuyFormProps) {
-  return (
-    <div className="w-full flex flex-col">
-      <h1 className="text-4xl font-black leading-tight mb-2 w-full text-left">
-        Buy Product
-      </h1>
-      <p className="text-lg text-[#888] mb-8 w-full text-left">
-        Add shipping address
-      </p>
-      <div className="grid grid-cols-2 gap-4 w-full">
-        <div>
-          <Label className="font-bold">Country or region</Label>
-          <Input
-            value={data.country}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, country: e.target.value }))
-            }
-            placeholder="Country or region"
-            className="mt-1"
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label className="font-bold">Country or region</Label>
+            <Input
+              value={data.country}
+              onChange={(e) =>
+                setData((prev) => ({ ...prev, country: e.target.value }))
+              }
+              placeholder="Country or region"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label className="font-bold">State</Label>
+            <Input
+              value={data.state}
+              onChange={(e) =>
+                setData((prev) => ({ ...prev, state: e.target.value }))
+              }
+              placeholder="State"
+              className="mt-1"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label className="font-bold">City</Label>
+            <Input
+              value={data.city}
+              onChange={(e) =>
+                setData((prev) => ({ ...prev, city: e.target.value }))
+              }
+              placeholder="City"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label className="font-bold">ZIP</Label>
+            <Input
+              value={data.zip}
+              onChange={(e) =>
+                setData((prev) => ({ ...prev, zip: e.target.value }))
+              }
+              placeholder="ZIP"
+              className="mt-1"
+            />
+          </div>
         </div>
         <div>
-          <Label className="font-bold">State</Label>
-          <Input
-            value={data.state}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, state: e.target.value }))
-            }
-            placeholder="State"
-            className="mt-1"
-          />
-        </div>
-        <div>
-          <Label className="font-bold">City</Label>
-          <Input
-            value={data.city}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, city: e.target.value }))
-            }
-            placeholder="City"
-            className="mt-1"
-          />
-        </div>
-        <div>
-          <Label className="font-bold">ZIP</Label>
-          <Input
-            value={data.zip}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, zip: e.target.value }))
-            }
-            placeholder="ZIP"
-            className="mt-1"
-          />
-        </div>
-        <div className="col-span-2">
           <Label className="font-bold">Address line 1</Label>
           <Input
             value={data.address1}
@@ -230,7 +203,7 @@ function ShippingAddressForm({ data, setData, onNext, onBack }: BuyFormProps) {
             className="mt-1"
           />
         </div>
-        <div className="col-span-2">
+        <div>
           <Label className="font-bold">Address line 2</Label>
           <Input
             value={data.address2}
@@ -242,21 +215,12 @@ function ShippingAddressForm({ data, setData, onNext, onBack }: BuyFormProps) {
           />
         </div>
       </div>
-      <div className="flex justify-between w-full mt-24">
-        <Button
-          variant="outline"
-          onClick={onBack}
-          className="rounded-full px-6 h-12 text-lg font-semibold"
-        >
-          ← Back
-        </Button>
-        <Button
-          onClick={onNext}
-          className="rounded-full px-6 h-12 text-lg font-semibold bg-black hover:bg-gray-900 transition"
-        >
-          Select payment method
-        </Button>
-      </div>
+      <Button
+        onClick={onNext}
+        className="w-full mt-34 h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
+      >
+        Continue to Payment <span className="ml-2">→</span>
+      </Button>
     </div>
   );
 }
@@ -332,14 +296,14 @@ function PaymentStep({
   return (
     <div className="w-full max-w-md flex flex-col justify-center items-center h-full">
       <div className="flex flex-col items-center w-full">
-        <div className="w-64 h-64 rounded-2xl overflow-hidden mb-6 bg-gray-100 flex items-center justify-center relative">
+        <div className="rounded-2xl overflow-hidden mb-6 bg-gray-100 flex items-center justify-center relative">
           {Array.isArray(parsedMetadata?.images) ? (
             <Carousel className="w-full h-full">
               <CarouselContent className="h-full">
                 {parsedMetadata.images.map((img: string, idx: number) => (
                   <CarouselItem
                     key={idx}
-                    className="flex items-center justify-center w-full h-64"
+                    className="flex items-center justify-center w-full h-full"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
