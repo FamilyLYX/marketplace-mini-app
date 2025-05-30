@@ -38,7 +38,7 @@ export function ProductImageCarousel({ images }: { images: string[] }) {
             <img
               src={img}
               alt={`Product image ${idx + 1}`}
-              className="block w-full h-64 object-fit transition-all duration-300"
+              className="block w-full h-90 object-fit transition-all duration-300"
             />
           </CarouselItem>
         ))}
