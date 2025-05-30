@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { ProductCard, ProductMetadata } from "@/components/product";
+import { ProductMetadata } from "@/components/product";
 import { Label } from "@/components/ui/label";
 import { useFamilyVaultFactory } from "@/hooks/useFamilyVaultFactory";
 import { useMutation } from "@tanstack/react-query";
@@ -41,6 +41,29 @@ export default function SellProductPage() {
   const [notes, setNotes] = useState("");
   const [price, setPrice] = useState("");
   const [plainUIDCode, setPlainUIDCode] = useState("");
+  const [images, setImages] = useState<string[]>(parsedMetadata?.images || []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formDataFile = new FormData();
+    formDataFile.append("file", file);
+
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formDataFile,
+    });
+
+    const data = await res.json();
+    if (data.url) {
+      const existingImages = images || [];
+      const updatedImages = [...existingImages, data.url];
+      setImages(updatedImages);
+    } else {
+      toast.error("Image upload failed");
+    }
+  };
 
   const handleSellMutation = useMutation({
     mutationFn: async () => {
@@ -92,7 +115,7 @@ export default function SellProductPage() {
             title: parsedMetadata?.title,
             description: parsedMetadata?.description,
             location,
-            images: parsedMetadata?.images,
+            images,
             category: parsedMetadata?.category,
             brand: parsedMetadata?.brand,
             listing_status: "listed",
@@ -120,8 +143,13 @@ export default function SellProductPage() {
     },
   });
 
+  const handleRemoveImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    setImages(newImages);
+  };
+
   return (
-    <div className="min-h-screen bg-white px-6 py-12">
+    <div className="min-h-screen bg-white px-6 py-12 relative">
       <Button
         variant="ghost"
         className="absolute top-4 left-4 z-10 p-2"
@@ -129,53 +157,104 @@ export default function SellProductPage() {
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
-      <div className="max-w-3xl mt-4">
-        <h1 className="text-4xl font-black text-start">Sell Product</h1>
+      <div className="max-w-3xl">
+        <h1 className="text-4xl font-black text-start mb-2">Sell Product</h1>
         <div className="mb-8">
           <p className="text-lg text-muted-foreground">
             To sell the product, please fill in all the fields below
           </p>
         </div>
-        <div className="space-y-4">
-          <Label htmlFor="location">Location</Label>
-          <Input
-            id="location"
-            placeholder="Location*"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-          <Label htmlFor="UID Code">Code</Label>
-          <Input
-            id="plainUIDCode"
-            placeholder="Code*"
-            value={plainUIDCode}
-            onChange={(e) => setPlainUIDCode(e.target.value)}
-          />
-
-          <Label htmlFor="Condition notes">Condition Notes</Label>
-          <Textarea
-            id="notes"
-            placeholder="Condition Notes*"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-          />
-
-          <Label htmlFor="">Price</Label>
-          <div className="flex items-center border rounded-lg overflow-hidden">
+        <div className="space-y-6 pb-32">
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
             <Input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              id="location"
+              placeholder="Location*"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
             />
-            <div className="px-3 py-2 bg-black text-white text-sm font-semibold">
-              LYX
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="UID Code">Code</Label>
+            <Input
+              id="plainUIDCode"
+              placeholder="Code*"
+              value={plainUIDCode}
+              onChange={(e) => setPlainUIDCode(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="Condition notes">Condition Notes</Label>
+            <Textarea
+              id="notes"
+              placeholder="Condition Notes*"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="min-h-[200px]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-mono">Pictures</Label>
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Upload Button */}
+              <label
+                htmlFor="upload"
+                className="w-12 h-12 border rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-100"
+              >
+                <Plus className="w-5 h-5" />
+                <input
+                  id="upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+              </label>
+
+              {/* Image Thumbnails */}
+              {images.map((imgUrl: string, index) => (
+                <div key={index} className="relative w-14 h-14 aspect-square">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imgUrl}
+                    alt={`Uploaded ${index}`}
+                    className="w-14 h-14 object-cover rounded-md border"
+                  />
+                  <button
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute -top-1 -right-1 bg-black text-white rounded-full p-0.5 hover:bg-red-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="price">Price</Label>
+            <div className="flex items-center border rounded-lg overflow-hidden">
+              <Input
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                className="border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <div className="px-3 py-2 bg-black text-white text-sm font-semibold">
+                LYX
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-white p-4">
+        <div className="max-w-3xl mx-auto">
           <Button
-            className="w-full mt-4 text-white rounded-full text-md py-6 text-lg"
+            className="w-full text-white rounded-full text-md py-6 text-lg"
             onClick={() => {
               handleSellMutation.mutate();
             }}
