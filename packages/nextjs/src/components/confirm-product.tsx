@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { getAddress, pad } from "viem";
+import { pad } from "viem";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -28,16 +28,10 @@ export function ConfirmProduct({
   vault,
   metadata,
   vaultAddress,
-  condition,
-  location,
-  sellerAddress,
 }: {
   vault: Vault;
   metadata: ProductMetadata;
   vaultAddress: string | `0x${string}`;
-  condition: string;
-  location: string;
-  sellerAddress: string | `0x${string}`;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [openChat, setOpenChat] = useState(false);

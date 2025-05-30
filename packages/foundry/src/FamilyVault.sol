@@ -34,11 +34,10 @@ contract FamilyVault is LSP9VaultInitAbstract {
     enum VaultState {
         Initialized, // 0
         Listed, // 1
-        Cancelled, // 2
-        FundsDeposited, // 3
-        DeliveryConfirmed, // 4
-        Completed, // 5
-        Disputed // 6
+        FundsDeposited, // 2
+        DeliveryConfirmed, // 3
+        Completed, // 4
+        Disputed // 5
     }
 
     // ===== Custom Errors =====
@@ -76,6 +75,7 @@ contract FamilyVault is LSP9VaultInitAbstract {
     event TradeSettledByAdmin(address indexed admin);
     event TradeCancelled(address indexed cancelledBy);
     event VaultListed(address nftContract, address vault, bytes32 tokenId);
+    event SellerUnlisted(address indexed seller);
 
     // ===== Modifiers =====
     modifier onlyBuyer() {
@@ -255,7 +255,7 @@ contract FamilyVault is LSP9VaultInitAbstract {
         if (!success) revert TransferFailed();
 
         buyer = address(0);
-        state = VaultState.Cancelled;
+        state = VaultState.Initialized;
         emit TradeCancelled(msg.sender);
     }
 
@@ -272,7 +272,7 @@ contract FamilyVault is LSP9VaultInitAbstract {
         _safeTransfer(seller, plainUidCode, salt, newUidHash);
         state = VaultState.Initialized;
 
-        emit TradeCancelled(msg.sender);
+        emit SellerUnlisted(msg.sender);
     }
 
     // ===== Dispute Functions =====

@@ -29,9 +29,6 @@ export default function OrdersCarousel({ orders }: { orders: OrderItem[] }) {
           vault={item.data}
           metadata={metadata}
           vaultAddress={item.data.vault_address}
-          condition={item.data.notes as string}
-          location={item.data.location as string}
-          sellerAddress={item.data.seller}
         />
       );
     } else if (item.type === "delivered") {

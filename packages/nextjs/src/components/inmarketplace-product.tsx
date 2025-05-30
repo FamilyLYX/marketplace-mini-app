@@ -9,7 +9,7 @@ import React from "react";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 import { useMutation } from "@tanstack/react-query";
-import { getAddress, pad } from "viem";
+import { pad } from "viem";
 import { queryClient } from "./marketplace-provider";
 import { ProductImageCarousel } from "./product";
 import { Badge } from "./ui/badge";
