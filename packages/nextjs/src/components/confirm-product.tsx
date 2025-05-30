@@ -108,7 +108,12 @@ export function ConfirmProduct({
         image={metadata.images?.[0] || ""}
         title={metadata.title}
         subtitle={metadata.brand}
-        status={vault.order_status ? vault.order_status.charAt(0).toUpperCase() + vault.order_status.slice(1) : ""}
+        status={
+          vault.order_status
+            ? vault.order_status.charAt(0).toUpperCase() +
+              vault.order_status.slice(1)
+            : ""
+        }
       >
         <Button
           variant="outline"
@@ -124,14 +129,15 @@ export function ConfirmProduct({
       <Dialog open={openChat} onOpenChange={setOpenChat}>
         <DialogTitle></DialogTitle>
         <DialogContent className="max-w-2xl w-full">
-          <ProductChat
-            vault={vault}
-            alreadyInDispute={vault.order_status === "disputed"}
-          />
+          <ProductChat vault={vault} />
         </DialogContent>
       </Dialog>
       {/* Info Modal */}
-      <Dialog key={infoOpen+plainUIDCode} open={infoOpen} onOpenChange={setInfoOpen}>
+      <Dialog
+        key={infoOpen + plainUIDCode}
+        open={infoOpen}
+        onOpenChange={setInfoOpen}
+      >
         <DialogTitle className="text-lg"></DialogTitle>
         <DialogContent className="max-w-md">
           <ProductImageCarousel images={metadata.images} />
@@ -140,7 +146,9 @@ export function ConfirmProduct({
               <Badge variant="outline" className="text-xs">
                 {metadata.category}
               </Badge>
-              <span className="text-xs font-medium">Brand: {metadata.brand}</span>
+              <span className="text-xs font-medium">
+                Brand: {metadata.brand}
+              </span>
             </div>
             <div>
               <span className="text-xs text-muted-foreground">Condition: </span>

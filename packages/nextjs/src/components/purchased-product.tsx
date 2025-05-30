@@ -43,10 +43,7 @@ export function PurchasedProductCard({
       <Dialog open={openChat} onOpenChange={setOpenChat}>
         <DialogTitle></DialogTitle>
         <DialogContent className="max-w-2xl w-full">
-          <ProductChat
-            vault={vault}
-            alreadyInDispute={vault.order_status === "disputed"}
-          />
+          <ProductChat vault={vault} />
         </DialogContent>
       </Dialog>
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
@@ -58,7 +55,9 @@ export function PurchasedProductCard({
               <Badge variant="outline" className="text-xs">
                 {metadata.category}
               </Badge>
-              <span className="text-xs font-medium">Brand: {metadata.brand}</span>
+              <span className="text-xs font-medium">
+                Brand: {metadata.brand}
+              </span>
             </div>
             <div>
               <span className="text-xs text-muted-foreground">Condition: </span>

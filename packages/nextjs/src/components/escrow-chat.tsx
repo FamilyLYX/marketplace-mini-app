@@ -44,7 +44,6 @@ interface ChatMessage {
 
 interface ProductChatProps {
   vault: Vault;
-  alreadyInDispute?: boolean;
 }
 
 const adminAddress =
@@ -219,17 +218,17 @@ const CancelTradeDialog = ({
       if (!res) {
         throw new Error("Failed to create vault");
       }
-      await fetch("/api/save-salt", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tokenId: pad("0x0", { size: 32 }), // using a fixed tokenId of 0x0
-          contractAddress: vault.nft_contract,
-          salt: newSalt,
-          uidHash: newUidHash,
-        }),
-      });
       try {
+        await fetch("/api/save-salt", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tokenId: pad("0x0", { size: 32 }),
+            contractAddress: vault.nft_contract,
+            salt: newSalt,
+            uidHash: newUidHash,
+          }),
+        });
         const response = await fetch(
           `/api/vault?vault_address=${vault.vault_address}`,
           {
@@ -292,6 +291,11 @@ const CancelTradeDialog = ({
           <Button
             variant="destructive"
             onClick={() => handleCancelMutation.mutate()}
+            disabled={
+              handleCancelMutation.isPending ||
+              !reason.trim() ||
+              !plainUIDCode.trim()
+            }
           >
             <X className="h-4 w-4 mr-2" />
             Cancel Trade
@@ -437,7 +441,11 @@ const ResolveDisputeDialog = ({
           </Button>
           <Button
             onClick={() => handleResolveDispute.mutate()}
-            disabled={!selectedWinner || !selectedTraceReceiver}
+            disabled={
+              !selectedWinner ||
+              !selectedTraceReceiver ||
+              handleResolveDispute.isPending
+            }
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             {handleResolveDispute.isPending ? "Resolving" : "Resolve Dispute"}
@@ -452,24 +460,32 @@ const ActionButtons = ({
   isBuyer,
   isSeller,
   isAdmin,
-  alreadyInDispute,
+  showConfirmButton,
+  showCancelButton,
+  showDisputeButton,
+  showResolveButton,
   onConfirmOpen,
   onCancelOpen,
   onDispute,
   onResolveOpen,
+  disputePending,
 }: {
   isBuyer: boolean;
   isSeller: boolean;
   isAdmin: boolean;
-  alreadyInDispute: boolean;
+  showConfirmButton: boolean;
+  showCancelButton: boolean;
+  showDisputeButton: boolean;
+  showResolveButton: boolean;
   onConfirmOpen: () => void;
   onCancelOpen: () => void;
   onDispute: () => void;
   onResolveOpen: () => void;
+  disputePending?: boolean;
 }) => (
   <div className="flex items-center gap-2">
     {/* Buyer Confirm Button */}
-    {isBuyer && !alreadyInDispute && (
+    {isBuyer && showConfirmButton && (
       <Button
         size="sm"
         variant="outline"
@@ -482,7 +498,7 @@ const ActionButtons = ({
     )}
 
     {/* Seller Cancel Button */}
-    {isSeller && !alreadyInDispute && (
+    {isSeller && showCancelButton && (
       <Button
         size="sm"
         variant="outline"
@@ -495,12 +511,13 @@ const ActionButtons = ({
     )}
 
     {/* Dispute Button */}
-    {!isAdmin && !alreadyInDispute && (isBuyer || isSeller) && (
+    {!isAdmin && showDisputeButton && (isBuyer || isSeller) && (
       <Button
         size="sm"
         variant="destructive"
         className="rounded-full"
         onClick={onDispute}
+        disabled={disputePending}
       >
         <AlertTriangle className="h-4 w-4 mr-1" />
         Dispute
@@ -508,7 +525,7 @@ const ActionButtons = ({
     )}
 
     {/* Admin Resolve Button */}
-    {isAdmin && alreadyInDispute && (
+    {isAdmin && showResolveButton && (
       <Button
         size="sm"
         variant="default"
@@ -527,21 +544,29 @@ const ChatHeader = ({
   firstName,
   isBuyer,
   isSeller,
-  alreadyInDispute,
+  showConfirmButton,
+  showCancelButton,
+  showDisputeButton,
+  showResolveButton,
   onConfirmOpen,
   onCancelOpen,
   onDispute,
   onResolveOpen,
+  disputePending,
 }: {
   isAdmin: boolean;
   firstName?: string;
   isBuyer: boolean;
   isSeller: boolean;
-  alreadyInDispute: boolean;
+  showConfirmButton: boolean;
+  showCancelButton: boolean;
+  showDisputeButton: boolean;
+  showResolveButton: boolean;
   onConfirmOpen: () => void;
   onCancelOpen: () => void;
   onDispute: () => void;
   onResolveOpen: () => void;
+  disputePending?: boolean;
 }) => (
   <div className="border-b bg-gray-50/50 rounded-t-lg">
     {/* First Row - User Pills */}
@@ -549,16 +574,20 @@ const ChatHeader = ({
 
     {/* Second Row - Action Buttons */}
     <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-      <span className="text-sm font-medium text-gray-700">DETAILS</span>
+      <span className="text-sm font-medium text-gray-700">ACTIONS</span>
       <ActionButtons
         isBuyer={isBuyer}
         isSeller={isSeller}
         isAdmin={isAdmin}
-        alreadyInDispute={alreadyInDispute}
+        showConfirmButton={showConfirmButton}
+        showCancelButton={showCancelButton}
+        showDisputeButton={showDisputeButton}
+        showResolveButton={showResolveButton}
         onConfirmOpen={onConfirmOpen}
         onCancelOpen={onCancelOpen}
         onDispute={onDispute}
         onResolveOpen={onResolveOpen}
+        disputePending={disputePending}
       />
     </div>
   </div>
@@ -674,7 +703,7 @@ const ChatMessages = ({
 
         const pillVariant =
           isFromCurrentUser ||
-            msg.from.toLowerCase() === adminAddress.toLowerCase()
+          msg.from.toLowerCase() === adminAddress.toLowerCase()
             ? "default"
             : msg.from === "system"
               ? "secondary"
@@ -734,14 +763,23 @@ const ChatInput = ({
 );
 
 // Main Component
-export default function ProductChat({
-  vault,
-  alreadyInDispute,
-}: ProductChatProps) {
+export default function ProductChat({ vault }: ProductChatProps) {
+  const order_status = vault.order_status || "pending";
   const { buyer, seller, vault_address: vaultAddress, first_name } = vault;
   const { accounts } = useUpProvider();
   const userAddress = accounts[0] || "";
   const { initiateDispute } = useFamilyVault(vaultAddress as `0x${string}`);
+
+  // User role checks
+  const isAdmin = userAddress.toLowerCase() === adminAddress.toLowerCase();
+  const isBuyer = userAddress.toLowerCase() === buyer?.toLowerCase();
+  const isSeller = userAddress.toLowerCase() === seller?.toLowerCase();
+
+  // Button visibility flags
+  const showConfirmButton = isBuyer && order_status === "pending";
+  const showCancelButton = isSeller && order_status === "pending";
+  const showDisputeButton = !isAdmin && order_status === "pending";
+  const showResolveButton = isAdmin && order_status === "disputed";
 
   // State
   const [cancelReason, setCancelReason] = useState("");
@@ -750,11 +788,6 @@ export default function ProductChat({
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMsg, setNewMsg] = useState("");
-
-  // User role checks
-  const isAdmin = userAddress.toLowerCase() === adminAddress.toLowerCase();
-  const isBuyer = userAddress.toLowerCase() === buyer?.toLowerCase();
-  const isSeller = userAddress.toLowerCase() === seller?.toLowerCase();
 
   // Data fetching
   async function fetchChat() {
@@ -854,7 +887,12 @@ export default function ProductChat({
   }
 
   const handleRaiseDispute = async () => {
-    await initiateDisputeMutation.mutateAsync();
+    try {
+      await initiateDisputeMutation.mutateAsync();
+    } catch (e) {
+      console.log(e);
+      return;
+    }
   };
 
   const handleCancelTrade = async () => {
@@ -903,15 +941,21 @@ export default function ProductChat({
 
   // Mutations
   const initiateDisputeMutation = useMutation({
-    mutationFn: initiateDispute,
+    mutationFn: async () => {
+      const res = await initiateDispute()
+      if (!res) {
+        throw new Error("Dispute onchain transaction failed.")
+      }
+      return res
+    },
     onSuccess: () => {
-      markDisputeMutation.mutate();
+      markDisputeMutation.mutate()
     },
     onError: (err) => {
-      console.error("Failed to initiate dispute onchain:", err);
-      toast.error("Dispute onchain transaction failed.");
+      console.error("Failed to initiate dispute onchain:", err)
+      toast.error("Dispute onchain transaction failed.")
     },
-  });
+  })
 
   const markDisputeMutation = useMutation({
     mutationFn: markDisputeInDB,
@@ -957,11 +1001,15 @@ export default function ProductChat({
         firstName={first_name}
         isBuyer={isBuyer}
         isSeller={isSeller}
-        alreadyInDispute={alreadyInDispute || false}
+        showConfirmButton={showConfirmButton}
+        showCancelButton={showCancelButton}
+        showDisputeButton={showDisputeButton}
+        showResolveButton={showResolveButton}
         onConfirmOpen={() => setIsConfirmModalOpen(true)}
         onCancelOpen={() => setIsCancelModalOpen(true)}
         onDispute={handleRaiseDispute}
         onResolveOpen={() => setIsResolveModalOpen(true)}
+        disputePending={initiateDisputeMutation.isPending}
       />
 
       <ChatMessages

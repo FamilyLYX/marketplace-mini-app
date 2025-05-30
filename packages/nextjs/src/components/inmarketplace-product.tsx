@@ -111,7 +111,6 @@ export function AlreadyInMarketplace({
             <DialogContent className="max-w-2xl w-full">
               <ProductChat
                 vault={vault}
-                alreadyInDispute={vault.order_status === "disputed"}
               />
             </DialogContent>
           </Dialog>

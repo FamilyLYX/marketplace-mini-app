@@ -95,10 +95,7 @@ export default function AdminProductChats() {
           </DialogHeader>
 
           {vault ? (
-            <ProductChat
-              vault={vault}
-              alreadyInDispute={vault.order_status === "disputed"}
-            />
+            <ProductChat vault={vault} />
           ) : (
             <p className="text-sm text-muted-foreground">Loading chat...</p>
           )}

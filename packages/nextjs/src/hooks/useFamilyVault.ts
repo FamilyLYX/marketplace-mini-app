@@ -81,35 +81,14 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
   const depositFunds = async ({ priceInLYX }: { priceInLYX: bigint }) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
-      return;
+      throw new Error("Wallet not connected.");
     }
 
     try {
       const vaultState = await getVaultState();
-      const nftContract = await getNFTContract();
-      const tokenId = await getTokenId();
-      const logs = await readClient.getLogs({
-        address: vaultAddress,
-        fromBlock: BigInt(0), // or specific block if you know when it started
-        toBlock: "latest",
-      });
-      console.log("Logs for vault:", logs);
-      if (!nftContract) {
-        toast.error("NFT contract not found.");
-        return;
-      }
-      console.log(
-        "Vault state:",
-        vaultState,
-        "NFT Contract:",
-        nftContract,
-        "Token ID:",
-        tokenId,
-      );
       if (vaultState !== FamilyVaultState.Listed) {
-        console.log(vaultState);
         toast.error("Vault is not in a listed state.");
-        return;
+        throw new Error("Vault is not in a listed state.");
       }
 
       const txHash = await client.sendTransaction({
@@ -125,6 +104,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     } catch (err) {
       console.error("Error depositing funds:", err);
       toast.error("Deposit failed.");
+      throw err;
     }
   };
 
@@ -135,7 +115,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
   ) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
-      return;
+      throw new Error("Wallet not connected.");
     }
 
     try {
@@ -147,7 +127,6 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         account: accounts[0],
         chain: luksoTestnet,
       });
-      console.log("Simulation response:", response);
 
       const txHash = await client.writeContract({
         abi: FAMILY_VAULT_ABI,
@@ -164,13 +143,14 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     } catch (err) {
       console.error("Error confirming receipt:", err);
       toast.error("Could not confirm receipt.");
+      throw err;
     }
   };
 
   const initiateDispute = async () => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
-      return;
+      throw new Error("Wallet not connected.");
     }
 
     try {
@@ -180,7 +160,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         vaultState !== FamilyVaultState.DeliveryConfirmed
       ) {
         toast.error("Dispute can only be initiated in appropriate states.");
-        return;
+        throw new Error("Dispute can only be initiated in appropriate states. Funds must be deposited or delivery confirmed.");
       }
 
       await readClient.simulateContract({
@@ -205,6 +185,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     } catch (err) {
       console.error("Error initiating dispute:", err);
       toast.error("Failed to initiate dispute.");
+      throw err;
     }
   };
 
@@ -217,14 +198,14 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
   ) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
-      return;
+      throw new Error("Wallet not connected.");
     }
 
     try {
       const vaultState = await getVaultState();
       if (vaultState !== FamilyVaultState.Disputed) {
         toast.error("Vault is not in a disputed state.");
-        return;
+        throw new Error("Vault is not in a disputed state.");
       }
 
       const txHash = await client.writeContract({
@@ -242,6 +223,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     } catch (err) {
       console.error("Error resolving dispute:", err);
       toast.error("Failed to resolve dispute.");
+      throw err;
     }
   };
 
@@ -252,7 +234,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
   ) => {
     if (!client || !walletConnected || !accounts?.[0]) {
       toast.error("Connect your Universal Profile wallet first.");
-      return;
+      throw new Error("Wallet not connected.");
     }
 
     try {
@@ -271,6 +253,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
     } catch (err) {
       console.error("Error cancelling trade:", err);
       toast.error("Failed to cancel trade.");
+      throw err;
     }
   };
 
@@ -294,8 +277,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
       toast.success("Vault relisted.");
       return txHash;
     } catch (err) {
-      console.error("Error relisting vault:", err);
-      toast.error("Failed to relist vault.");
+      throw err;
     }
   };
 
