@@ -89,7 +89,7 @@ export function AlreadyInMarketplace({
   const [openChat, setOpenChat] = useState(false);
   const [isBuyerModalOpen, setIsBuyerModalOpen] = useState(false);
   const hasBuyer = Boolean(vault.buyer);
-  const { cancelTrade } = useFamilyVault(vault.vault_address as `0x${string}`);
+  const { unlist } = useFamilyVault(vault.vault_address as `0x${string}`);
   const { fetchDataAndUpdateSalt } = useFetchSaltAndUpdate();
 
   const handleUnlistMutation = useMutation({
@@ -101,7 +101,7 @@ export function AlreadyInMarketplace({
         await fetchDataAndUpdateSalt(vault.nft_contract as `0x${string}`);
       let res = undefined;
       try {
-        res = await cancelTrade(plainUIDCode, currentSalt, newUidHash);
+        res = await unlist(plainUIDCode, currentSalt, newUidHash);
       } catch (error) {
         console.error("Error during cancelTrade:", error);
         throw new Error("Failed to cancel trade");
