@@ -14,8 +14,12 @@ import { NFT_ABI } from "@/constants/dpp";
 import { parseEventLogs } from "viem";
 
 const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32
-const LSP4_METADATA_KEY =
-  "0x9afb95cacc9f95858ec44aa8c3b685511002e30ae54415823f406128b85b238e";
+
+// const LSP4_METADATA_KEY =
+//   "0x9afb95cacc9f95858ec44aa8c3b685511002e30ae54415823f406128b85b238e";
+
+const DPP_METADATA_KEY =
+  "0x83e0c8c4fe3b78192b174a9db34a2591dd4efc5a07cf4f62432e244374361e14";
 
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
   throw new Error("PRIVATE_KEY environment variable is not set.");
@@ -60,7 +64,7 @@ export async function getAllNFTMetadata(): Promise<
         abi: NFT_ABI,
         address: nftAddress as `0x${string}`,
         functionName: "getDataForTokenId",
-        args: [tokenId, LSP4_METADATA_KEY],
+        args: [tokenId, DPP_METADATA_KEY],
       });
       if (!metadata) {
         continue;

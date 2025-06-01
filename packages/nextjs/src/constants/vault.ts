@@ -715,6 +715,19 @@ export const FAMILY_VAULT_ABI = [
   },
   {
     type: "event",
+    name: "SellerUnlisted",
+    inputs: [
+      {
+        name: "seller",
+        type: "address",
+        indexed: true,
+        internalType: "address",
+      },
+    ],
+    anonymous: false,
+  },
+  {
+    type: "event",
     name: "TradeCancelled",
     inputs: [
       {
