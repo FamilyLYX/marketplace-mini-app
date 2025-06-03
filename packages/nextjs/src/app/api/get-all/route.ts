@@ -1,8 +1,10 @@
 import { getAllData } from "@/lib/getSalt";
+import { withAuth } from "@/lib/middleware/auth";
+import { NextApiRequest } from "next";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
+async function handler(req: NextApiRequest) {
+  const { searchParams } = new URL(req.url ?? "");
 
   const dppAddress = searchParams.get("dppAddress");
 
@@ -22,7 +24,9 @@ export async function GET(req: Request) {
     console.error("Get data error:", error);
     return NextResponse.json(
       { error: "Failed to fetch data" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
+
+export const GET = withAuth(handler);
