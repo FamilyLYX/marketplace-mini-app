@@ -49,11 +49,11 @@ export function UpProvider({ children }: UpProviderProps) {
   const [chainId, setChainId] = useState<number>(0);
   const [accounts, setAccounts] = useState<Array<`0x${string}`>>([]);
   const [contextAccounts, setContextAccounts] = useState<Array<`0x${string}`>>(
-    [],
+    []
   );
   const [walletConnected, setWalletConnected] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<`0x${string}` | null>(
-    null,
+    null
   );
   const [isSearching, setIsSearching] = useState(false);
   const [account] = accounts ?? [];
@@ -78,7 +78,7 @@ export function UpProvider({ children }: UpProviderProps) {
 
         const _accounts = (await provider.request(
           "eth_accounts",
-          [],
+          []
         )) as Array<`0x${string}`>;
         if (!mounted) return;
         setAccounts(_accounts);
@@ -91,6 +91,15 @@ export function UpProvider({ children }: UpProviderProps) {
         if (!mounted) return;
         setContextAccounts(_contextAccounts);
         setWalletConnected(_accounts[0] != null && _contextAccounts[0] != null);
+        if (_accounts[0] != null && _contextAccounts[0] != null) {
+          fetch("/api/auth/login", {
+            method: "POST",
+          });
+        } else {
+          fetch("/api/auth/logout", {
+            method: "POST",
+          });
+        }
       } catch (error) {
         console.error(error);
       }
@@ -102,11 +111,29 @@ export function UpProvider({ children }: UpProviderProps) {
       const accountsChanged = (_accounts: Array<`0x${string}`>) => {
         setAccounts(_accounts);
         setWalletConnected(_accounts[0] != null && contextAccount != null);
+        if (_accounts[0] != null) {
+          fetch("/api/auth/login", {
+            method: "POST",
+          });
+        } else {
+          fetch("/api/auth/logout", {
+            method: "POST",
+          });
+        }
       };
 
       const contextAccountsChanged = (_accounts: Array<`0x${string}`>) => {
         setContextAccounts(_accounts);
         setWalletConnected(account != null && _accounts[0] != null);
+        if (_accounts[0] != null) {
+          fetch("/api/auth/login", {
+            method: "POST",
+          });
+        } else {
+          fetch("/api/auth/logout", {
+            method: "POST",
+          });
+        }
       };
 
       const chainChanged = (_chainId: number) => {
@@ -122,7 +149,7 @@ export function UpProvider({ children }: UpProviderProps) {
         provider.removeListener("accountsChanged", accountsChanged);
         provider.removeListener(
           "contextAccountsChanged",
-          contextAccountsChanged,
+          contextAccountsChanged
         );
         provider.removeListener("chainChanged", chainChanged);
       };
