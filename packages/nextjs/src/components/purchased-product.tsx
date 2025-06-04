@@ -1,9 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { ProductImageCarousel } from "./product";
 import { ProductMetadata } from "./buy-product";
-import { getAddress } from "viem";
 import { Vault } from "@/types";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";

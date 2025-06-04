@@ -245,7 +245,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
       const vaultState = await getVaultState();
       if (
         vaultState === FamilyVaultState.Completed ||
-        FamilyVaultState.Disputed
+        vaultState === FamilyVaultState.Disputed
       ) {
         toast.error("Trade cannot be cancelled in this state.");
         throw new Error(

@@ -5,12 +5,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Badge } from "@/components/ui/badge";
 import { useRef } from "react";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { ProductCardShell } from "./inmarketplace-product";
-import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent } from "./ui/dialog";
 import { ProductInfo } from "./product-info";
 import React from "react";
 

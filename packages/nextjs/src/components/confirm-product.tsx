@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { pad } from "viem";
 import { Button } from "./ui/button";
