@@ -109,7 +109,7 @@ const ConfirmTradeDialog = ({
         throw new Error("Failed to create vault");
       }
       await fetchWithAuth("/api/save-salt", {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tokenId: pad("0x0", { size: 32 }), // using a fixed tokenId of 0x0
@@ -774,10 +774,13 @@ export default function ProductChat({ vault }: ProductChatProps) {
   const isSeller = userAddress.toLowerCase() === seller?.toLowerCase();
 
   // Button visibility flags
-  const showConfirmButton = isBuyer && order_status === "pending";
-  const showCancelButton = isSeller && order_status === "pending";
+  const showConfirmButton =
+    isBuyer && order_status === "pending" && !isSeller && !isAdmin;
+  const showCancelButton =
+    isSeller && order_status === "pending" && !isBuyer && !isAdmin;
   const showDisputeButton = !isAdmin && order_status === "pending";
-  const showResolveButton = isAdmin && order_status === "disputed";
+  const showResolveButton =
+    isAdmin && order_status === "disputed" && !isBuyer && !isSeller;
 
   // State
   const [cancelReason, setCancelReason] = useState("");
