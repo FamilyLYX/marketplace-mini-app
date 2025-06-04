@@ -85,7 +85,7 @@ export function ConfirmProduct({
     },
     onSuccess: () => {
       toast.success("Product delivery confirmed!");
-      queryClient.invalidateQueries({
+      queryClient.refetchQueries({
         queryKey: ["marketplaceProducts", "allNfts"],
       });
       setModalOpen(false);
