@@ -11,9 +11,8 @@ import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 import { useMutation } from "@tanstack/react-query";
 import { pad } from "viem";
 import { queryClient } from "./marketplace-provider";
-import { ProductImageCarousel } from "./product";
-import { Badge } from "./ui/badge";
 import { fetchWithAuth } from "@/lib/api";
+import { ProductInfo } from "./product-info";
 
 export type ProductMetadata = {
   title: string;
@@ -235,25 +234,8 @@ export function AlreadyInMarketplace({
             More Info
           </Button>
           <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
-            <DialogTitle className="text-lg"></DialogTitle>
             <DialogContent className="max-w-md">
-              <ProductImageCarousel images={metadata.images} />
-              <div className="flex flex-col gap-2 mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant="outline" className="text-xs">
-                    {metadata.category}
-                  </Badge>
-                  <span className="text-xs font-medium">
-                    Brand: {metadata.brand}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-xs text-muted-foreground">
-                    Description:{" "}
-                  </span>
-                  <span className="text-sm">{metadata.description}</span>
-                </div>
-              </div>
+              <ProductInfo metadata={metadata} />
             </DialogContent>
           </Dialog>
         </>

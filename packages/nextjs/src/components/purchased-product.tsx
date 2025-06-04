@@ -9,6 +9,7 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import ProductChat from "./escrow-chat";
 import { ProductCardShell } from "./inmarketplace-product";
+import { ProductInfo } from "./product-info";
 import React from "react";
 
 export function PurchasedProductCard({
@@ -49,38 +50,7 @@ export function PurchasedProductCard({
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
         <DialogTitle className="text-lg"></DialogTitle>
         <DialogContent className="max-w-md">
-          <ProductImageCarousel images={metadata.images} />
-          <div className="flex flex-col gap-2 mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <Badge variant="outline" className="text-xs">
-                {metadata.category}
-              </Badge>
-              <span className="text-xs font-medium">
-                Brand: {metadata.brand}
-              </span>
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground">Condition: </span>
-              <Badge className="whitespace-pre-wrap">{vault.notes}</Badge>
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground">Location: </span>
-              <Badge>{vault.location}</Badge>
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground">Product By</span>
-              <a
-                href={`https://universaleverything.io/${getAddress(vault.seller)}?network=testnet&assetGroup=tokens`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-medium text-blue-600 hover:underline truncate block"
-              >
-                <Badge variant="outline" className="truncate">
-                  {vault.seller}
-                </Badge>
-              </a>
-            </div>
-          </div>
+          <ProductInfo metadata={metadata} />
         </DialogContent>
       </Dialog>
     </>

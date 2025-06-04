@@ -11,6 +11,7 @@ import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { ProductCardShell } from "./inmarketplace-product";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
+import { ProductInfo } from "./product-info";
 import React from "react";
 
 export type ProductMetadata = {
@@ -103,25 +104,8 @@ export function ProductCard({
         </Button>
       </ProductCardShell>
       <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
-        <DialogTitle className="text-lg"></DialogTitle>
         <DialogContent className="max-w-md">
-          <ProductImageCarousel images={metadata.images} />
-          <div className="flex flex-col gap-2 mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <Badge variant="outline" className="text-xs">
-                {metadata.category}
-              </Badge>
-              <span className="text-xs font-medium">
-                Brand: {metadata.brand}
-              </span>
-            </div>
-            <div>
-              <span className="text-xs text-muted-foreground">
-                Description:{" "}
-              </span>
-              <span className="text-sm">{metadata.description}</span>
-            </div>
-          </div>
+          <ProductInfo metadata={metadata} />
         </DialogContent>
       </Dialog>
     </>
