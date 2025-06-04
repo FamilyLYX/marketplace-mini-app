@@ -20,6 +20,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 import { ArrowLeft } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
 
 // Updated BuyFormData
 interface BuyFormData {
@@ -250,7 +251,7 @@ function PaymentStep({
         throw new Error("Failed to create vault");
       }
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/vault?vault_address=${vaultAddress}`,
           {
             method: "PATCH",

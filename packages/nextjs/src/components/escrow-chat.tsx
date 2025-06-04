@@ -35,6 +35,7 @@ import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 import { pad } from "viem";
+import { fetchWithAuth } from "@/lib/api";
 
 interface ChatMessage {
   from: string;
@@ -107,7 +108,7 @@ const ConfirmTradeDialog = ({
       if (!res) {
         throw new Error("Failed to create vault");
       }
-      await fetch("/api/save-salt", {
+      await fetchWithAuth("/api/save-salt", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -118,7 +119,7 @@ const ConfirmTradeDialog = ({
         }),
       });
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/vault?vault_address=${vaultAddress}`,
           {
             method: "PATCH",
@@ -219,7 +220,7 @@ const CancelTradeDialog = ({
         throw new Error("Failed to create vault");
       }
       try {
-        await fetch("/api/save-salt", {
+        await fetchWithAuth("/api/save-salt", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -229,7 +230,7 @@ const CancelTradeDialog = ({
             uidHash: newUidHash,
           }),
         });
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/vault?vault_address=${vault.vault_address}`,
           {
             method: "PATCH",
@@ -351,7 +352,7 @@ const ResolveDisputeDialog = ({
       if (!res) {
         throw new Error("Failed to create vault");
       }
-      await fetch("/api/save-salt", {
+      await fetchWithAuth("/api/save-salt", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -362,7 +363,7 @@ const ResolveDisputeDialog = ({
         }),
       });
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/vault?vault_address=${vaultAddress}`,
           {
             method: "PATCH",
@@ -867,7 +868,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
 
   async function markDisputeInDB() {
     try {
-      const response = await fetch(`/api/vault?vault_address=${vaultAddress}`, {
+      const response = await fetchWithAuth(`/api/vault?vault_address=${vaultAddress}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

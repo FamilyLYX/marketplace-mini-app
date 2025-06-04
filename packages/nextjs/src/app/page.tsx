@@ -13,6 +13,7 @@ import Image from "next/image";
 import ProductMarketplaceCarousel from "@/components/product-marketplace-carousel";
 import InventoryCarousel from "@/components/inventory-carousel";
 import OrdersCarousel from "@/components/orders-carousel";
+import { fetchWithAuth } from "@/lib/api";
 
 const adminAddress =
   (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
@@ -30,7 +31,7 @@ const Inventory = () => {
   const { data: marketplace, isLoading: isMarketplaceLoading } = useQuery({
     queryKey: ["marketplaceProducts"],
     queryFn: async () => {
-      const response = await fetch("/api/vaults");
+      const response = await fetchWithAuth("/api/vaults");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }

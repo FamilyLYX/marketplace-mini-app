@@ -15,6 +15,7 @@ import ProductChat from "./escrow-chat";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 import { ProductCardShell } from "./inmarketplace-product";
 import { ProductImageCarousel } from "./product";
+import { fetchWithAuth } from "@/lib/api";
 
 export type ProductMetadata = {
   title: string;
@@ -53,7 +54,7 @@ export function ConfirmProduct({
       if (!res) {
         throw new Error("Failed to create vault");
       }
-      await fetch("/api/save-salt", {
+      await fetchWithAuth("/api/save-salt", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,7 +65,7 @@ export function ConfirmProduct({
         }),
       });
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/vault?vault_address=${vaultAddress}`,
           {
             method: "PATCH",

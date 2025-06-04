@@ -1,5 +1,6 @@
 import { keccak256, encodePacked } from "viem";
 import { v4 as uuidv4 } from "uuid";
+import { fetchWithAuth } from "@/lib/api";
 
 export const useFetchSaltAndUpdate = () => {
   const fetchAndUpdateSalt = async (
@@ -10,7 +11,7 @@ export const useFetchSaltAndUpdate = () => {
     newSalt: string;
     newUidHash: `0x${string}`;
   }> => {
-    const response = await fetch(`/api/get-salt?dppAddress=${dppAddress}`);
+    const response = await fetchWithAuth(`/api/get-salt?dppAddress=${dppAddress}`);
     const dppSalt = await response.json();
 
     if (!dppSalt || !dppSalt.salt) {
@@ -38,7 +39,7 @@ export const useFetchSaltAndUpdate = () => {
     newSalt: string;
     newUidHash: `0x${string}`;
   }> => {
-    const response = await fetch(`/api/get-all?dppAddress=${dppAddress}`);
+    const response = await fetchWithAuth(`/api/get-all?dppAddress=${dppAddress}`);
     const res = await response.json();
     const data = res.data;
     const plainUIDCode = data.uid_code;

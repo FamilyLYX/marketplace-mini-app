@@ -13,6 +13,7 @@ import { pad } from "viem";
 import { queryClient } from "./marketplace-provider";
 import { ProductImageCarousel } from "./product";
 import { Badge } from "./ui/badge";
+import { fetchWithAuth } from "@/lib/api";
 
 export type ProductMetadata = {
   title: string;
@@ -110,7 +111,7 @@ export function AlreadyInMarketplace({
         throw new Error("Failed to Unlist");
       }
       try {
-        await fetch("/api/save-salt", {
+        await fetchWithAuth("/api/save-salt", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -120,7 +121,7 @@ export function AlreadyInMarketplace({
             uidHash: newUidHash,
           }),
         });
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `/api/vault?vault_address=${vault.vault_address}`,
           {
             method: "DELETE",

@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { useUpProvider } from "@/components/up-provider";
 import { queryClient } from "@/components/marketplace-provider";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
+import { fetchWithAuth } from "@/lib/api";
 
 export default function SellProductPage() {
   const { accounts } = useUpProvider();
@@ -49,7 +50,7 @@ export default function SellProductPage() {
     const formDataFile = new FormData();
     formDataFile.append("file", file);
 
-    const res = await fetch("/api/upload", {
+    const res = await fetchWithAuth("/api/upload", {
       method: "POST",
       body: formDataFile,
     });
@@ -91,7 +92,7 @@ export default function SellProductPage() {
       if (!transferDPP) {
         throw new Error("Failed to transfer ownership");
       }
-      await fetch("/api/save-salt", {
+      await fetchWithAuth("/api/save-salt", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -102,7 +103,7 @@ export default function SellProductPage() {
         }),
       });
       try {
-        const response = await fetch("/api/vault", {
+        const response = await fetchWithAuth("/api/vault", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

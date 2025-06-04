@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { fetchWithAuth } from "@/lib/api";
 
 export default function AdminProductChats() {
   const [chats, setChats] = useState<{ product_id: string }[]>([]);
@@ -35,7 +36,7 @@ export default function AdminProductChats() {
 
   const openChat = async (vaultAddress: string) => {
     try {
-      const response = await fetch(`/api/vault?vault_address=${vaultAddress}`, {
+      const response = await fetchWithAuth(`/api/vault?vault_address=${vaultAddress}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
