@@ -26,7 +26,24 @@ export async function PUT(req: Request) {
     const { tokenId, contractAddress, salt, uidHash } = await req.json();
 
     if (!tokenId || !contractAddress || !salt || !uidHash) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+      console.error("Missing fields in request:", {
+        tokenId: !tokenId,
+        contractAddress: !contractAddress,
+        salt: !salt,
+        uidHash: !uidHash,
+      });
+      return NextResponse.json(
+        {
+          error: "Missing fields",
+          details: {
+            tokenId: !tokenId,
+            contractAddress: !contractAddress,
+            salt: !salt,
+            uidHash: !uidHash,
+          },
+        },
+        { status: 400 },
+      );
     }
 
     await updateSalt(tokenId, contractAddress, salt, uidHash);

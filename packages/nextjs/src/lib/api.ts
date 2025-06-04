@@ -24,7 +24,7 @@ export async function fetchWithAuth(
   const config: RequestInit = {
     ...options,
     headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: options.body ? options.body : undefined,
   };
 
   const response = await fetch(endpoint, config);
