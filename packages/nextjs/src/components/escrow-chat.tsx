@@ -489,8 +489,8 @@ const ActionButtons = ({
     {isBuyer && showConfirmButton && (
       <Button
         size="sm"
-        variant="outline"
-        className="rounded-full"
+        variant="default"
+        className="rounded-full bg-green-500 text-white hover:bg-green-600"
         onClick={onConfirmOpen}
       >
         <CheckCircle className="h-4 w-4 mr-1" />

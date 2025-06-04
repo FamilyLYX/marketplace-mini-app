@@ -83,8 +83,7 @@ export function ConfirmProduct({
       }
       return { res };
     },
-    onSuccess: (data) => {
-      console.log("Buy mutation successful", data);
+    onSuccess: () => {
       toast.success("Product delivery confirmed!");
       queryClient.invalidateQueries({
         queryKey: ["marketplaceProducts", "allNfts"],

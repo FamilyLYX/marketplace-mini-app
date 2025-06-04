@@ -218,7 +218,7 @@ export function AlreadyInMarketplace({
         </>
       ) : (
         <>
-          {vault.buyer === "" ? (
+          {!hasBuyer ? (
             <Button
               variant="default"
               className="w-1/2"

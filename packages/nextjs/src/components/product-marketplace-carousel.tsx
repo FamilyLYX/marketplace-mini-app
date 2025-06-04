@@ -15,8 +15,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Vault } from "@/types";
-import { BuyProductDetails } from "./buy-product";
 import { ProductCardShell } from "./inmarketplace-product";
+import { ProductInfo } from "./product-info";
 
 export default function ProductMarketplaceCarousel({
   products,
@@ -58,10 +58,7 @@ export default function ProductMarketplaceCarousel({
       >
         <CarouselContent>
           {products.map((product, index) => (
-            <CarouselItem
-              key={index}
-              className="flex"
-            >
+            <CarouselItem key={index} className="flex">
               <ProductCardShell
                 image={product.images?.[0] || "/placeholder.png"}
                 title={product.title}
@@ -98,9 +95,9 @@ export default function ProductMarketplaceCarousel({
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl w-full items-center justify-center">
                     <DialogHeader>
-                      <DialogTitle>Product Details</DialogTitle>
+                      <DialogTitle className="text-lg"></DialogTitle>
                     </DialogHeader>
-                    <BuyProductDetails
+                    <ProductInfo
                       metadata={{
                         title: product.title ?? "",
                         description: product.description ?? "",
@@ -108,11 +105,6 @@ export default function ProductMarketplaceCarousel({
                         category: product.category ?? "",
                         brand: product.brand ?? "",
                       }}
-                      vaultAddress={product.vault_address}
-                      condition={product.notes as string}
-                      location={product.location as string}
-                      sellerAddress={product.seller}
-                      priceInLYX={product.price_in_lyx}
                     />
                   </DialogContent>
                 </Dialog>
