@@ -2,7 +2,7 @@
 import { http, createPublicClient, createWalletClient } from "viem";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
 import { luksoTestnet } from "viem/chains";
-import { fromHex, pad } from "viem/utils";
+import { fromHex, pad, keccak256 } from "viem/utils";
 import { ProductMetadata } from "@/components/product";
 import { privateKeyToAccount } from "viem/accounts";
 import {
@@ -19,7 +19,7 @@ const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32
 //   "0x9afb95cacc9f95858ec44aa8c3b685511002e30ae54415823f406128b85b238e";
 
 const DPP_METADATA_KEY =
-  "0x83e0c8c4fe3b78192b174a9db34a2591dd4efc5a07cf4f62432e244374361e14";
+  "0xfdc90bed11ed075e8de8d81f16642cab1d54295200de73e16728abf20dea834d";
 
 if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
   throw new Error("PRIVATE_KEY environment variable is not set.");

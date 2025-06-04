@@ -4,118 +4,54 @@ const FACTORY_ABI = [
   {
     type: "constructor",
     inputs: [
-      {
-        name: "_implementation",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "_implementation", type: "address", internalType: "address" },
     ],
     stateMutability: "nonpayable",
   },
   {
     type: "function",
     name: "allDPPs",
-    inputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "createNFT",
     inputs: [
-      {
-        name: "name",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "symbol",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "initialOwner",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "name", type: "string", internalType: "string" },
+      { name: "symbol", type: "string", internalType: "string" },
+      { name: "initialOwner", type: "address", internalType: "address" },
     ],
-    outputs: [
-      {
-        name: "clone",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "clone", type: "address", internalType: "address" }],
     stateMutability: "nonpayable",
   },
   {
     type: "function",
     name: "getDeployedDPPs",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address[]",
-        internalType: "address[]",
-      },
-    ],
+    outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "implementation",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "nftContracts",
-    inputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    inputs: [{ name: "", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "owner",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
@@ -128,13 +64,7 @@ const FACTORY_ABI = [
   {
     type: "function",
     name: "transferOwnership",
-    inputs: [
-      {
-        name: "newOwner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -176,19 +106,11 @@ const FACTORY_ABI = [
     ],
     anonymous: false,
   },
-  {
-    type: "error",
-    name: "InvalidImplementationIsZero",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "InvalidInitialOwner",
-    inputs: [],
-  },
+  { type: "error", name: "InvalidImplementationIsZero", inputs: [] },
+  { type: "error", name: "InvalidInitialOwner", inputs: [] },
 ] as Abi;
 
 const FACTORY_ADDRESS =
-  "0x7745132fD75d3a797bC0ff9EF4066735cAb87f4b" as `0x${string}`;
+  "0x9a6660cc65DB3f834447b8a97754dAadE6664D65" as `0x${string}`;
 
 export { FACTORY_ABI, FACTORY_ADDRESS };

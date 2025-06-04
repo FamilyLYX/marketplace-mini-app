@@ -1,28 +1,14 @@
 import { Abi } from "viem";
 
 export const NFT_ABI = [
-  {
-    type: "fallback",
-    stateMutability: "payable",
-  },
-  {
-    type: "receive",
-    stateMutability: "payable",
-  },
+  { type: "fallback", stateMutability: "payable" },
+  { type: "receive", stateMutability: "payable" },
   {
     type: "function",
     name: "authorizeOperator",
     inputs: [
-      {
-        name: "operator",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "operator", type: "address", internalType: "address" },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
       {
         name: "operatorNotificationData",
         type: "bytes",
@@ -35,165 +21,67 @@ export const NFT_ABI = [
   {
     type: "function",
     name: "balanceOf",
-    inputs: [
-      {
-        name: "tokenOwner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    inputs: [{ name: "tokenOwner", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "batchCalls",
-    inputs: [
-      {
-        name: "data",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
-    ],
-    outputs: [
-      {
-        name: "results",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
-    ],
+    inputs: [{ name: "data", type: "bytes[]", internalType: "bytes[]" }],
+    outputs: [{ name: "results", type: "bytes[]", internalType: "bytes[]" }],
     stateMutability: "nonpayable",
   },
   {
     type: "function",
     name: "getData",
-    inputs: [
-      {
-        name: "dataKey",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    outputs: [
-      {
-        name: "dataValue",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
+    inputs: [{ name: "dataKey", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "dataValue", type: "bytes", internalType: "bytes" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "getDataBatch",
     inputs: [
-      {
-        name: "dataKeys",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
+      { name: "dataKeys", type: "bytes32[]", internalType: "bytes32[]" },
     ],
-    outputs: [
-      {
-        name: "dataValues",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
-    ],
+    outputs: [{ name: "dataValues", type: "bytes[]", internalType: "bytes[]" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "getDataBatchForTokenIds",
     inputs: [
-      {
-        name: "tokenIds",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
-      {
-        name: "dataKeys",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
+      { name: "tokenIds", type: "bytes32[]", internalType: "bytes32[]" },
+      { name: "dataKeys", type: "bytes32[]", internalType: "bytes32[]" },
     ],
-    outputs: [
-      {
-        name: "dataValues",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
-    ],
+    outputs: [{ name: "dataValues", type: "bytes[]", internalType: "bytes[]" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "getDataForTokenId",
     inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "dataKey",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
+      { name: "dataKey", type: "bytes32", internalType: "bytes32" },
     ],
-    outputs: [
-      {
-        name: "dataValue",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
+    outputs: [{ name: "dataValue", type: "bytes", internalType: "bytes" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "getOperatorsOf",
-    inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "address[]",
-        internalType: "address[]",
-      },
-    ],
+    inputs: [{ name: "tokenId", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "initialize",
     inputs: [
-      {
-        name: "name_",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "symbol_",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "newOwner",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "name_", type: "string", internalType: "string" },
+      { name: "symbol_", type: "string", internalType: "string" },
+      { name: "newOwner", type: "address", internalType: "address" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -202,50 +90,20 @@ export const NFT_ABI = [
     type: "function",
     name: "isOperatorFor",
     inputs: [
-      {
-        name: "operator",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "operator", type: "address", internalType: "address" },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
     ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "mint",
     inputs: [
-      {
-        name: "to",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "force",
-        type: "bool",
-        internalType: "bool",
-      },
-      {
-        name: "data",
-        type: "bytes",
-        internalType: "bytes",
-      },
+      { name: "", type: "address", internalType: "address" },
+      { name: "", type: "bytes32", internalType: "bytes32" },
+      { name: "", type: "bool", internalType: "bool" },
+      { name: "", type: "bytes", internalType: "bytes" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -254,21 +112,9 @@ export const NFT_ABI = [
     type: "function",
     name: "mintDPP",
     inputs: [
-      {
-        name: "to",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "publicJsonMetadata",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "uidHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "to", type: "address", internalType: "address" },
+      { name: "publicJsonMetadata", type: "string", internalType: "string" },
+      { name: "uidHash", type: "bytes32", internalType: "bytes32" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -277,26 +123,14 @@ export const NFT_ABI = [
     type: "function",
     name: "nextTokenIndex",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "owner",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
@@ -310,21 +144,9 @@ export const NFT_ABI = [
     type: "function",
     name: "revokeOperator",
     inputs: [
-      {
-        name: "operator",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "notify",
-        type: "bool",
-        internalType: "bool",
-      },
+      { name: "operator", type: "address", internalType: "address" },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
+      { name: "notify", type: "bool", internalType: "bool" },
       {
         name: "operatorNotificationData",
         type: "bytes",
@@ -338,16 +160,8 @@ export const NFT_ABI = [
     type: "function",
     name: "setData",
     inputs: [
-      {
-        name: "dataKey",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "dataValue",
-        type: "bytes",
-        internalType: "bytes",
-      },
+      { name: "dataKey", type: "bytes32", internalType: "bytes32" },
+      { name: "dataValue", type: "bytes", internalType: "bytes" },
     ],
     outputs: [],
     stateMutability: "payable",
@@ -356,16 +170,8 @@ export const NFT_ABI = [
     type: "function",
     name: "setDataBatch",
     inputs: [
-      {
-        name: "dataKeys",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
-      {
-        name: "dataValues",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
+      { name: "dataKeys", type: "bytes32[]", internalType: "bytes32[]" },
+      { name: "dataValues", type: "bytes[]", internalType: "bytes[]" },
     ],
     outputs: [],
     stateMutability: "payable",
@@ -374,21 +180,9 @@ export const NFT_ABI = [
     type: "function",
     name: "setDataBatchForTokenIds",
     inputs: [
-      {
-        name: "tokenIds",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
-      {
-        name: "dataKeys",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
-      {
-        name: "dataValues",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
+      { name: "tokenIds", type: "bytes32[]", internalType: "bytes32[]" },
+      { name: "dataKeys", type: "bytes32[]", internalType: "bytes32[]" },
+      { name: "dataValues", type: "bytes[]", internalType: "bytes[]" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -397,21 +191,9 @@ export const NFT_ABI = [
     type: "function",
     name: "setDataForTokenId",
     inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "dataKey",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "dataValue",
-        type: "bytes",
-        internalType: "bytes",
-      },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
+      { name: "dataKey", type: "bytes32", internalType: "bytes32" },
+      { name: "dataValue", type: "bytes", internalType: "bytes" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -419,102 +201,40 @@ export const NFT_ABI = [
   {
     type: "function",
     name: "supportsInterface",
-    inputs: [
-      {
-        name: "interfaceId",
-        type: "bytes4",
-        internalType: "bytes4",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    inputs: [{ name: "interfaceId", type: "bytes4", internalType: "bytes4" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "tokenIdsOf",
-    inputs: [
-      {
-        name: "tokenOwner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
-    ],
+    inputs: [{ name: "tokenOwner", type: "address", internalType: "address" }],
+    outputs: [{ name: "", type: "bytes32[]", internalType: "bytes32[]" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "tokenOwnerOf",
-    inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "tokenId", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "totalSupply",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "transfer",
     inputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-      {
-        name: "",
-        type: "bytes",
-        internalType: "bytes",
-      },
+      { name: "", type: "address", internalType: "address" },
+      { name: "", type: "address", internalType: "address" },
+      { name: "", type: "bytes32", internalType: "bytes32" },
+      { name: "", type: "bool", internalType: "bool" },
+      { name: "", type: "bytes", internalType: "bytes" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -523,31 +243,11 @@ export const NFT_ABI = [
     type: "function",
     name: "transferBatch",
     inputs: [
-      {
-        name: "from",
-        type: "address[]",
-        internalType: "address[]",
-      },
-      {
-        name: "to",
-        type: "address[]",
-        internalType: "address[]",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
-      {
-        name: "force",
-        type: "bool[]",
-        internalType: "bool[]",
-      },
-      {
-        name: "data",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
+      { name: "from", type: "address[]", internalType: "address[]" },
+      { name: "to", type: "address[]", internalType: "address[]" },
+      { name: "tokenId", type: "bytes32[]", internalType: "bytes32[]" },
+      { name: "force", type: "bool[]", internalType: "bool[]" },
+      { name: "data", type: "bytes[]", internalType: "bytes[]" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -555,13 +255,7 @@ export const NFT_ABI = [
   {
     type: "function",
     name: "transferOwnership",
-    inputs: [
-      {
-        name: "newOwner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -569,36 +263,12 @@ export const NFT_ABI = [
     type: "function",
     name: "transferWithUIDRotation",
     inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "to",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "data",
-        type: "bytes",
-        internalType: "bytes",
-      },
-      {
-        name: "salt",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "plainUidCode",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "newUidHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
+      { name: "to", type: "address", internalType: "address" },
+      { name: "data", type: "bytes", internalType: "bytes" },
+      { name: "salt", type: "string", internalType: "string" },
+      { name: "plainUidCode", type: "string", internalType: "string" },
+      { name: "newUidHash", type: "bytes32", internalType: "bytes32" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -626,12 +296,7 @@ export const NFT_ABI = [
     type: "event",
     name: "Initialized",
     inputs: [
-      {
-        name: "version",
-        type: "uint8",
-        indexed: false,
-        internalType: "uint8",
-      },
+      { name: "version", type: "uint8", indexed: false, internalType: "uint8" },
     ],
     anonymous: false,
   },
@@ -688,12 +353,7 @@ export const NFT_ABI = [
         indexed: true,
         internalType: "bytes32",
       },
-      {
-        name: "notified",
-        type: "bool",
-        indexed: false,
-        internalType: "bool",
-      },
+      { name: "notified", type: "bool", indexed: false, internalType: "bool" },
       {
         name: "operatorNotificationData",
         type: "bytes",
@@ -757,310 +417,125 @@ export const NFT_ABI = [
         indexed: false,
         internalType: "address",
       },
-      {
-        name: "from",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
-      {
-        name: "to",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
+      { name: "from", type: "address", indexed: true, internalType: "address" },
+      { name: "to", type: "address", indexed: true, internalType: "address" },
       {
         name: "tokenId",
         type: "bytes32",
         indexed: true,
         internalType: "bytes32",
       },
-      {
-        name: "force",
-        type: "bool",
-        indexed: false,
-        internalType: "bool",
-      },
-      {
-        name: "data",
-        type: "bytes",
-        indexed: false,
-        internalType: "bytes",
-      },
+      { name: "force", type: "bool", indexed: false, internalType: "bool" },
+      { name: "data", type: "bytes", indexed: false, internalType: "bytes" },
     ],
     anonymous: false,
   },
-  {
-    type: "error",
-    name: "ERC725Y_DataKeysValuesEmptyArray",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "ERC725Y_DataKeysValuesLengthMismatch",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "ERC725Y_MsgValueDisallowed",
-    inputs: [],
-  },
+  { type: "error", name: "ERC725Y_DataKeysValuesEmptyArray", inputs: [] },
+  { type: "error", name: "ERC725Y_DataKeysValuesLengthMismatch", inputs: [] },
+  { type: "error", name: "ERC725Y_MsgValueDisallowed", inputs: [] },
   {
     type: "error",
     name: "InvalidExtensionAddress",
-    inputs: [
-      {
-        name: "storedData",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
+    inputs: [{ name: "storedData", type: "bytes", internalType: "bytes" }],
   },
   {
     type: "error",
     name: "InvalidFunctionSelector",
-    inputs: [
-      {
-        name: "data",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
+    inputs: [{ name: "data", type: "bytes", internalType: "bytes" }],
   },
-  {
-    type: "error",
-    name: "InvalidUID",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "LSP4TokenNameNotEditable",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "LSP4TokenSymbolNotEditable",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "LSP4TokenTypeNotEditable",
-    inputs: [],
-  },
+  { type: "error", name: "InvalidUID", inputs: [] },
+  { type: "error", name: "LSP4TokenNameNotEditable", inputs: [] },
+  { type: "error", name: "LSP4TokenSymbolNotEditable", inputs: [] },
+  { type: "error", name: "LSP4TokenTypeNotEditable", inputs: [] },
   {
     type: "error",
     name: "LSP8BatchCallFailed",
-    inputs: [
-      {
-        name: "callIndex",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    inputs: [{ name: "callIndex", type: "uint256", internalType: "uint256" }],
   },
-  {
-    type: "error",
-    name: "LSP8CannotSendToAddressZero",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "LSP8CannotUseAddressZeroAsOperator",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "LSP8InvalidTransferBatch",
-    inputs: [],
-  },
+  { type: "error", name: "LSP8CannotSendToAddressZero", inputs: [] },
+  { type: "error", name: "LSP8CannotUseAddressZeroAsOperator", inputs: [] },
+  { type: "error", name: "LSP8InvalidTransferBatch", inputs: [] },
   {
     type: "error",
     name: "LSP8NonExistentTokenId",
-    inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
+    inputs: [{ name: "tokenId", type: "bytes32", internalType: "bytes32" }],
   },
   {
     type: "error",
     name: "LSP8NonExistingOperator",
     inputs: [
-      {
-        name: "operator",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "operator", type: "address", internalType: "address" },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
     ],
   },
   {
     type: "error",
     name: "LSP8NotTokenOwner",
     inputs: [
-      {
-        name: "tokenOwner",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "caller",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "tokenOwner", type: "address", internalType: "address" },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
+      { name: "caller", type: "address", internalType: "address" },
     ],
   },
   {
     type: "error",
     name: "LSP8NotifyTokenReceiverContractMissingLSP1Interface",
     inputs: [
-      {
-        name: "tokenReceiver",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "tokenReceiver", type: "address", internalType: "address" },
     ],
   },
   {
     type: "error",
     name: "LSP8NotifyTokenReceiverIsEOA",
     inputs: [
-      {
-        name: "tokenReceiver",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "tokenReceiver", type: "address", internalType: "address" },
     ],
   },
   {
     type: "error",
     name: "LSP8OperatorAlreadyAuthorized",
     inputs: [
-      {
-        name: "operator",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "operator", type: "address", internalType: "address" },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
     ],
   },
   {
     type: "error",
     name: "LSP8RevokeOperatorNotAuthorized",
     inputs: [
-      {
-        name: "caller",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenOwner",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "caller", type: "address", internalType: "address" },
+      { name: "tokenOwner", type: "address", internalType: "address" },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
     ],
   },
-  {
-    type: "error",
-    name: "LSP8TokenContractCannotHoldValue",
-    inputs: [],
-  },
+  { type: "error", name: "LSP8TokenContractCannotHoldValue", inputs: [] },
   {
     type: "error",
     name: "LSP8TokenIdAlreadyMinted",
-    inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
+    inputs: [{ name: "tokenId", type: "bytes32", internalType: "bytes32" }],
   },
-  {
-    type: "error",
-    name: "LSP8TokenIdFormatNotEditable",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "LSP8TokenIdsDataEmptyArray",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "LSP8TokenIdsDataLengthMismatch",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "LSP8TokenOwnerCannotBeOperator",
-    inputs: [],
-  },
+  { type: "error", name: "LSP8TokenIdFormatNotEditable", inputs: [] },
+  { type: "error", name: "LSP8TokenIdsDataEmptyArray", inputs: [] },
+  { type: "error", name: "LSP8TokenIdsDataLengthMismatch", inputs: [] },
+  { type: "error", name: "LSP8TokenOwnerCannotBeOperator", inputs: [] },
   {
     type: "error",
     name: "LSP8TokenOwnerChanged",
     inputs: [
-      {
-        name: "tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "oldOwner",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "newOwner",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "tokenId", type: "bytes32", internalType: "bytes32" },
+      { name: "oldOwner", type: "address", internalType: "address" },
+      { name: "newOwner", type: "address", internalType: "address" },
     ],
   },
+  { type: "error", name: "MintingDisabled", inputs: [] },
   {
     type: "error",
     name: "NoExtensionFoundForFunctionSelector",
     inputs: [
-      {
-        name: "functionSelector",
-        type: "bytes4",
-        internalType: "bytes4",
-      },
+      { name: "functionSelector", type: "bytes4", internalType: "bytes4" },
     ],
   },
-  {
-    type: "error",
-    name: "NotTokenOwner",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "OwnableCannotSetZeroAddressAsOwner",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "TransferNotAllowed",
-    inputs: [],
-  },
+  { type: "error", name: "NotTokenOwner", inputs: [] },
+  { type: "error", name: "OwnableCannotSetZeroAddressAsOwner", inputs: [] },
+  { type: "error", name: "TransferNotAllowed", inputs: [] },
 ] as Abi;
