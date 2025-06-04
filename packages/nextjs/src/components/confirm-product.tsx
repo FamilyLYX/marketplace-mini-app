@@ -113,7 +113,6 @@ export function ConfirmProduct({
           variant="outline"
           className="w-1/2"
           onClick={() => setOpenChat(!openChat)}
-          disabled={true}
         >
           Open Chat
         </Button>

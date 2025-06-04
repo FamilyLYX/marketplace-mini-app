@@ -109,7 +109,7 @@ const ConfirmTradeDialog = ({
         throw new Error("Failed to create vault");
       }
       await fetchWithAuth("/api/save-salt", {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tokenId: pad("0x0", { size: 32 }), // using a fixed tokenId of 0x0
@@ -868,13 +868,16 @@ export default function ProductChat({ vault }: ProductChatProps) {
 
   async function markDisputeInDB() {
     try {
-      const response = await fetchWithAuth(`/api/vault?vault_address=${vaultAddress}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          order_status: "disputed",
-        } as Vault),
-      });
+      const response = await fetchWithAuth(
+        `/api/vault?vault_address=${vaultAddress}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order_status: "disputed",
+          } as Vault),
+        },
+      );
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Vault listing update failed: ${errorText}`);

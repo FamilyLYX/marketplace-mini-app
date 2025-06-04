@@ -104,8 +104,8 @@ export function AlreadyInMarketplace({
       try {
         res = await unlist(plainUIDCode, currentSalt, newUidHash);
       } catch (error) {
-        console.error("Error during cancelTrade:", error);
-        throw new Error("Failed to cancel trade");
+        console.error("Error during unlist:", error);
+        throw new Error("Failed to unlist trade");
       }
       if (!res) {
         throw new Error("Failed to Unlist");
