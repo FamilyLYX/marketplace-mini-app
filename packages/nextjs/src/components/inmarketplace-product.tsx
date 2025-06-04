@@ -218,14 +218,31 @@ export function AlreadyInMarketplace({
         </>
       ) : (
         <>
-          <Button
-            variant="default"
-            className="w-1/2"
-            onClick={() => handleUnlistMutation.mutate()}
-            disabled={handleUnlistMutation.isPending}
-          >
-            Unlist
-          </Button>
+          {vault.order_status === "" ? (
+            <Button
+              variant="default"
+              className="w-1/2"
+              onClick={() => handleUnlistMutation.mutate()}
+              disabled={handleUnlistMutation.isPending}
+            >
+              Unlist
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="default"
+                className="w-1/2"
+                onClick={() => setOpenChat(true)}
+              >
+                Open Chat
+              </Button>
+              <Dialog open={openChat} onOpenChange={setOpenChat}>
+                <DialogContent className="max-w-2xl w-full">
+                  <ProductChat vault={vault} />
+                </DialogContent>
+              </Dialog>
+            </>
+          )}
           <Button
             variant="outline"
             className="w-1/2"
