@@ -1,37 +1,19 @@
 import { Abi } from "viem";
 export const FAMILY_VAULT_ABI = [
-  {
-    type: "fallback",
-    stateMutability: "payable",
-  },
-  {
-    type: "receive",
-    stateMutability: "payable",
-  },
+  { type: "fallback", stateMutability: "payable" },
+  { type: "receive", stateMutability: "payable" },
   {
     type: "function",
     name: "RENOUNCE_OWNERSHIP_CONFIRMATION_DELAY",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "RENOUNCE_OWNERSHIP_CONFIRMATION_PERIOD",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
@@ -45,66 +27,30 @@ export const FAMILY_VAULT_ABI = [
     type: "function",
     name: "admin",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "batchCalls",
-    inputs: [
-      {
-        name: "data",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
-    ],
-    outputs: [
-      {
-        name: "results",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
-    ],
+    inputs: [{ name: "data", type: "bytes[]", internalType: "bytes[]" }],
+    outputs: [{ name: "results", type: "bytes[]", internalType: "bytes[]" }],
     stateMutability: "nonpayable",
   },
   {
     type: "function",
     name: "buyer",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "cancelTrade",
     inputs: [
-      {
-        name: "plainUidCode",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "salt",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "newUidHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "plainUidCode", type: "string", internalType: "string" },
+      { name: "salt", type: "string", internalType: "string" },
+      { name: "newUidHash", type: "bytes32", internalType: "bytes32" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -113,21 +59,9 @@ export const FAMILY_VAULT_ABI = [
     type: "function",
     name: "confirmReceipt",
     inputs: [
-      {
-        name: "plainUidCode",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "salt",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "newUidHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "plainUidCode", type: "string", internalType: "string" },
+      { name: "salt", type: "string", internalType: "string" },
+      { name: "newUidHash", type: "bytes32", internalType: "bytes32" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -136,137 +70,51 @@ export const FAMILY_VAULT_ABI = [
     type: "function",
     name: "execute",
     inputs: [
-      {
-        name: "operationType",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "target",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "value",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "data",
-        type: "bytes",
-        internalType: "bytes",
-      },
+      { name: "operationType", type: "uint256", internalType: "uint256" },
+      { name: "target", type: "address", internalType: "address" },
+      { name: "value", type: "uint256", internalType: "uint256" },
+      { name: "data", type: "bytes", internalType: "bytes" },
     ],
-    outputs: [
-      {
-        name: "",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
+    outputs: [{ name: "", type: "bytes", internalType: "bytes" }],
     stateMutability: "payable",
   },
   {
     type: "function",
     name: "executeBatch",
     inputs: [
-      {
-        name: "operationsType",
-        type: "uint256[]",
-        internalType: "uint256[]",
-      },
-      {
-        name: "targets",
-        type: "address[]",
-        internalType: "address[]",
-      },
-      {
-        name: "values",
-        type: "uint256[]",
-        internalType: "uint256[]",
-      },
-      {
-        name: "datas",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
+      { name: "operationsType", type: "uint256[]", internalType: "uint256[]" },
+      { name: "targets", type: "address[]", internalType: "address[]" },
+      { name: "values", type: "uint256[]", internalType: "uint256[]" },
+      { name: "datas", type: "bytes[]", internalType: "bytes[]" },
     ],
-    outputs: [
-      {
-        name: "",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
-    ],
+    outputs: [{ name: "", type: "bytes[]", internalType: "bytes[]" }],
     stateMutability: "payable",
   },
   {
     type: "function",
     name: "getData",
-    inputs: [
-      {
-        name: "dataKey",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
-    outputs: [
-      {
-        name: "dataValue",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
+    inputs: [{ name: "dataKey", type: "bytes32", internalType: "bytes32" }],
+    outputs: [{ name: "dataValue", type: "bytes", internalType: "bytes" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "getDataBatch",
     inputs: [
-      {
-        name: "dataKeys",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
+      { name: "dataKeys", type: "bytes32[]", internalType: "bytes32[]" },
     ],
-    outputs: [
-      {
-        name: "dataValues",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
-    ],
+    outputs: [{ name: "dataValues", type: "bytes[]", internalType: "bytes[]" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "initialize",
     inputs: [
-      {
-        name: "_admin",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_seller",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_nftContract",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "_tokenId",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "_priceInLYX",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "_admin", type: "address", internalType: "address" },
+      { name: "_seller", type: "address", internalType: "address" },
+      { name: "_nftContract", type: "address", internalType: "address" },
+      { name: "_tokenId", type: "bytes32", internalType: "bytes32" },
+      { name: "_priceInLYX", type: "uint256", internalType: "uint256" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -282,52 +130,28 @@ export const FAMILY_VAULT_ABI = [
     type: "function",
     name: "nftContract",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "owner",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "pendingOwner",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "priceInLYX",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "uint256",
-        internalType: "uint256",
-      },
-    ],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
   },
   {
@@ -341,31 +165,11 @@ export const FAMILY_VAULT_ABI = [
     type: "function",
     name: "resolveDispute",
     inputs: [
-      {
-        name: "nftRecipient",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "paymentRecipient",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "plainUidCode",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "salt",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "newUidHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "nftRecipient", type: "address", internalType: "address" },
+      { name: "paymentRecipient", type: "address", internalType: "address" },
+      { name: "plainUidCode", type: "string", internalType: "string" },
+      { name: "salt", type: "string", internalType: "string" },
+      { name: "newUidHash", type: "bytes32", internalType: "bytes32" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -374,29 +178,15 @@ export const FAMILY_VAULT_ABI = [
     type: "function",
     name: "seller",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "setData",
     inputs: [
-      {
-        name: "dataKey",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "dataValue",
-        type: "bytes",
-        internalType: "bytes",
-      },
+      { name: "dataKey", type: "bytes32", internalType: "bytes32" },
+      { name: "dataValue", type: "bytes", internalType: "bytes" },
     ],
     outputs: [],
     stateMutability: "payable",
@@ -405,16 +195,8 @@ export const FAMILY_VAULT_ABI = [
     type: "function",
     name: "setDataBatch",
     inputs: [
-      {
-        name: "dataKeys",
-        type: "bytes32[]",
-        internalType: "bytes32[]",
-      },
-      {
-        name: "dataValues",
-        type: "bytes[]",
-        internalType: "bytes[]",
-      },
+      { name: "dataKeys", type: "bytes32[]", internalType: "bytes32[]" },
+      { name: "dataValues", type: "bytes[]", internalType: "bytes[]" },
     ],
     outputs: [],
     stateMutability: "payable",
@@ -424,56 +206,28 @@ export const FAMILY_VAULT_ABI = [
     name: "state",
     inputs: [],
     outputs: [
-      {
-        name: "",
-        type: "uint8",
-        internalType: "enum FamilyVault.VaultState",
-      },
+      { name: "", type: "uint8", internalType: "enum FamilyVault.VaultState" },
     ],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "supportsInterface",
-    inputs: [
-      {
-        name: "interfaceId",
-        type: "bytes4",
-        internalType: "bytes4",
-      },
-    ],
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-        internalType: "bool",
-      },
-    ],
+    inputs: [{ name: "interfaceId", type: "bytes4", internalType: "bytes4" }],
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "tokenId",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
+    outputs: [{ name: "", type: "bytes32", internalType: "bytes32" }],
     stateMutability: "view",
   },
   {
     type: "function",
     name: "transferOwnership",
-    inputs: [
-      {
-        name: "newOwner",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
     outputs: [],
     stateMutability: "nonpayable",
   },
@@ -481,45 +235,19 @@ export const FAMILY_VAULT_ABI = [
     type: "function",
     name: "universalReceiver",
     inputs: [
-      {
-        name: "",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-      {
-        name: "",
-        type: "bytes",
-        internalType: "bytes",
-      },
+      { name: "", type: "bytes32", internalType: "bytes32" },
+      { name: "", type: "bytes", internalType: "bytes" },
     ],
-    outputs: [
-      {
-        name: "",
-        type: "bytes",
-        internalType: "bytes",
-      },
-    ],
+    outputs: [{ name: "", type: "bytes", internalType: "bytes" }],
     stateMutability: "payable",
   },
   {
     type: "function",
     name: "unlist",
     inputs: [
-      {
-        name: "plainUidCode",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "salt",
-        type: "string",
-        internalType: "string",
-      },
-      {
-        name: "newUidHash",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
+      { name: "plainUidCode", type: "string", internalType: "string" },
+      { name: "salt", type: "string", internalType: "string" },
+      { name: "newUidHash", type: "bytes32", internalType: "bytes32" },
     ],
     outputs: [],
     stateMutability: "nonpayable",
@@ -546,12 +274,7 @@ export const FAMILY_VAULT_ABI = [
         indexed: false,
         internalType: "uint256",
       },
-      {
-        name: "salt",
-        type: "bytes32",
-        indexed: true,
-        internalType: "bytes32",
-      },
+      { name: "salt", type: "bytes32", indexed: true, internalType: "bytes32" },
     ],
     anonymous: false,
   },
@@ -641,21 +364,11 @@ export const FAMILY_VAULT_ABI = [
     type: "event",
     name: "Initialized",
     inputs: [
-      {
-        name: "version",
-        type: "uint8",
-        indexed: false,
-        internalType: "uint8",
-      },
+      { name: "version", type: "uint8", indexed: false, internalType: "uint8" },
     ],
     anonymous: false,
   },
-  {
-    type: "event",
-    name: "OwnershipRenounced",
-    inputs: [],
-    anonymous: false,
-  },
+  { type: "event", name: "OwnershipRenounced", inputs: [], anonymous: false },
   {
     type: "event",
     name: "OwnershipTransferStarted",
@@ -739,12 +452,7 @@ export const FAMILY_VAULT_ABI = [
     ],
     anonymous: false,
   },
-  {
-    type: "event",
-    name: "TradeCompleted",
-    inputs: [],
-    anonymous: false,
-  },
+  { type: "event", name: "TradeCompleted", inputs: [], anonymous: false },
   {
     type: "event",
     name: "TradeSettledByAdmin",
@@ -762,12 +470,7 @@ export const FAMILY_VAULT_ABI = [
     type: "event",
     name: "UniversalReceiver",
     inputs: [
-      {
-        name: "from",
-        type: "address",
-        indexed: true,
-        internalType: "address",
-      },
+      { name: "from", type: "address", indexed: true, internalType: "address" },
       {
         name: "value",
         type: "uint256",
@@ -851,21 +554,13 @@ export const FAMILY_VAULT_ABI = [
     ],
     anonymous: false,
   },
-  {
-    type: "error",
-    name: "ERC725X_ContractDeploymentFailed",
-    inputs: [],
-  },
+  { type: "error", name: "ERC725X_ContractDeploymentFailed", inputs: [] },
   {
     type: "error",
     name: "ERC725X_CreateOperationsRequireEmptyRecipientAddress",
     inputs: [],
   },
-  {
-    type: "error",
-    name: "ERC725X_ExecuteParametersEmptyArray",
-    inputs: [],
-  },
+  { type: "error", name: "ERC725X_ExecuteParametersEmptyArray", inputs: [] },
   {
     type: "error",
     name: "ERC725X_ExecuteParametersLengthMismatch",
@@ -875,28 +570,12 @@ export const FAMILY_VAULT_ABI = [
     type: "error",
     name: "ERC725X_InsufficientBalance",
     inputs: [
-      {
-        name: "balance",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "value",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "balance", type: "uint256", internalType: "uint256" },
+      { name: "value", type: "uint256", internalType: "uint256" },
     ],
   },
-  {
-    type: "error",
-    name: "ERC725X_MsgValueDisallowedInStaticCall",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "ERC725X_NoContractBytecodeProvided",
-    inputs: [],
-  },
+  { type: "error", name: "ERC725X_MsgValueDisallowedInStaticCall", inputs: [] },
+  { type: "error", name: "ERC725X_NoContractBytecodeProvided", inputs: [] },
   {
     type: "error",
     name: "ERC725X_UnknownOperationType",
@@ -908,46 +587,22 @@ export const FAMILY_VAULT_ABI = [
       },
     ],
   },
-  {
-    type: "error",
-    name: "ERC725Y_DataKeysValuesLengthMismatch",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "ERC725Y_MsgValueDisallowed",
-    inputs: [],
-  },
+  { type: "error", name: "ERC725Y_DataKeysValuesLengthMismatch", inputs: [] },
+  { type: "error", name: "ERC725Y_MsgValueDisallowed", inputs: [] },
   {
     type: "error",
     name: "IncorrectPayment",
     inputs: [
-      {
-        name: "expected",
-        type: "uint256",
-        internalType: "uint256",
-      },
-      {
-        name: "actual",
-        type: "uint256",
-        internalType: "uint256",
-      },
+      { name: "expected", type: "uint256", internalType: "uint256" },
+      { name: "actual", type: "uint256", internalType: "uint256" },
     ],
   },
   {
     type: "error",
     name: "IncorrectTokenOwner",
     inputs: [
-      {
-        name: "expected",
-        type: "address",
-        internalType: "address",
-      },
-      {
-        name: "actual",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "expected", type: "address", internalType: "address" },
+      { name: "actual", type: "address", internalType: "address" },
     ],
   },
   {
@@ -966,27 +621,13 @@ export const FAMILY_VAULT_ABI = [
       },
     ],
   },
-  {
-    type: "error",
-    name: "InvalidUIDCode",
-    inputs: [],
-  },
+  { type: "error", name: "InvalidUIDCode", inputs: [] },
   {
     type: "error",
     name: "LSP14CallerNotPendingOwner",
-    inputs: [
-      {
-        name: "caller",
-        type: "address",
-        internalType: "address",
-      },
-    ],
+    inputs: [{ name: "caller", type: "address", internalType: "address" }],
   },
-  {
-    type: "error",
-    name: "LSP14CannotTransferOwnershipToSelf",
-    inputs: [],
-  },
+  { type: "error", name: "LSP14CannotTransferOwnershipToSelf", inputs: [] },
   {
     type: "error",
     name: "LSP14MustAcceptOwnershipInSeparateTransaction",
@@ -1011,64 +652,26 @@ export const FAMILY_VAULT_ABI = [
   {
     type: "error",
     name: "LSP1DelegateNotAllowedToSetDataKey",
-    inputs: [
-      {
-        name: "dataKey",
-        type: "bytes32",
-        internalType: "bytes32",
-      },
-    ],
+    inputs: [{ name: "dataKey", type: "bytes32", internalType: "bytes32" }],
   },
   {
     type: "error",
     name: "NoExtensionFoundForFunctionSelector",
     inputs: [
-      {
-        name: "functionSelector",
-        type: "bytes4",
-        internalType: "bytes4",
-      },
+      { name: "functionSelector", type: "bytes4", internalType: "bytes4" },
     ],
   },
-  {
-    type: "error",
-    name: "NotAdmin",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "NotBuyer",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "NotBuyerOrSeller",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "NotSeller",
-    inputs: [],
-  },
+  { type: "error", name: "NotAdmin", inputs: [] },
+  { type: "error", name: "NotBuyer", inputs: [] },
+  { type: "error", name: "NotBuyerOrSeller", inputs: [] },
+  { type: "error", name: "NotSeller", inputs: [] },
   {
     type: "error",
     name: "OwnableCallerNotTheOwner",
     inputs: [
-      {
-        name: "callerAddress",
-        type: "address",
-        internalType: "address",
-      },
+      { name: "callerAddress", type: "address", internalType: "address" },
     ],
   },
-  {
-    type: "error",
-    name: "TransferFailed",
-    inputs: [],
-  },
-  {
-    type: "error",
-    name: "ZeroAddress",
-    inputs: [],
-  },
+  { type: "error", name: "TransferFailed", inputs: [] },
+  { type: "error", name: "ZeroAddress", inputs: [] },
 ] as Abi;

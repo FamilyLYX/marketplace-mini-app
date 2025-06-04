@@ -12,11 +12,10 @@ const readClient = createPublicClient({
 export enum FamilyVaultState {
   Initialized = 0,
   Listed = 1,
-  Cancelled = 2,
-  FundsDeposited = 3,
-  DeliveryConfirmed = 4,
-  Completed = 5,
-  Disputed = 6,
+  FundsDeposited = 2,
+  DeliveryConfirmed = 3,
+  Completed = 4,
+  Disputed = 5,
 }
 
 export const useFamilyVault = (vaultAddress: `0x${string}`) => {
@@ -246,7 +245,6 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
       const vaultState = await getVaultState();
       if (
         vaultState === FamilyVaultState.Completed ||
-        FamilyVaultState.Cancelled ||
         FamilyVaultState.Disputed
       ) {
         toast.error("Trade cannot be cancelled in this state.");
