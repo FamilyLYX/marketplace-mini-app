@@ -67,7 +67,11 @@ export default function SellProductPage() {
 
   const handleSellMutation = useMutation({
     mutationFn: async () => {
-      if (!nftContract) {
+      if (!nftContract || !accounts.length) {
+        throw new Error("Missing required parameters");
+      }
+      if (!price || !plainUIDCode || !location || !notes) {
+        toast.info("Please fill in all required fields");
         throw new Error("Missing required parameters");
       }
       const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
