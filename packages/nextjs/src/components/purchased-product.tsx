@@ -31,6 +31,7 @@ export function PurchasedProductCard({
           variant="outline"
           className="w-1/2"
           onClick={() => setOpenChat(true)}
+          disabled={true}
         >
           Open Chat
         </Button>

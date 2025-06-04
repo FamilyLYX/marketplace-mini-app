@@ -119,7 +119,7 @@ export function ConfirmProduct({
           More Info
         </Button>
       </ProductCardShell>
-      <Dialog open={false} onOpenChange={setOpenChat}>
+      <Dialog open={openChat} onOpenChange={setOpenChat}>
         <DialogTitle></DialogTitle>
         <DialogContent className="max-w-2xl w-full">
           <ProductChat vault={vault} />
