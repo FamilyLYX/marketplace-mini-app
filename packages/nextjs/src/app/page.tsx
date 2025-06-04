@@ -241,7 +241,7 @@ const Inventory = () => {
                   confirmedProducts.length > 0 ? (
                     <OrdersCarousel orders={allOrders} />
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground flex items-center justify-center h-[500px]">
                       No orders found.
                     </p>
                   )}
@@ -264,7 +264,7 @@ const Inventory = () => {
             ) : allInventoryProducts.length > 0 ? (
               <InventoryCarousel products={allInventoryProducts} />
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground flex items-center justify-center h-[500px]">
                 Tokenize products to add to the marketplace.
               </p>
             )}
