@@ -274,7 +274,7 @@ const Inventory = () => {
         {accounts &&
           accounts.length > 0 &&
           getAddress(accounts[0]).toLowerCase() ===
-            adminAddress.toLowerCase() && (
+            appConfig.adminAddress.toLowerCase() && (
             <TabsContent value="admin">
               <div className="flex flex-col gap-10 max-w-6xl w-full">
                 <h2 className="text-2xl font-semibold title">Admin Section</h2>
