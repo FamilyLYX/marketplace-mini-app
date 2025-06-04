@@ -6,6 +6,7 @@ interface Config {
   vaults_db: string;
   chain: typeof lukso | typeof luksoTestnet;
   chainUrl: ReturnType<typeof http>;
+  adminAddress: `0x${string}`;
 }
 
 let appConfig: Config;
@@ -15,6 +16,9 @@ export const TESTNET_CONFIG = {
   vaults_db: "vaults_testnet",
   chain: luksoTestnet,
   chainUrl: http("https://rpc.testnet.lukso.network"),
+  adminAddress:
+    (process.env.NEXT_PUBLIC_ADMIN_TESTNET_ADDRESS as `0x${string}`) ??
+    "0x9fBd3638Fc8D6c8C25f44200f5dbD1e3e9F25959",
 };
 
 export const MAINNET_CONFIG = {
@@ -22,6 +26,9 @@ export const MAINNET_CONFIG = {
   vaults_db: "vaults",
   chain: lukso,
   chainUrl: http("https://rpc.mainnet.lukso.network"),
+  adminAddress:
+    (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) ??
+    "0x9fBd3638Fc8D6c8C25f44200f5dbD1e3e9F25959",
 };
 
 if (process.env.NEXT_PUBLIC_TESTNET === "true") {

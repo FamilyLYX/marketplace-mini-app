@@ -36,6 +36,7 @@ import { Input } from "./ui/input";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 import { pad } from "viem";
 import { fetchWithAuth } from "@/lib/api";
+import { appConfig } from "@/lib/app-config";
 
 interface ChatMessage {
   from: string;
@@ -47,8 +48,7 @@ interface ProductChatProps {
   vault: Vault;
 }
 
-const adminAddress =
-  (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
+const adminAddress = appConfig.adminAddress as `0x${string}`;
 
 // Header Components
 const UserPills = ({

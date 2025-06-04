@@ -14,9 +14,7 @@ import ProductMarketplaceCarousel from "@/components/product-marketplace-carouse
 import InventoryCarousel from "@/components/inventory-carousel";
 import OrdersCarousel from "@/components/orders-carousel";
 import { fetchWithAuth } from "@/lib/api";
-
-const adminAddress =
-  (process.env.NEXT_PUBLIC_ADMIN_ADDRESS as `0x${string}`) || "";
+import { appConfig } from "@/lib/app-config";
 
 const Inventory = () => {
   const { accounts } = useUpProvider();
@@ -192,7 +190,7 @@ const Inventory = () => {
           {accounts &&
             accounts.length > 0 &&
             getAddress(accounts[0]).toLowerCase() ===
-              adminAddress.toLowerCase() && (
+              appConfig.adminAddress.toLowerCase() && (
               <TabsTrigger
                 value="admin"
                 className="rounded-full px-4 py-1 text-xs data-[state=active]:bg-black data-[state=active]:text-white"
