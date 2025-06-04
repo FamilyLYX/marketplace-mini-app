@@ -5,13 +5,8 @@ import {
   FAMILY_VAULT_FACTORY_ABI,
   FAMILY_VAULT_FACTORY_ADDRESS,
 } from "@/constants/vaultFactory";
-import { createPublicClient, http, pad, parseEventLogs } from "viem";
-import { luksoTestnet } from "viem/chains";
-
-const readClient = createPublicClient({
-  chain: luksoTestnet,
-  transport: http("https://rpc.testnet.lukso.network"),
-});
+import { pad, parseEventLogs } from "viem";
+import { readClient } from "@/lib/app-config";
 
 type CreateVaultParams = {
   nftContract: string;

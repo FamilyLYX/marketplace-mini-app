@@ -1,6 +1,9 @@
 // utils/getSalt.ts
 import { pad } from "viem";
 import { supabase } from "./initSupabase";
+import { appConfig } from "./app-config";
+
+const SALT_DB = appConfig.salt_db; // Use the configured salt database
 
 const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32 since we are managing one token per contract - this will change with entrepresis
 /**
@@ -10,7 +13,7 @@ const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32 since 
  */
 export async function getSalt(dppAddress: string): Promise<string | null> {
   const { data, error } = await supabase
-    .from("dpp_salts")
+    .from(SALT_DB)
     .select("salt")
     .eq("token_id", tokenId)
     .eq("contract_address", dppAddress)
@@ -26,7 +29,7 @@ export async function getSalt(dppAddress: string): Promise<string | null> {
 
 export async function getAllData(dppAddress: string): Promise<string | null> {
   const { data, error } = await supabase
-    .from("dpp_salts")
+    .from(SALT_DB)
     .select("*")
     .eq("token_id", tokenId)
     .eq("contract_address", dppAddress)

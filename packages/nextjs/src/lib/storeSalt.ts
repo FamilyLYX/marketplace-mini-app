@@ -1,5 +1,8 @@
 // utils/storeSalt.ts
+import { appConfig } from "./app-config";
 import { supabase } from "./initSupabase";
+
+const SALT_DB = appConfig.salt_db; // Use the configured salt database
 
 export async function storeSalt(
   tokenId: string,
@@ -8,7 +11,7 @@ export async function storeSalt(
   uidHash: string,
   productCode: string,
 ) {
-  const { error } = await supabase.from("dpp_salts").insert([
+  const { error } = await supabase.from(SALT_DB).insert([
     {
       token_id: tokenId,
       salt,
@@ -31,7 +34,7 @@ export async function updateSalt(
   newUidHash: string,
 ) {
   const { error } = await supabase
-    .from("dpp_salts")
+    .from(SALT_DB)
     .update({
       salt: newSalt,
       hash: newUidHash,

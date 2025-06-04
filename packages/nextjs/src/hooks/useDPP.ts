@@ -1,12 +1,8 @@
 import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
-import { createPublicClient, http, pad } from "viem";
-import { luksoTestnet } from "viem/chains";
+import { pad } from "viem";
 import { NFT_ABI } from "@/constants/dpp";
-const readClient = createPublicClient({
-  chain: luksoTestnet,
-  transport: http("https://rpc.testnet.lukso.network"),
-});
+import { readClient } from "@/lib/app-config";
 
 export const useDPP = () => {
   const { client, accounts, walletConnected } = useUpProvider();

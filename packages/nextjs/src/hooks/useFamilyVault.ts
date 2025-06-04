@@ -1,13 +1,7 @@
 import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import { FAMILY_VAULT_ABI } from "@/constants/vault";
-import { createPublicClient, http } from "viem";
-import { luksoTestnet } from "viem/chains";
-
-const readClient = createPublicClient({
-  chain: luksoTestnet,
-  transport: http("https://rpc.testnet.lukso.network"),
-});
+import { appConfig, readClient } from "@/lib/app-config";
 
 export enum FamilyVaultState {
   Initialized = 0,
@@ -124,7 +118,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         functionName: "confirmReceipt",
         args: [plainUidCode, salt, newUidHash],
         account: accounts[0],
-        chain: luksoTestnet,
+        chain: appConfig.chain,
       });
       if (!response) {
         throw new Error(`Simulation failed: ${response}`);
@@ -172,7 +166,7 @@ export const useFamilyVault = (vaultAddress: `0x${string}`) => {
         address: vaultAddress,
         functionName: "initiateDispute",
         account: accounts[0],
-        chain: luksoTestnet,
+        chain: appConfig.chain,
       });
 
       const txHash = await client.writeContract({

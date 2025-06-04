@@ -1,7 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { http, createPublicClient, createWalletClient } from "viem";
+import { createWalletClient } from "viem";
 import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
-import { luksoTestnet } from "viem/chains";
 import { fromHex, pad } from "viem/utils";
 import { ProductMetadata } from "@/components/product";
 import { privateKeyToAccount } from "viem/accounts";
@@ -12,11 +11,9 @@ import {
 import { FAMILY_VAULT_ABI } from "@/constants/vault";
 import { NFT_ABI } from "@/constants/dpp";
 import { parseEventLogs } from "viem";
+import { appConfig, readClient } from "@/lib/app-config";
 
 const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32
-
-// const LSP4_METADATA_KEY =
-//   "0x9afb95cacc9f95858ec44aa8c3b685511002e30ae54415823f406128b85b238e";
 
 const DPP_METADATA_KEY =
   "0xfdc90bed11ed075e8de8d81f16642cab1d54295200de73e16728abf20dea834d";
@@ -28,12 +25,6 @@ if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
 export const account = privateKeyToAccount(
   process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`,
 );
-
-// Create the public client for reading from contracts
-const readClient = createPublicClient({
-  chain: luksoTestnet,
-  transport: http(), // Using the same transport for reading
-});
 
 export async function getAllNFTMetadata(): Promise<
   Record<
@@ -98,8 +89,8 @@ export async function getAllNFTMetadata(): Promise<
 
 const walletClient = createWalletClient({
   account,
-  chain: luksoTestnet,
-  transport: http(), // Make sure the transport is properly configured for the testnet
+  chain: appConfig.chain,
+  transport: appConfig.chainUrl,
 });
 
 interface CreateVaultParams {
@@ -116,7 +107,7 @@ export const createVaultTest = async (params: CreateVaultParams) => {
       address: FAMILY_VAULT_FACTORY_ADDRESS,
       functionName: "createVault",
       args: [account.address, nftContract, priceInLYX, expectedUIDHash],
-      chain: luksoTestnet,
+      chain: appConfig.chain,
     });
     const receipt = await readClient.waitForTransactionReceipt({
       hash: tx,
@@ -159,7 +150,7 @@ export const transferOwnershipWithUIDTest = async (
       address: dppAddress,
       functionName: "transferOwnershipWithUID",
       args: [to, plainUidCode],
-      chain: luksoTestnet,
+      chain: appConfig.chain,
     });
 
     // Wait for the transaction receipt to confirm its success
@@ -198,7 +189,7 @@ export const depositFundsTest = async (params: DepositFundsParams) => {
       to: vaultAddress,
       value: priceInLYX,
       account: account.address,
-      chain: luksoTestnet,
+      chain: appConfig.chain,
     });
 
     const receipt = await readClient.waitForTransactionReceipt({
@@ -237,7 +228,7 @@ export const confirmReceiptTest = async (params: ConfirmReceiptParams) => {
       functionName: "confirmReceipt",
       args: [plainUidCode],
       account: account.address,
-      chain: luksoTestnet,
+      chain: appConfig.chain,
     });
     console.log("Simulation result:", simulation);
 
@@ -246,7 +237,7 @@ export const confirmReceiptTest = async (params: ConfirmReceiptParams) => {
     //   address: vaultAddress,
     //   functionName: "confirmReceipt",
     //   args: [plainUidCode],
-    //   chain: luksoTestnet,
+    //   chain: appConfig.chain,
     //   account: account.address,
     // });
     //

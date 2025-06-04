@@ -1,11 +1,12 @@
 import { supabase } from "@/lib/initSupabase";
 import { Vault } from "@/types/index";
+import { appConfig } from "./app-config";
 
-const TABLE_NAME = "vaults_1";
+const VAULT_DB = appConfig.vaults_db;
 
 export async function createVault(vault: Vault) {
   const { data, error } = await supabase
-    .from(TABLE_NAME)
+    .from(VAULT_DB)
     .insert([vault])
     .select()
     .single();
@@ -14,14 +15,14 @@ export async function createVault(vault: Vault) {
 }
 
 export async function getAllVaults() {
-  const { data, error } = await supabase.from(TABLE_NAME).select("*");
+  const { data, error } = await supabase.from(VAULT_DB).select("*");
   if (error) throw error;
   return data;
 }
 
 export async function getAllVaultsInOrderStatusPending() {
   const { data, error } = await supabase
-    .from(TABLE_NAME)
+    .from(VAULT_DB)
     .select("*")
     .eq("order_status", "pending");
   if (error) throw error;
@@ -30,7 +31,7 @@ export async function getAllVaultsInOrderStatusPending() {
 
 export async function getVaultByAddress(vault_address: string) {
   const { data, error } = await supabase
-    .from(TABLE_NAME)
+    .from(VAULT_DB)
     .select("*")
     .eq("vault_address", vault_address)
     .maybeSingle();
@@ -43,7 +44,7 @@ export async function updateVault(
   updates: Partial<Vault>,
 ) {
   const { data, error } = await supabase
-    .from(TABLE_NAME)
+    .from(VAULT_DB)
     .update(updates)
     .eq("vault_address", vault_address)
     .select()
@@ -54,7 +55,7 @@ export async function updateVault(
 
 export async function deleteVault(vault_address: string) {
   const { error } = await supabase
-    .from(TABLE_NAME)
+    .from(VAULT_DB)
     .delete()
     .eq("vault_address", vault_address);
   if (error) throw error;
