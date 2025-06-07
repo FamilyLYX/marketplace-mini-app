@@ -97,6 +97,6 @@ const FAMILY_VAULT_FACTORY_ABI = [
   { type: "error", name: "InvalidUIDHash", inputs: [] },
 ] as Abi;
 const FAMILY_VAULT_FACTORY_ADDRESS =
-  "0xc6f835Eb34F09ba78f22512509629e8147EA77A3" as `0x${string}`;
+  "0xA49Ad464ad27f29ed5797405B062BDbC44c36D10" as `0x${string}`;
 
 export { FAMILY_VAULT_FACTORY_ABI, FAMILY_VAULT_FACTORY_ADDRESS };

@@ -82,8 +82,8 @@ export function UpProvider({ children }: UpProviderProps) {
         )) as Array<`0x${string}`>;
         if (!mounted) return;
         setAccounts(_accounts);
-
-        const _chainId = (await provider.request("eth_chainId")) as number;
+        const chainIdHex = (await provider.request("eth_chainId")) as string;
+        const _chainId = parseInt(chainIdHex, 16);
         if (!mounted) return;
         setChainId(_chainId);
 

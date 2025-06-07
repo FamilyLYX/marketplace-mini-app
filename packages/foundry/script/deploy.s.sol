@@ -11,24 +11,12 @@ contract DeployScript is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        // Step 1: Deploy the FamilyVault implementation
         FamilyVault implementation = new FamilyVault();
-        console.log(
-            "FamilyVault implementation deployed at:",
-            address(implementation)
-        );
+        console.log("FamilyVault implementation deployed at:", address(implementation));
 
-        // Step 2: Deploy the factory with implementation address
-        FamilyVaultFactory factory = new FamilyVaultFactory(
-            address(implementation),
-            0x9fBd3638Fc8D6c8C25f44200f5dbD1e3e9F25959 // TODO:CHANGE THIS TO THE ADMIN ADDRESS FROM JAMES AND PUT IN ENV
-        );
-        console.log(
-            "FamilyVaultFactory deployed at:",
-            address(factory),
-            "Admin:",
-            factory.admin()
-        );
+        FamilyVaultFactory factory =
+            new FamilyVaultFactory(address(implementation), 0x3c612a4031B997015F28b7Aef5342a7c9e9463ed);
+        console.log("FamilyVaultFactory deployed at:", address(factory), "Admin:", factory.admin());
 
         vm.stopBroadcast();
     }
