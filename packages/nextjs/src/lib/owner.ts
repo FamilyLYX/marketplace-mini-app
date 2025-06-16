@@ -23,7 +23,7 @@ if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
 }
 
 export const account = privateKeyToAccount(
-  process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`,
+  process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`
 );
 
 export async function getAllNFTMetadata(): Promise<
@@ -57,12 +57,13 @@ export async function getAllNFTMetadata(): Promise<
         functionName: "getDataForTokenId",
         args: [tokenId, DPP_METADATA_KEY],
       });
-      if (!metadata) {
+
+      if (!metadata || metadata === "0x") {
         continue;
       }
       // 3. Decode the metadata since its hex
       const decodedMetadata = JSON.parse(
-        fromHex(metadata as `0x${string}`, "string"),
+        fromHex(metadata as `0x${string}`, "string")
       ) as ProductMetadata;
 
       // const decodedMetadata = JSON.parse(metadata as string);
@@ -140,7 +141,7 @@ interface TransferOwnershipParams {
 }
 
 export const transferOwnershipWithUIDTest = async (
-  params: TransferOwnershipParams,
+  params: TransferOwnershipParams
 ) => {
   const { dppAddress, to, plainUidCode } = params;
 
