@@ -9,7 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { getAddress, parseEther } from "viem";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
-import { useUpProvider } from "@/components/up-provider";
+// import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import { queryClient } from "@/components/marketplace-provider";
 import {
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/carousel";
 import { ArrowLeft } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
+import { useAccount } from "wagmi";
 
 // Updated BuyFormData
 interface BuyFormData {
@@ -67,11 +68,7 @@ export default function BuyPage() {
       <div className="flex-1 flex flex-col w-full h-full mt-14">
         {step === 1 && (
           <div className="w-full mx-auto">
-            <CombinedForm
-              data={formData}
-              setData={setFormData}
-              onNext={next}
-            />
+            <CombinedForm data={formData} setData={setFormData} onNext={next} />
           </div>
         )}
         {step === 2 && (
@@ -233,7 +230,7 @@ function PaymentStep({
   data: BuyFormData;
   onBack: () => void;
 }) {
-  const { accounts } = useUpProvider();
+  const { address: account } = useAccount();
   const router = useRouter();
   const searchParams = useSearchParams();
   const metadataParam = searchParams.get("metadata") || "";
@@ -270,7 +267,7 @@ function PaymentStep({
               address2: data.address2,
               order_status: "pending",
             } as Vault),
-          },
+          }
         );
         if (!response.ok) {
           const errorText = await response.text();

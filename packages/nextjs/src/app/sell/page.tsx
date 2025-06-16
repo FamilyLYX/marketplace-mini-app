@@ -16,13 +16,14 @@ import { getAddress, pad, parseEther } from "viem";
 import { Vault } from "@/types";
 import { useDPP } from "@/hooks/useDPP";
 import { toast } from "sonner";
-import { useUpProvider } from "@/components/up-provider";
+// import { useUpProvider } from "@/components/up-provider";
 import { queryClient } from "@/components/marketplace-provider";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 import { fetchWithAuth } from "@/lib/api";
+import { useAccount } from "wagmi";
 
 export default function SellProductPage() {
-  const { accounts } = useUpProvider();
+  const { address: account } = useAccount();
   const router = useRouter();
   const { createVault } = useFamilyVaultFactory();
   const { transferWithUIDRotation } = useDPP();
@@ -67,7 +68,7 @@ export default function SellProductPage() {
 
   const handleSellMutation = useMutation({
     mutationFn: async () => {
-      if (!nftContract || !accounts.length) {
+      if (!nftContract || !account) {
         throw new Error("Missing required parameters");
       }
       if (!price || !plainUIDCode || !location || !notes) {
@@ -76,7 +77,7 @@ export default function SellProductPage() {
       }
       const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
         nftContract as `0x${string}`,
-        plainUIDCode,
+        plainUIDCode
       );
       const res = await createVault({
         nftContract: nftContract as `0x${string}`,
@@ -113,7 +114,7 @@ export default function SellProductPage() {
           body: JSON.stringify({
             vault_address: vaultAddress,
             nft_contract: nftContract,
-            seller: getAddress(accounts[0]),
+            seller: getAddress(account),
             notes,
             price_in_lyx: price.toString(),
             title: parsedMetadata?.title,

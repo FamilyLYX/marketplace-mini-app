@@ -1,5 +1,4 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import {
   FAMILY_VAULT_FACTORY_ABI,
@@ -7,6 +6,7 @@ import {
 } from "@/constants/vaultFactory";
 import { pad, parseEventLogs } from "viem";
 import { readClient } from "@/lib/app-config";
+import { useAccount, useWalletClient } from "wagmi";
 
 type CreateVaultParams = {
   nftContract: string;
@@ -14,13 +14,14 @@ type CreateVaultParams = {
 };
 
 export const useFamilyVaultFactory = () => {
-  const { client, accounts, walletConnected } = useUpProvider();
+  const { data: client } = useWalletClient();
+  const { address: account } = useAccount();
 
   const createVault = async ({
     nftContract,
     priceInLYX,
   }: CreateVaultParams) => {
-    if (!client || !walletConnected || !accounts?.[0]) {
+    if (!client || !account) {
       toast.error("Please connect your Universal Profile wallet.");
       return null;
     }
@@ -32,7 +33,7 @@ export const useFamilyVaultFactory = () => {
         abi: FAMILY_VAULT_FACTORY_ABI,
         address: FAMILY_VAULT_FACTORY_ADDRESS,
         functionName: "createVault",
-        account: accounts[0] as `0x${string}`,
+        account: account as `0x${string}`,
         chain: client.chain,
         args: [nftContract, tokenId, priceInLYX],
       });
@@ -44,7 +45,7 @@ export const useFamilyVaultFactory = () => {
         abi: FAMILY_VAULT_FACTORY_ABI,
         address: FAMILY_VAULT_FACTORY_ADDRESS,
         functionName: "createVault",
-        account: accounts[0] as `0x${string}`,
+        account: account as `0x${string}`,
         chain: client.chain,
         args: [nftContract, tokenId, priceInLYX],
       });
@@ -80,7 +81,7 @@ export const useFamilyVaultFactory = () => {
         abi: FAMILY_VAULT_FACTORY_ABI,
         address: FAMILY_VAULT_FACTORY_ADDRESS,
         functionName: "getVaultsCreatedByUser",
-        args: [accounts?.[0] as `0x${string}`],
+        args: [account as `0x${string}`],
       });
       return vaults as string[];
     } catch (err) {
@@ -92,7 +93,7 @@ export const useFamilyVaultFactory = () => {
   return {
     createVault,
     getVaultsCreatedByUser,
-    connectedWallet: accounts?.[0],
-    walletConnected,
+    connectedWallet: account,
+    walletConnected: Boolean(account),
   };
 };
