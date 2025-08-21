@@ -1,17 +1,22 @@
-import { useUpProvider } from "@/components/up-provider";
+// import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import { pad } from "viem";
 import { NFT_ABI } from "@/constants/dpp";
-import { readClient } from "@/lib/app-config";
+import { useAccount, useWalletClient } from "wagmi";
+import { useReadClient } from "@/lib/app-config";
 
 export const useDPP = () => {
-  const { client, accounts, walletConnected } = useUpProvider();
+  const { data: client } = useWalletClient();
+  const { address: account } = useAccount();
+  const readClient = useReadClient();
+
   const tokenId = pad("0x0", { size: 32 }); // since rn we are using a fixed tokenId of 0x0, as one quantity of product is available for sale
 
+  console.log(tokenId);
   const getTokenOwner = async (
-    dppAddress: `0x${string}`,
+    dppAddress: `0x${string}`
   ): Promise<string | null> => {
-    if (!client || !walletConnected || !accounts?.[0]) {
+    if (!client || !account) {
       toast.error("Please connect your Universal Profile wallet.");
       throw new Error("Wallet not connected");
     }
@@ -44,7 +49,7 @@ export const useDPP = () => {
     salt: string;
     newUidHash: `0x${string}`;
   }) => {
-    if (!client || !walletConnected || !accounts?.[0]) {
+    if (!client || !account) {
       toast.error("Please connect your Universal Profile wallet.");
       throw new Error("Wallet not connected");
     }
@@ -54,7 +59,7 @@ export const useDPP = () => {
         abi: NFT_ABI,
         address: dppAddress,
         functionName: "transferWithUIDRotation",
-        account: accounts[0],
+        account: account,
         args: [tokenId, to, "0x", salt, plainUidCode, newUidHash],
         chain: client.chain,
       });
@@ -75,8 +80,7 @@ export const useDPP = () => {
 
   return {
     transferWithUIDRotation,
-    connectedWallet: accounts?.[0],
-    walletConnected,
+    connectedWallet: account,
     getTokenOwner,
   };
 };

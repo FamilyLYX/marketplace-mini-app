@@ -5,13 +5,16 @@ import { fetchWithAuth } from "@/lib/api";
 export const useFetchSaltAndUpdate = () => {
   const fetchAndUpdateSalt = async (
     dppAddress: `0x${string}`,
-    plainUIDCode: string,
+    plainUIDCode: string
   ): Promise<{
     currentSalt: string;
     newSalt: string;
     newUidHash: `0x${string}`;
   }> => {
-    const response = await fetchWithAuth(`/api/get-salt?dppAddress=${dppAddress}`);
+    const response = await fetchWithAuth(
+      `/api/get-salt?dppAddress=${dppAddress}`
+    );
+    console.log(response, "response useFetchSaltAndUpdate");
     const dppSalt = await response.json();
 
     if (!dppSalt || !dppSalt.salt) {
@@ -21,7 +24,7 @@ export const useFetchSaltAndUpdate = () => {
     const currentSalt = dppSalt.salt;
     const newSalt = uuidv4();
     const newUidHash = keccak256(
-      encodePacked(["string", "string"], [newSalt, plainUIDCode]),
+      encodePacked(["string", "string"], [newSalt, plainUIDCode])
     );
 
     return {
@@ -32,24 +35,28 @@ export const useFetchSaltAndUpdate = () => {
   };
 
   const fetchDataAndUpdateSalt = async (
-    dppAddress: `0x${string}`,
+    dppAddress: `0x${string}`
   ): Promise<{
     plainUIDCode: string;
     currentSalt: string;
     newSalt: string;
     newUidHash: `0x${string}`;
   }> => {
-    const response = await fetchWithAuth(`/api/get-all?dppAddress=${dppAddress}`);
+    const response = await fetchWithAuth(
+      `/api/get-all?dppAddress=${dppAddress}`
+    );
     const res = await response.json();
+
+    console.log(res, "res useFetchSaltAndUpdate");
     const data = res.data;
-    const plainUIDCode = data.uid_code;
+    const plainUIDCode = data.productCode;
     if (!plainUIDCode) {
       throw new Error("Failed to fetch plain UID code");
     }
     const currentSalt = data.salt;
     const newSalt = uuidv4();
     const newUidHash = keccak256(
-      encodePacked(["string", "string"], [newSalt, plainUIDCode]),
+      encodePacked(["string", "string"], [newSalt, plainUIDCode])
     );
 
     return {

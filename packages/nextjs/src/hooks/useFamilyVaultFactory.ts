@@ -1,12 +1,12 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import {
   FAMILY_VAULT_FACTORY_ABI,
-  FAMILY_VAULT_FACTORY_ADDRESS,
+  useVaultFactoryAddress,
 } from "@/constants/vaultFactory";
 import { pad, parseEventLogs } from "viem";
-import { readClient } from "@/lib/app-config";
+import { useAccount, useWalletClient } from "wagmi";
+import { useReadClient } from "@/lib/app-config";
 
 type CreateVaultParams = {
   nftContract: string;
@@ -14,13 +14,18 @@ type CreateVaultParams = {
 };
 
 export const useFamilyVaultFactory = () => {
-  const { client, accounts, walletConnected } = useUpProvider();
+  const { data: client } = useWalletClient();
+  const { address: account } = useAccount();
+
+  const factoryAddress = useVaultFactoryAddress();
+
+  const readClient = useReadClient();
 
   const createVault = async ({
     nftContract,
     priceInLYX,
   }: CreateVaultParams) => {
-    if (!client || !walletConnected || !accounts?.[0]) {
+    if (!client || !account) {
       toast.error("Please connect your Universal Profile wallet.");
       return null;
     }
@@ -30,9 +35,9 @@ export const useFamilyVaultFactory = () => {
     try {
       const { request } = await readClient.simulateContract({
         abi: FAMILY_VAULT_FACTORY_ABI,
-        address: FAMILY_VAULT_FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "createVault",
-        account: accounts[0] as `0x${string}`,
+        account: account as `0x${string}`,
         chain: client.chain,
         args: [nftContract, tokenId, priceInLYX],
       });
@@ -42,9 +47,9 @@ export const useFamilyVaultFactory = () => {
       }
       const tx = await client.writeContract({
         abi: FAMILY_VAULT_FACTORY_ABI,
-        address: FAMILY_VAULT_FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "createVault",
-        account: accounts[0] as `0x${string}`,
+        account: account as `0x${string}`,
         chain: client.chain,
         args: [nftContract, tokenId, priceInLYX],
       });
@@ -78,9 +83,9 @@ export const useFamilyVaultFactory = () => {
     try {
       const vaults = await readClient.readContract({
         abi: FAMILY_VAULT_FACTORY_ABI,
-        address: FAMILY_VAULT_FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "getVaultsCreatedByUser",
-        args: [accounts?.[0] as `0x${string}`],
+        args: [account as `0x${string}`],
       });
       return vaults as string[];
     } catch (err) {
@@ -92,7 +97,7 @@ export const useFamilyVaultFactory = () => {
   return {
     createVault,
     getVaultsCreatedByUser,
-    connectedWallet: accounts?.[0],
-    walletConnected,
+    connectedWallet: account,
+    walletConnected: Boolean(account),
   };
 };

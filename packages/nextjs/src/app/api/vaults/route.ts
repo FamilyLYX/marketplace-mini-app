@@ -1,15 +1,36 @@
+import { NextRequest, NextResponse } from "next/server";
 import { getAllVaults } from "@/lib/vaultFunctions";
-import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     const result = await getAllVaults();
-    return NextResponse.json(result);
+    console.log("result", result);
+
+    return NextResponse.json(result.data);
   } catch (error) {
-    console.error("Error fetching vault:", error);
+    console.error("Error fetching vaults:", error);
     return NextResponse.json(
-      { error: "Error fetching vault" },
-      { status: 500 },
+      { error: "Failed to fetch vaults" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const result = await body;
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+
+    return NextResponse.json({ vault: result.data });
+  } catch (error) {
+    console.error("Error creating/updating vault:", error);
+    return NextResponse.json(
+      { error: "Failed to create/update vault" },
+      { status: 500 }
     );
   }
 }

@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     console.error("Get data error:", error);
     return NextResponse.json(
       { error: "Failed to fetch data" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

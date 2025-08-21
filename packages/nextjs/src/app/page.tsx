@@ -6,25 +6,33 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
 import { Vault } from "@/types";
-import { getAddress } from "viem";
-import { useUpProvider } from "@/components/up-provider";
+import { getAddress, PublicClient } from "viem";
+// import { useUpProvider } from "@/components/up-provider";
 import AdminProductChats from "@/components/admin-product-chats";
 import Image from "next/image";
 import ProductMarketplaceCarousel from "@/components/product-marketplace-carousel";
 import InventoryCarousel from "@/components/inventory-carousel";
 import OrdersCarousel from "@/components/orders-carousel";
 import { fetchWithAuth } from "@/lib/api";
-import { appConfig } from "@/lib/app-config";
+import { appConfig, useReadClient } from "@/lib/app-config";
+import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import "@rainbow-me/rainbowkit/styles.css";
+import { useFactoryAddress } from "@/constants/factory";
 
 const Inventory = () => {
-  const { accounts } = useUpProvider();
+  const { address: account } = useAccount();
+  const factoryAddress = useFactoryAddress();
+  const readClient = useReadClient();
 
   const { data, isLoading: isNFTsLoading } = useQuery({
-    queryKey: ["allNfts"],
-    queryFn: () => getAllNFTMetadata(),
-    refetchOnWindowFocus: false,
-    refetchInterval: 1000,
+    queryKey: ["allNfts", factoryAddress, account],
+    queryFn: () =>
+      getAllNFTMetadata(readClient as PublicClient, factoryAddress),
+    // refetchOnWindowFocus: false,
   });
+
+  console.log("data:1", data, isNFTsLoading);
 
   const { data: marketplace, isLoading: isMarketplaceLoading } = useQuery({
     queryKey: ["marketplaceProducts"],
@@ -39,48 +47,55 @@ const Inventory = () => {
   });
 
   const orderedProducts = React.useMemo(() => {
-    if (!marketplace || !accounts || accounts.length === 0) return [];
+    console.log("marketplace", marketplace);
+    if (!marketplace || !account) return [];
+    console.log({ marketplace });
     return marketplace
-      .filter(
+      ?.filter(
         (p: Vault) =>
-          (p.order_status === "pending" &&
-            p.buyer === getAddress(accounts[0])) ||
-          (p.order_status === "disputed" &&
-            p.buyer === getAddress(accounts[0])),
+          (p.order_status === "pending" && p.buyer === getAddress(account)) ||
+          (p.order_status === "disputed" && p.buyer === getAddress(account))
       )
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
-  }, [marketplace, accounts]);
+  }, [marketplace, account]);
 
   const confirmedProducts = React.useMemo(() => {
-    if (!marketplace || !accounts || accounts.length === 0) return [];
+    if (!marketplace || !account) return [];
     return marketplace
-      .filter(
+      ?.filter(
         (p: Vault) =>
-          p.order_status === "confirmed" && p.buyer === getAddress(accounts[0]),
+          p.order_status === "confirmed" && p.buyer === getAddress(account)
       )
       .sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
-  }, [marketplace, accounts]);
+  }, [marketplace, account]);
 
   const marketplaceProducts = React.useMemo(() => {
     if (!marketplace) return [];
     return marketplace
-      .filter((p: Vault) => p.order_status === null)
-      .sort(
+      ?.filter((p: Vault) => p.order_status === "")
+      ?.sort(
         (a: Vault, b: Vault) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
   }, [marketplace]);
 
   const products = React.useMemo(() => {
-    if (!data || !accounts || accounts.length === 0) return [];
-    return data[getAddress(accounts[0])] ?? [];
-  }, [data, accounts]);
+    console.log("data1", data, account);
+    if (!data || !account) return [];
+    console.log(
+      "data:2",
+      data,
+      account === getAddress(account),
+      data[getAddress(account!)]
+    );
+    return data[getAddress(account!)] ?? [];
+  }, [data, account]);
 
   const nftAddressToVaultMap = React.useMemo(() => {
     if (!marketplace) return new Map<string, Vault>();
@@ -94,9 +109,11 @@ const Inventory = () => {
   }, [marketplace]);
 
   const addToMarketplaceProducts = React.useMemo(() => {
-    if (!products || !accounts || accounts.length === 0) return [];
+    if (!products || !account) return [];
 
-    const userAddress = getAddress(accounts[0]);
+    console.log("data: products", products);
+
+    const userAddress = getAddress(account);
     return products.filter((product: { nftAddress: string }) => {
       const vault = nftAddressToVaultMap.get(product.nftAddress);
       if (!vault) return true; // Keep products that don't have a vault (e.g., user's own NFTs not yet in marketplace)
@@ -107,25 +124,25 @@ const Inventory = () => {
 
       return isSeller || isBuyer;
     });
-  }, [products, nftAddressToVaultMap, accounts]);
+  }, [products, nftAddressToVaultMap, account]);
 
   const alreadyInMarketplaceProducts = React.useMemo(() => {
-    if (!marketplace || !accounts || accounts.length === 0) return [];
-    return marketplace.filter(
-      (p: Vault) => p.seller === getAddress(accounts[0]),
-    );
-  }, [marketplace, accounts]);
+    if (!marketplace || !account) return [];
+    return marketplace.filter((p: Vault) => p.seller === getAddress(account));
+  }, [marketplace, account]);
 
   const allInventoryProducts = React.useMemo(() => {
     const addProducts = addToMarketplaceProducts.map((product: any) => ({
       type: "add",
       data: product,
     }));
+
+    console.log("data: addToMarketplaceProducts", addToMarketplaceProducts);
     const inMarketplaceProducts = alreadyInMarketplaceProducts.map(
       (vault: Vault) => ({
         type: "in-marketplace",
         data: vault,
-      }),
+      })
     );
     return [...addProducts, ...inMarketplaceProducts];
   }, [addToMarketplaceProducts, alreadyInMarketplaceProducts]);
@@ -142,7 +159,7 @@ const Inventory = () => {
     return [...shippingProducts, ...deliveredProducts].sort(
       (a, b) =>
         new Date(b.data.created_at).getTime() -
-        new Date(a.data.created_at).getTime(),
+        new Date(a.data.created_at).getTime()
     );
   }, [orderedProducts, confirmedProducts]);
 
@@ -156,6 +173,7 @@ const Inventory = () => {
           height={64}
           className="mt-2 w-16 h-16"
         />
+        <ConnectButton showBalance={false} />
         <h1 className="font-serif text-5xl font-black tracking-tight title">
           Universal Goods
         </h1>
@@ -187,9 +205,8 @@ const Inventory = () => {
           >
             Orders
           </TabsTrigger>
-          {accounts &&
-            accounts.length > 0 &&
-            getAddress(accounts[0]).toLowerCase() ===
+          {account &&
+            getAddress(account).toLowerCase() ===
               appConfig.adminAddress.toLowerCase() && (
               <TabsTrigger
                 value="admin"
@@ -257,7 +274,7 @@ const Inventory = () => {
           }}
         >
           <div className="flex flex-col gap-10 w-full">
-            {isNFTsLoading || isMarketplaceLoading ? (
+            {isMarketplaceLoading ? (
               <p className="text-sm text-muted-foreground">
                 Loading your products...
               </p>
@@ -271,9 +288,8 @@ const Inventory = () => {
           </div>
         </TabsContent>
         {/* Admin Section */}
-        {accounts &&
-          accounts.length > 0 &&
-          getAddress(accounts[0]).toLowerCase() ===
+        {account &&
+          getAddress(account).toLowerCase() ===
             appConfig.adminAddress.toLowerCase() && (
             <TabsContent value="admin">
               <div className="flex flex-col gap-10 max-w-6xl w-full">

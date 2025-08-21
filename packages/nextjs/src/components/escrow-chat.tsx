@@ -1,6 +1,6 @@
-import { supabase } from "@/lib/initSupabase";
+import { ChatService } from "@/lib/chatService";
 import React, { useEffect, useState, useRef } from "react";
-import { useUpProvider } from "./up-provider";
+// import { useUpProvider } from "./up-provider";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
 import { useMutation } from "@tanstack/react-query";
 import { Vault } from "@/types";
@@ -37,6 +37,7 @@ import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 import { pad } from "viem";
 import { fetchWithAuth } from "@/lib/api";
 import { appConfig } from "@/lib/app-config";
+import { useAccount } from "wagmi";
 
 interface ChatMessage {
   from: string;
@@ -102,7 +103,7 @@ const ConfirmTradeDialog = ({
       }
       const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
         vault.nft_contract as `0x${string}`,
-        plainUIDCode,
+        plainUIDCode
       );
       const res = await confirmReceipt(plainUIDCode, currentSalt, newUidHash);
       if (!res) {
@@ -127,7 +128,7 @@ const ConfirmTradeDialog = ({
             body: JSON.stringify({
               order_status: "confirmed",
             } as Vault),
-          },
+          }
         );
         if (!response.ok) {
           const errorText = await response.text();
@@ -213,7 +214,7 @@ const CancelTradeDialog = ({
       }
       const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
         vault.nft_contract as `0x${string}`,
-        plainUIDCode,
+        plainUIDCode
       );
       const res = await cancelTrade(plainUIDCode, currentSalt, newUidHash);
       if (!res) {
@@ -238,7 +239,7 @@ const CancelTradeDialog = ({
             body: JSON.stringify({
               order_status: "cancelled",
             } as Vault),
-          },
+          }
         );
         if (!response.ok) {
           const errorText = await response.text();
@@ -346,7 +347,7 @@ const ResolveDisputeDialog = ({
         selectedWinner,
         plainUIDCode,
         currentSalt,
-        newUidHash,
+        newUidHash
       );
 
       if (!res) {
@@ -371,7 +372,7 @@ const ResolveDisputeDialog = ({
             body: JSON.stringify({
               order_status: "resolved",
             } as Vault),
-          },
+          }
         );
         if (!response.ok) {
           const errorText = await response.text();
@@ -618,14 +619,14 @@ const MessageBubble = ({
   const bubbleBg = isFromCurrentUser
     ? "bg-black text-white"
     : message.from === "system"
-      ? "bg-blue-50 text-blue-800 border border-blue-200"
-      : "bg-gray-100 text-gray-800";
+    ? "bg-blue-50 text-blue-800 border border-blue-200"
+    : "bg-gray-100 text-gray-800";
 
   return (
     <div
       className={clsx(
         "flex flex-col mb-3",
-        align === "end" ? "items-end" : "items-start",
+        align === "end" ? "items-end" : "items-start"
       )}
     >
       <div className={clsx("mb-2", align === "end" ? "mr-2" : "ml-2")}>
@@ -637,14 +638,14 @@ const MessageBubble = ({
         className={clsx(
           "max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm whitespace-pre-line",
           bubbleBg,
-          align === "end" ? "rounded-br-md" : "rounded-bl-md",
+          align === "end" ? "rounded-br-md" : "rounded-bl-md"
         )}
       >
         {message.content}
         <div
           className={clsx(
             "text-[10px] text-right mt-2",
-            isFromCurrentUser ? "text-gray-300" : "text-gray-400",
+            isFromCurrentUser ? "text-gray-300" : "text-gray-400"
           )}
         >
           {new Date(message.timestamp).toLocaleTimeString([], {
@@ -705,8 +706,8 @@ const ChatMessages = ({
           msg.from.toLowerCase() === adminAddress.toLowerCase()
             ? "default"
             : msg.from === "system"
-              ? "secondary"
-              : "outline";
+            ? "secondary"
+            : "outline";
 
         const dateStr = msg.timestamp.slice(0, 10);
         const showDate = dateStr !== lastDate;
@@ -764,8 +765,8 @@ const ChatInput = ({
 export default function ProductChat({ vault }: ProductChatProps) {
   const order_status = vault.order_status || "pending";
   const { buyer, seller, vault_address: vaultAddress, first_name } = vault;
-  const { accounts } = useUpProvider();
-  const userAddress = accounts[0] || "";
+  const { address: account } = useAccount();
+  const userAddress = account || "";
   const { initiateDispute } = useFamilyVault(vaultAddress as `0x${string}`);
 
   // User role checks
@@ -792,16 +793,12 @@ export default function ProductChat({ vault }: ProductChatProps) {
 
   // Data fetching
   async function fetchChat() {
-    const { data, error } = await supabase
-      .from("product_chats")
-      .select("content")
-      .eq("product_id", vaultAddress)
-      .single();
-
-    if (error) {
+    try {
+      const messages = await ChatService.getMessages(vaultAddress);
+      setMessages(messages);
+    } catch (error) {
+      console.error("Error fetching chat:", error);
       setMessages([]);
-    } else {
-      setMessages(data?.content || []);
     }
   }
 
@@ -816,22 +813,22 @@ export default function ProductChat({ vault }: ProductChatProps) {
   async function sendMessage(
     content: string,
     from: "user" | "admin" | "system" = "user",
-    updateUI = true,
+    updateUI = true
   ) {
     const fromAddress =
       from === "user"
         ? userAddress
         : from === "admin"
-          ? adminAddress
-          : "system";
+        ? adminAddress
+        : "system";
 
-    const { error } = await supabase.rpc("upsert_product_chat", {
-      p_product_id: vaultAddress,
-      p_from: fromAddress,
-      p_message: content,
-    });
+    const result = await ChatService.sendMessage(
+      vaultAddress,
+      fromAddress,
+      content
+    );
 
-    if (!error && updateUI) {
+    if (result.success && updateUI) {
       setMessages((msgs) => [
         ...msgs,
         {
@@ -840,8 +837,8 @@ export default function ProductChat({ vault }: ProductChatProps) {
           timestamp: new Date().toISOString(),
         },
       ]);
-    } else if (error) {
-      console.error("Send message error:", error);
+    } else if (!result.success) {
+      console.error("Send message error:", result.error);
     }
   }
 
@@ -857,7 +854,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
     }
     await sendMessage(
       `Thanks for raising a dispute. We will look into it and get back to you shortly. Stay tuned! Raised by: ${raisedBy}`,
-      "admin",
+      "admin"
     );
   }
 
@@ -865,7 +862,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
     const canceledBy = isSeller ? "Seller" : "Buyer";
     await sendMessage(
       `Trade has been cancelled by ${canceledBy}. Reason: ${reason}`,
-      "system",
+      "system"
     );
   }
 
@@ -879,7 +876,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
           body: JSON.stringify({
             order_status: "disputed",
           } as Vault),
-        },
+        }
       );
       if (!response.ok) {
         const errorText = await response.text();
@@ -927,7 +924,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
       toast.success("Dispute resolved successfully!");
       await sendMessage(
         `Dispute has been resolved by admin. Funds sent to ${fundsReceiver} and trace sent to ${traceReceiver}.`,
-        "admin",
+        "admin"
       );
       setIsResolveModalOpen(false);
     } catch (err) {
@@ -969,7 +966,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
     onError: (err) => {
       console.error("Failed to mark dispute in DB:", err);
       toast.error(
-        "Dispute was initiated, but marking it in the database failed.",
+        "Dispute was initiated, but marking it in the database failed."
       );
     },
   });

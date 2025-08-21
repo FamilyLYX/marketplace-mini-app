@@ -1,10 +1,12 @@
 import { createConfig, http } from "wagmi";
-import { luksoTestnet } from "wagmi/chains";
+import { baseSepolia, luksoTestnet, xdcTestnet } from "wagmi/chains";
 
 export const config = createConfig({
-  chains: [luksoTestnet],
+  chains: [luksoTestnet, xdcTestnet, baseSepolia],
   transports: {
     [luksoTestnet.id]: http(),
+    [xdcTestnet.id]: http(),
+    [baseSepolia.id]: http(),
   },
 });
 

@@ -4,9 +4,10 @@ import { useMemo } from "react";
 import { getAddress } from "viem";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
-import { useUpProvider } from "./up-provider";
+// import { useUpProvider } from "./up-provider";
 import { toast } from "sonner";
 import { ProductImageCarousel } from "./product";
+import { useAccount } from "wagmi";
 export type ProductMetadata = {
   title: string;
   description: string;
@@ -35,12 +36,12 @@ export function BuyProduct({
   showBuyButton?: boolean;
 }) {
   const { push } = useRouter();
-  const { accounts } = useUpProvider();
+  const { address: account } = useAccount();
   const canBuy = useMemo(() => {
-    if (!accounts || !accounts[0]) return false;
-    if (sellerAddress === getAddress(accounts[0])) return false;
+    if (!account) return false;
+    if (sellerAddress === getAddress(account)) return false;
     return true;
-  }, [accounts, sellerAddress]);
+  }, [account, sellerAddress]);
 
   return (
     <Card className="w-full max-w-sm rounded-2xl border shadow-lg bg-white transition hover:shadow-xl relative">
@@ -90,7 +91,7 @@ export function BuyProduct({
         <CardFooter className="flex justify-end">
           <Button
             onClick={() => {
-              if (!accounts || !accounts[0]) {
+              if (!account) {
                 toast.error("Please connect your wallet to buy a product");
                 return;
               }
