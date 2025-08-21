@@ -384,14 +384,14 @@ const FACTORY_ABI_OLD = [
 ] as Abi;
 
 const FACTORY_ADDRESS =
-  "0x2617c66707d40B33A869b1Dbb392b6fA5ca1D156" as `0x${string}`;
+  "0xc024F42709E3Bd2b347ca208055fC5FC4E2A35a4" as `0x${string}`;
 
 const FACTORY_ADDRESSES = {
   [luksoTestnet.id]:
-    "0x9a6660cc65DB3f834447b8a97754dAadE6664D65" as `0x${string}`,
+    "0x2617c66707d40B33A869b1Dbb392b6fA5ca1D156" as `0x${string}`,
   [xdcTestnet.id]: FACTORY_ADDRESS,
   [baseSepolia.id]:
-    "0x8E25437e19618385831339A095f041976c0d3D60" as `0x${string}`,
+    "0x1f2E6C90FdDF253C30c8e689B8582b1f068c8134" as `0x${string}`,
 };
 
 const useFactoryAddress = () => {

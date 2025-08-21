@@ -99,13 +99,14 @@ const FAMILY_VAULT_FACTORY_ABI = [
   { type: "error", name: "InvalidUIDHash", inputs: [] },
 ] as Abi;
 const FAMILY_VAULT_FACTORY_ADDRESS =
-  "0x9e216Cad678DeB0e37cF461f8DD175475289A72d" as `0x${string}`;
+  "0x03a901a563FCD2692046FFd08A510f0246253596" as `0x${string}`;
 
 const FAMILY_VAULT_FACTORY_ADDRESSES = {
   [luksoTestnet.id]: FAMILY_VAULT_FACTORY_ADDRESS,
-  [xdcTestnet.id]: FAMILY_VAULT_FACTORY_ADDRESS,
+  [xdcTestnet.id]:
+    "0x58d682dAc73551c6CD8Be22cF0dAF13466C9d621" as `0x${string}`,
   [baseSepolia.id]:
-    "0x540a9c34368A4316235DCDA980759A1064D24Bc0" as `0x${string}`,
+    "0x2C4472C14DDd6A9886a8a02dD63ADed8b482F585" as `0x${string}`,
 };
 
 const useVaultFactoryAddress = () => {
