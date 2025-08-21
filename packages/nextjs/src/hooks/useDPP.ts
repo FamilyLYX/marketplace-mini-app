@@ -2,15 +2,17 @@
 import { toast } from "sonner";
 import { pad } from "viem";
 import { NFT_ABI } from "@/constants/dpp";
-import { readClient } from "@/lib/app-config";
 import { useAccount, useWalletClient } from "wagmi";
+import { useReadClient } from "@/lib/app-config";
 
 export const useDPP = () => {
   const { data: client } = useWalletClient();
   const { address: account } = useAccount();
+  const readClient = useReadClient();
 
   const tokenId = pad("0x0", { size: 32 }); // since rn we are using a fixed tokenId of 0x0, as one quantity of product is available for sale
 
+  console.log(tokenId);
   const getTokenOwner = async (
     dppAddress: `0x${string}`
   ): Promise<string | null> => {

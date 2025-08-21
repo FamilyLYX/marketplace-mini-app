@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"; // Toast import here
 import { Vault } from "@/types";
@@ -51,12 +50,12 @@ export function ProductCardShell({
               status === "Pending" || status === "Listed"
                 ? "bg-yellow-500 text-yellow-900"
                 : status === "Confirmed" ||
-                    status === "Completed" ||
-                    status === "Purchased"
-                  ? "bg-green-500 text-white"
-                  : status === "Disputed" || status === "Cancelled"
-                    ? "bg-red-500 text-white"
-                    : "bg-gray-200 text-gray-700"
+                  status === "Completed" ||
+                  status === "Purchased"
+                ? "bg-green-500 text-white"
+                : status === "Disputed" || status === "Cancelled"
+                ? "bg-red-500 text-white"
+                : "bg-gray-200 text-gray-700"
             }`}
           >
             {status}
@@ -125,7 +124,7 @@ export function AlreadyInMarketplace({
           {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
         if (!response.ok) {
           const errorText = await response.text();

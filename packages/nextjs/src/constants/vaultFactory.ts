@@ -1,4 +1,6 @@
 import { Abi } from "viem";
+import { baseSepolia, luksoTestnet, xdcTestnet } from "viem/chains";
+import { useAccount } from "wagmi";
 
 const FAMILY_VAULT_FACTORY_ABI = [
   {
@@ -99,4 +101,23 @@ const FAMILY_VAULT_FACTORY_ABI = [
 const FAMILY_VAULT_FACTORY_ADDRESS =
   "0x9e216Cad678DeB0e37cF461f8DD175475289A72d" as `0x${string}`;
 
-export { FAMILY_VAULT_FACTORY_ABI, FAMILY_VAULT_FACTORY_ADDRESS };
+const FAMILY_VAULT_FACTORY_ADDRESSES = {
+  [luksoTestnet.id]: FAMILY_VAULT_FACTORY_ADDRESS,
+  [xdcTestnet.id]: FAMILY_VAULT_FACTORY_ADDRESS,
+  [baseSepolia.id]:
+    "0x540a9c34368A4316235DCDA980759A1064D24Bc0" as `0x${string}`,
+};
+
+const useVaultFactoryAddress = () => {
+  const { chain } = useAccount();
+  return FAMILY_VAULT_FACTORY_ADDRESSES[
+    (chain?.id as keyof typeof FAMILY_VAULT_FACTORY_ADDRESSES) ??
+      luksoTestnet.id
+  ];
+};
+
+export {
+  FAMILY_VAULT_FACTORY_ABI,
+  FAMILY_VAULT_FACTORY_ADDRESS,
+  useVaultFactoryAddress,
+};

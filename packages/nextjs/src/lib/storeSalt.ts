@@ -1,28 +1,28 @@
 // utils/storeSalt.ts
-import { appConfig } from "./app-config";
-import { supabase } from "./initSupabase";
 
-const SALT_DB = appConfig.salt_db; // Use the configured salt database
+import { adminDb } from "./firerbase";
 
 export async function storeSalt(
   tokenId: string,
   contractAddress: string,
   salt: string,
   uidHash: string,
-  productCode: string,
+  productCode: string
 ) {
-  const { error } = await supabase.from(SALT_DB).insert([
-    {
-      token_id: tokenId,
-      salt,
-      contract_address: contractAddress,
-      uid_code: productCode,
-      hash: uidHash,
-    },
-  ]);
-
-  if (error) {
-    console.error("Error storing salt:", error.message);
+  try {
+    const saltRecord = await adminDb
+      .collection("salts")
+      .doc(contractAddress)
+      .set({
+        tokenId: tokenId,
+        contractAddress: contractAddress,
+        salt: salt,
+        uidHash: uidHash,
+        uidCode: productCode,
+      });
+    return saltRecord;
+  } catch (error) {
+    console.error("Error storing salt:", error);
     throw error;
   }
 }
@@ -31,21 +31,28 @@ export async function updateSalt(
   tokenId: string,
   contractAddress: string,
   newSalt: string,
-  newUidHash: string,
+  newUidHash: string
 ) {
-  const { error } = await supabase
-    .from(SALT_DB)
-    .update({
-      salt: newSalt,
-      hash: newUidHash,
-    })
-    .match({
-      token_id: tokenId,
-      contract_address: contractAddress,
-    });
+  try {
+    // Return mock updated salt record
+    const _saltRecord = await adminDb
+      .collection("salts")
+      .where("contractAddress", "==", contractAddress)
+      .where("tokenId", "==", tokenId)
+      .get();
 
-  if (error) {
-    console.error("Error updating salt:", error.message);
+    if (_saltRecord.empty) {
+      console.error("No salt record found");
+      return null;
+    }
+
+    const saltRecord = await _saltRecord.docs[0].ref.update({
+      salt: newSalt,
+      uidHash: newUidHash,
+    });
+    return saltRecord;
+  } catch (error) {
+    console.error("Error updating salt:", error);
     throw error;
   }
 }

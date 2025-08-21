@@ -254,7 +254,7 @@ function PaymentStep({
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              buyer: getAddress(accounts[0]),
+              buyer: getAddress(account as `0x${string}`),
               first_name: data.firstName,
               last_name: data.lastName,
               email: data.email,
@@ -335,7 +335,7 @@ function PaymentStep({
           className="w-full h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition mb-4"
           size="lg"
           onClick={() => handleBuyMutation.mutate()}
-          disabled={!accounts?.[0] || handleBuyMutation.isPending}
+          disabled={!account || handleBuyMutation.isPending}
         >
           {handleBuyMutation.isPending ? "Processing..." : "LYX Payment"}
         </Button>

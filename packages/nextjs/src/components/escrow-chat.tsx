@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/initSupabase";
+import { ChatService } from "@/lib/chatService";
 import React, { useEffect, useState, useRef } from "react";
 // import { useUpProvider } from "./up-provider";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
@@ -793,16 +793,12 @@ export default function ProductChat({ vault }: ProductChatProps) {
 
   // Data fetching
   async function fetchChat() {
-    const { data, error } = await supabase
-      .from("product_chats")
-      .select("content")
-      .eq("product_id", vaultAddress)
-      .single();
-
-    if (error) {
+    try {
+      const messages = await ChatService.getMessages(vaultAddress);
+      setMessages(messages);
+    } catch (error) {
+      console.error("Error fetching chat:", error);
       setMessages([]);
-    } else {
-      setMessages(data?.content || []);
     }
   }
 
@@ -826,13 +822,13 @@ export default function ProductChat({ vault }: ProductChatProps) {
         ? adminAddress
         : "system";
 
-    const { error } = await supabase.rpc("upsert_product_chat", {
-      p_product_id: vaultAddress,
-      p_from: fromAddress,
-      p_message: content,
-    });
+    const result = await ChatService.sendMessage(
+      vaultAddress,
+      fromAddress,
+      content
+    );
 
-    if (!error && updateUI) {
+    if (result.success && updateUI) {
       setMessages((msgs) => [
         ...msgs,
         {
@@ -841,8 +837,8 @@ export default function ProductChat({ vault }: ProductChatProps) {
           timestamp: new Date().toISOString(),
         },
       ]);
-    } else if (error) {
-      console.error("Send message error:", error);
+    } else if (!result.success) {
+      console.error("Send message error:", result.error);
     }
   }
 

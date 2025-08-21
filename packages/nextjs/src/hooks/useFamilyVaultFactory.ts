@@ -2,11 +2,11 @@
 import { toast } from "sonner";
 import {
   FAMILY_VAULT_FACTORY_ABI,
-  FAMILY_VAULT_FACTORY_ADDRESS,
+  useVaultFactoryAddress,
 } from "@/constants/vaultFactory";
 import { pad, parseEventLogs } from "viem";
-import { readClient } from "@/lib/app-config";
 import { useAccount, useWalletClient } from "wagmi";
+import { useReadClient } from "@/lib/app-config";
 
 type CreateVaultParams = {
   nftContract: string;
@@ -16,6 +16,10 @@ type CreateVaultParams = {
 export const useFamilyVaultFactory = () => {
   const { data: client } = useWalletClient();
   const { address: account } = useAccount();
+
+  const factoryAddress = useVaultFactoryAddress();
+
+  const readClient = useReadClient();
 
   const createVault = async ({
     nftContract,
@@ -31,7 +35,7 @@ export const useFamilyVaultFactory = () => {
     try {
       const { request } = await readClient.simulateContract({
         abi: FAMILY_VAULT_FACTORY_ABI,
-        address: FAMILY_VAULT_FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "createVault",
         account: account as `0x${string}`,
         chain: client.chain,
@@ -43,7 +47,7 @@ export const useFamilyVaultFactory = () => {
       }
       const tx = await client.writeContract({
         abi: FAMILY_VAULT_FACTORY_ABI,
-        address: FAMILY_VAULT_FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "createVault",
         account: account as `0x${string}`,
         chain: client.chain,
@@ -79,7 +83,7 @@ export const useFamilyVaultFactory = () => {
     try {
       const vaults = await readClient.readContract({
         abi: FAMILY_VAULT_FACTORY_ABI,
-        address: FAMILY_VAULT_FACTORY_ADDRESS,
+        address: factoryAddress,
         functionName: "getVaultsCreatedByUser",
         args: [account as `0x${string}`],
       });

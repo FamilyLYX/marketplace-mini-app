@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { getAllNFTMetadata } from "@/lib/owner";
 import { Vault } from "@/types";
-import { getAddress } from "viem";
+import { getAddress, PublicClient } from "viem";
 // import { useUpProvider } from "@/components/up-provider";
 import AdminProductChats from "@/components/admin-product-chats";
 import Image from "next/image";
@@ -14,20 +14,25 @@ import ProductMarketplaceCarousel from "@/components/product-marketplace-carouse
 import InventoryCarousel from "@/components/inventory-carousel";
 import OrdersCarousel from "@/components/orders-carousel";
 import { fetchWithAuth } from "@/lib/api";
-import { appConfig } from "@/lib/app-config";
+import { appConfig, useReadClient } from "@/lib/app-config";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
+import { useFactoryAddress } from "@/constants/factory";
 
 const Inventory = () => {
   const { address: account } = useAccount();
+  const factoryAddress = useFactoryAddress();
+  const readClient = useReadClient();
 
   const { data, isLoading: isNFTsLoading } = useQuery({
-    queryKey: ["allNfts"],
-    queryFn: () => getAllNFTMetadata(),
-    refetchOnWindowFocus: false,
-    refetchInterval: 1000,
+    queryKey: ["allNfts", factoryAddress, account],
+    queryFn: () =>
+      getAllNFTMetadata(readClient as PublicClient, factoryAddress),
+    // refetchOnWindowFocus: false,
   });
+
+  console.log("data:1", data, isNFTsLoading);
 
   const { data: marketplace, isLoading: isMarketplaceLoading } = useQuery({
     queryKey: ["marketplaceProducts"],
@@ -42,9 +47,11 @@ const Inventory = () => {
   });
 
   const orderedProducts = React.useMemo(() => {
+    console.log("marketplace", marketplace);
     if (!marketplace || !account) return [];
+    console.log({ marketplace });
     return marketplace
-      .filter(
+      ?.filter(
         (p: Vault) =>
           (p.order_status === "pending" && p.buyer === getAddress(account)) ||
           (p.order_status === "disputed" && p.buyer === getAddress(account))
@@ -58,7 +65,7 @@ const Inventory = () => {
   const confirmedProducts = React.useMemo(() => {
     if (!marketplace || !account) return [];
     return marketplace
-      .filter(
+      ?.filter(
         (p: Vault) =>
           p.order_status === "confirmed" && p.buyer === getAddress(account)
       )
@@ -71,16 +78,23 @@ const Inventory = () => {
   const marketplaceProducts = React.useMemo(() => {
     if (!marketplace) return [];
     return marketplace
-      .filter((p: Vault) => p.order_status === null)
-      .sort(
+      ?.filter((p: Vault) => p.order_status === "")
+      ?.sort(
         (a: Vault, b: Vault) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
   }, [marketplace]);
 
   const products = React.useMemo(() => {
+    console.log("data1", data, account);
     if (!data || !account) return [];
-    return data[getAddress(account)] ?? [];
+    console.log(
+      "data:2",
+      data,
+      account === getAddress(account),
+      data[getAddress(account!)]
+    );
+    return data[getAddress(account!)] ?? [];
   }, [data, account]);
 
   const nftAddressToVaultMap = React.useMemo(() => {
@@ -96,6 +110,8 @@ const Inventory = () => {
 
   const addToMarketplaceProducts = React.useMemo(() => {
     if (!products || !account) return [];
+
+    console.log("data: products", products);
 
     const userAddress = getAddress(account);
     return products.filter((product: { nftAddress: string }) => {
@@ -120,6 +136,8 @@ const Inventory = () => {
       type: "add",
       data: product,
     }));
+
+    console.log("data: addToMarketplaceProducts", addToMarketplaceProducts);
     const inMarketplaceProducts = alreadyInMarketplaceProducts.map(
       (vault: Vault) => ({
         type: "in-marketplace",
@@ -256,7 +274,7 @@ const Inventory = () => {
           }}
         >
           <div className="flex flex-col gap-10 w-full">
-            {isNFTsLoading || isMarketplaceLoading ? (
+            {isMarketplaceLoading ? (
               <p className="text-sm text-muted-foreground">
                 Loading your products...
               </p>

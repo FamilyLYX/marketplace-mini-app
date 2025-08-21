@@ -1,8 +1,8 @@
 // import { useUpProvider } from "@/components/up-provider";
 import { toast } from "sonner";
 import { FAMILY_VAULT_ABI } from "@/constants/vault";
-import { appConfig, readClient } from "@/lib/app-config";
-import { useAccount, useWalletClient } from "wagmi";
+import { appConfig } from "@/lib/app-config";
+import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 
 export enum FamilyVaultState {
   Initialized = 0,
@@ -16,6 +16,7 @@ export enum FamilyVaultState {
 export const useFamilyVault = (vaultAddress: `0x${string}`) => {
   const { data: client } = useWalletClient();
   const { address: account } = useAccount();
+  const readClient = usePublicClient();
 
   const getVaultState = async (): Promise<FamilyVaultState | null> => {
     try {

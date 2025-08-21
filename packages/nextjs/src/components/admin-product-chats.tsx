@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/initSupabase";
 import ProductChat from "./escrow-chat";
 import { Vault } from "@/types";
 import {
@@ -12,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { fetchWithAuth } from "@/lib/api";
+import { ChatService } from "@/lib/chatService";
 
 export default function AdminProductChats() {
   const [chats, setChats] = useState<{ product_id: string }[]>([]);
@@ -20,14 +20,16 @@ export default function AdminProductChats() {
 
   useEffect(() => {
     const fetchChats = async () => {
-      const { data, error } = await supabase
-        .from("product_chats")
-        .select("product_id");
+      try {
+        const chatData = await ChatService.getAllProductChats();
+        // Extract unique product IDs from chats
+        const uniqueProductIds = Array.from(
+          new Set(chatData.map((chat) => chat.product_id))
+        ).map((product_id) => ({ product_id }));
 
-      if (error) {
+        setChats(uniqueProductIds);
+      } catch (error) {
         console.error("Error fetching chats:", error);
-      } else {
-        setChats(data || []);
       }
     };
 
@@ -36,10 +38,13 @@ export default function AdminProductChats() {
 
   const openChat = async (vaultAddress: string) => {
     try {
-      const response = await fetchWithAuth(`/api/vault?vault_address=${vaultAddress}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await fetchWithAuth(
+        `/api/vault?vault_address=${vaultAddress}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();

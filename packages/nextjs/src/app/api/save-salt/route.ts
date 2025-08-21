@@ -1,3 +1,4 @@
+// import { updateSalt } from "@/lib/storeSalt";
 import { storeSalt, updateSalt } from "@/lib/storeSalt";
 import { NextResponse } from "next/server";
 
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     console.error("Save salt error:", error);
     return NextResponse.json(
       { error: "Failed to store salt" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -42,7 +43,7 @@ export async function PUT(req: Request) {
             uidHash: !uidHash,
           },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -53,7 +54,7 @@ export async function PUT(req: Request) {
     console.error("Update salt error:", error);
     return NextResponse.json(
       { error: "Failed to update salt" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,17 +1,24 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-import { createWalletClient } from "viem";
-import { FACTORY_ABI, FACTORY_ADDRESS } from "@/constants/factory";
+import {
+  Account,
+  Chain,
+  createWalletClient,
+  ParseAccount,
+  PublicClient,
+  RpcSchema,
+  WalletClient,
+} from "viem";
+import { FACTORY_ABI } from "@/constants/factory";
 import { fromHex, pad } from "viem/utils";
 import { ProductMetadata } from "@/components/product";
 import { privateKeyToAccount } from "viem/accounts";
-import {
-  FAMILY_VAULT_FACTORY_ADDRESS,
-  FAMILY_VAULT_FACTORY_ABI,
-} from "@/constants/vaultFactory";
+import { FAMILY_VAULT_FACTORY_ABI } from "@/constants/vaultFactory";
 import { FAMILY_VAULT_ABI } from "@/constants/vault";
 import { NFT_ABI } from "@/constants/dpp";
 import { parseEventLogs } from "viem";
-import { appConfig, readClient } from "@/lib/app-config";
+import { appConfig } from "@/lib/app-config";
+import { luksoTestnet } from "viem/chains";
+import { Transport, useAccount } from "wagmi";
 
 const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32
 
@@ -26,7 +33,10 @@ export const account = privateKeyToAccount(
   process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`
 );
 
-export async function getAllNFTMetadata(): Promise<
+export async function getAllNFTMetadata(
+  readClient: PublicClient,
+  factoryAddress: `0x${string}`
+): Promise<
   Record<
     string,
     {
@@ -39,7 +49,7 @@ export async function getAllNFTMetadata(): Promise<
     // 1. Fetch deployed NFTs from the factory contract
     const deployedNFTs = (await readClient.readContract({
       abi: FACTORY_ABI,
-      address: FACTORY_ADDRESS,
+      address: factoryAddress,
       functionName: "getDeployedDPPs",
     })) as string[];
     console.log({ deployedNFTs });
@@ -74,6 +84,8 @@ export async function getAllNFTMetadata(): Promise<
         functionName: "tokenOwnerOf",
         args: [tokenId],
       })) as `0x${string}`;
+
+      console.log("owner", owner);
       if (!ownerMap[owner]) {
         ownerMap[owner] = [];
       }
@@ -82,6 +94,7 @@ export async function getAllNFTMetadata(): Promise<
         decodedMetadata,
       });
     }
+    console.log("ownerMap", ownerMap);
     return ownerMap;
   } catch (error) {
     console.error("Error fetching NFT metadata:", error);
@@ -89,24 +102,42 @@ export async function getAllNFTMetadata(): Promise<
   }
 }
 
-const walletClient = createWalletClient({
-  account,
-  chain: appConfig.chain,
-  transport: appConfig.chainUrl,
-});
+export const useWalletClient = () => {
+  const { chain: connectedChain } = useAccount();
+  return createWalletClient({
+    account,
+    chain: connectedChain ?? luksoTestnet,
+    transport: appConfig.chainUrl,
+  });
+};
 
 interface CreateVaultParams {
   nftContract: `0x${string}`;
   priceInLYX: number | bigint;
   expectedUIDHash: `0x${string}`;
+  factoryAddress: `0x${string}`;
+  readClient: PublicClient;
+  walletClient: WalletClient<
+    Transport,
+    Chain,
+    ParseAccount<Account>,
+    RpcSchema
+  >;
 }
 
 export const createVaultTest = async (params: CreateVaultParams) => {
-  const { nftContract, priceInLYX, expectedUIDHash } = params;
+  const {
+    nftContract,
+    priceInLYX,
+    expectedUIDHash,
+    walletClient,
+    readClient,
+    factoryAddress,
+  } = params;
   try {
     const tx = await walletClient.writeContract({
       abi: FAMILY_VAULT_FACTORY_ABI,
-      address: FAMILY_VAULT_FACTORY_ADDRESS,
+      address: factoryAddress,
       functionName: "createVault",
       args: [account.address, nftContract, priceInLYX, expectedUIDHash],
       chain: appConfig.chain,
@@ -139,12 +170,19 @@ interface TransferOwnershipParams {
   dppAddress: `0x${string}`;
   to: `0x${string}`;
   plainUidCode: string;
+  walletClient: WalletClient<
+    Transport,
+    Chain,
+    ParseAccount<Account>,
+    RpcSchema
+  >;
+  readClient: PublicClient;
 }
 
 export const transferOwnershipWithUIDTest = async (
   params: TransferOwnershipParams
 ) => {
-  const { dppAddress, to, plainUidCode } = params;
+  const { dppAddress, to, plainUidCode, walletClient, readClient } = params;
 
   try {
     const tx = await walletClient.writeContract({
@@ -181,10 +219,17 @@ export const transferOwnershipWithUIDTest = async (
 interface DepositFundsParams {
   vaultAddress: `0x${string}`;
   priceInLYX: bigint;
+  walletClient: WalletClient<
+    Transport,
+    Chain,
+    ParseAccount<Account>,
+    RpcSchema
+  >;
+  readClient: PublicClient;
 }
 
 export const depositFundsTest = async (params: DepositFundsParams) => {
-  const { vaultAddress, priceInLYX } = params;
+  const { vaultAddress, priceInLYX, walletClient, readClient } = params;
 
   try {
     const tx = await walletClient.sendTransaction({
@@ -217,10 +262,11 @@ export const depositFundsTest = async (params: DepositFundsParams) => {
 interface ConfirmReceiptParams {
   vaultAddress: `0x${string}`;
   plainUidCode: string;
+  readClient: PublicClient;
 }
 
 export const confirmReceiptTest = async (params: ConfirmReceiptParams) => {
-  const { vaultAddress, plainUidCode } = params;
+  const { vaultAddress, plainUidCode, readClient } = params;
 
   try {
     // Simulate the call to catch any revert or issues before sending transaction
@@ -263,7 +309,10 @@ export const confirmReceiptTest = async (params: ConfirmReceiptParams) => {
   }
 };
 
-export function getOwnerOfNFT(nftAddress: string): Promise<string> {
+export function getOwnerOfNFT(
+  nftAddress: string,
+  readClient: PublicClient
+): Promise<string> {
   return readClient.readContract({
     abi: NFT_ABI,
     address: nftAddress as `0x${string}`,

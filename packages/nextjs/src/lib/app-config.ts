@@ -1,5 +1,6 @@
 import { createPublicClient, http } from "viem";
-import { xdc, xdcTestnet } from "viem/chains";
+import { luksoTestnet, xdc, xdcTestnet } from "viem/chains";
+import { useAccount } from "wagmi";
 
 interface Config {
   salt_db: string;
@@ -41,4 +42,12 @@ const readClient = createPublicClient({
   chain: appConfig.chain,
   transport: appConfig.chainUrl,
 });
-export { appConfig, readClient };
+
+const useReadClient = () => {
+  const { chain: connectedChain } = useAccount();
+  return createPublicClient({
+    chain: connectedChain ?? luksoTestnet,
+    transport: http(connectedChain?.rpcUrls.default.http[0]),
+  });
+};
+export { appConfig, readClient, useReadClient };

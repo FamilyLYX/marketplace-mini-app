@@ -1,63 +1,91 @@
-import { supabase } from "@/lib/initSupabase";
 import { Vault } from "@/types/index";
-import { appConfig } from "./app-config";
-
-const VAULT_DB = appConfig.vaults_db;
+import { VaultService } from "./vaultService";
 
 export async function createVault(vault: Vault) {
-  const { data, error } = await supabase
-    .from(VAULT_DB)
-    .insert([vault])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  try {
+    const newVault = await VaultService.createVault({
+      ...vault,
+      created_at: Date.now().toString(),
+    });
+    return newVault;
+  } catch (error) {
+    console.error("Error creating vault:", error);
+    throw error;
+  }
 }
 
 export async function getAllVaults() {
-  const { data, error } = await supabase.from(VAULT_DB).select("*");
-  if (error) throw error;
-  return data;
+  try {
+    const vaults = await VaultService.getAllVaults();
+    return vaults;
+  } catch (error) {
+    console.error("Error fetching vaults:", error);
+    throw error;
+  }
+}
+
+export async function upsertVault(vault_address: string, vault: Vault) {
+  try {
+    const updatedVault = await VaultService.upsert(vault_address, vault);
+    return updatedVault;
+  } catch (error) {
+    console.error("Error upserting vault:", error);
+    throw error;
+  }
 }
 
 export async function getAllVaultsInOrderStatusPending() {
-  const { data, error } = await supabase
-    .from(VAULT_DB)
-    .select("*")
-    .eq("order_status", "pending");
-  if (error) throw error;
-  return data;
+  try {
+    const vaults = await VaultService.findByOrderStatus("pending");
+    return vaults;
+  } catch (error) {
+    console.error("Error fetching vaults:", error);
+    throw error;
+  }
 }
 
 export async function getVaultByAddress(vault_address: string) {
-  const { data, error } = await supabase
-    .from(VAULT_DB)
-    .select("*")
-    .eq("vault_address", vault_address)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
+  try {
+    const vault = await VaultService.getVaultByAddress(vault_address);
+    return vault;
+  } catch (error) {
+    console.error("Error fetching vault:", error);
+    throw error;
+  }
 }
 
 export async function updateVault(
   vault_address: string,
-  updates: Partial<Vault>,
+  updates: Partial<Vault>
 ) {
-  const { data, error } = await supabase
-    .from(VAULT_DB)
-    .update(updates)
-    .eq("vault_address", vault_address)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  try {
+    // Return mock updated vault
+    const mockVault = {
+      id: "mock_vault_id",
+      vault_address: vault_address,
+      first_name: "Mock",
+      last_name: "User",
+      email: "mock@example.com",
+      phone: "+1234567890",
+      order_status: "pending",
+      created_at: new Date().toISOString(),
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+    console.log("Mock vault updated:", mockVault);
+    return mockVault;
+  } catch (error) {
+    console.error("Error updating vault:", error);
+    throw error;
+  }
 }
 
 export async function deleteVault(vault_address: string) {
-  const { error } = await supabase
-    .from(VAULT_DB)
-    .delete()
-    .eq("vault_address", vault_address);
-  if (error) throw error;
-  return { success: true };
+  try {
+    await VaultService.deleteVault(vault_address);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting vault:", error);
+    throw error;
+  }
 }

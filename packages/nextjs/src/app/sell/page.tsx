@@ -86,6 +86,10 @@ export default function SellProductPage() {
       if (!res) {
         throw new Error("Failed to create vault");
       }
+
+      console.log({ currentSalt, newSalt, newUidHash });
+
+      // await delay(5000);
       const { tx, vaultAddress } = res;
       const transferDPP = await transferWithUIDRotation({
         dppAddress: nftContract as `0x${string}`,
