@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { tokenId, contractAddress, salt, uidHash, productCode, chainId } =
+    const { tokenId, contractAddress, salt, uidHash, productCode } =
       await req.json();
 
     if (!tokenId || !contractAddress || !salt) {
@@ -16,8 +16,8 @@ export async function POST(req: Request) {
       contractAddress,
       salt,
       uidHash,
-      productCode,
-      chainId
+      productCode
+      // chainId
     );
     return NextResponse.json({ success: true });
   } catch (error) {

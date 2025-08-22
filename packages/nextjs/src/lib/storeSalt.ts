@@ -7,8 +7,8 @@ export async function storeSalt(
   contractAddress: string,
   salt: string,
   uidHash: string,
-  productCode: string,
-  chainId: number
+  productCode: string
+  // chainId: number
 ) {
   try {
     const saltRecord = await adminDb
@@ -20,7 +20,7 @@ export async function storeSalt(
         salt: salt,
         uidHash: uidHash,
         uidCode: productCode,
-        chainId: chainId,
+        // chainId: chainId,
       });
     return saltRecord;
   } catch (error) {

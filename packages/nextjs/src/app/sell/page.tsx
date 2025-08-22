@@ -21,6 +21,7 @@ import { queryClient } from "@/components/marketplace-provider";
 import { useFetchSaltAndUpdate } from "@/hooks/useFetchSaltAndUpdate";
 import { fetchWithAuth } from "@/lib/api";
 import { useAccount } from "wagmi";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function SellProductPage() {
   const { address: account, chainId } = useAccount();
@@ -43,6 +44,8 @@ export default function SellProductPage() {
   const [price, setPrice] = useState("");
   const [plainUIDCode, setPlainUIDCode] = useState("");
   const [images, setImages] = useState<string[]>(parsedMetadata?.images || []);
+
+  const currency = useCurrency();
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -109,7 +112,6 @@ export default function SellProductPage() {
           contractAddress: nftContract,
           salt: newSalt,
           uidHash: newUidHash,
-          chainId: chainId,
         }),
       });
       try {
@@ -129,6 +131,7 @@ export default function SellProductPage() {
             category: parsedMetadata?.category,
             brand: parsedMetadata?.brand,
             listing_status: "listed",
+            chainId: chainId,
           } as Vault),
         });
         if (!response.ok) {
@@ -254,7 +257,7 @@ export default function SellProductPage() {
                 className="border-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
               <div className="px-3 py-2 bg-black text-white text-sm font-semibold">
-                LYX
+                {currency}
               </div>
             </div>
           </div>
