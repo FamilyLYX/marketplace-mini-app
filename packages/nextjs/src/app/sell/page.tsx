@@ -23,7 +23,7 @@ import { fetchWithAuth } from "@/lib/api";
 import { useAccount } from "wagmi";
 
 export default function SellProductPage() {
-  const { address: account } = useAccount();
+  const { address: account, chainId } = useAccount();
   const router = useRouter();
   const { createVault } = useFamilyVaultFactory();
   const { transferWithUIDRotation } = useDPP();
@@ -109,6 +109,7 @@ export default function SellProductPage() {
           contractAddress: nftContract,
           salt: newSalt,
           uidHash: newUidHash,
+          chainId: chainId,
         }),
       });
       try {

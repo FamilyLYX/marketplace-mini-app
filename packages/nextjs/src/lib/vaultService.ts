@@ -18,6 +18,22 @@ export class VaultService {
     }
   }
 
+  static async getAllVaultsByChainId(chainId: number) {
+    try {
+      const vaults = await adminDb
+        .collection("vaults")
+        .where("chainId", "==", chainId)
+        .get();
+      return { success: true, data: vaults.docs.map((doc) => doc.data()) };
+    } catch (error) {
+      console.error("Error fetching vaults:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  }
+
   static async createVault(vaultData: Vault) {
     try {
       const newVault = await adminDb.collection("vaults").add(vaultData);

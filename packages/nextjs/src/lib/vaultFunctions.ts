@@ -14,10 +14,15 @@ export async function createVault(vault: Vault) {
   }
 }
 
-export async function getAllVaults() {
+export async function getAllVaults(chainId: number) {
   try {
-    const vaults = await VaultService.getAllVaults();
-    return vaults;
+    if (!chainId) {
+      const vaults = await VaultService.getAllVaults();
+      return vaults;
+    } else {
+      const vaults = await VaultService.getAllVaultsByChainId(chainId);
+      return vaults;
+    }
   } catch (error) {
     console.error("Error fetching vaults:", error);
     throw error;

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllVaults } from "@/lib/vaultFunctions";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const result = await getAllVaults();
+    const chainId = request.nextUrl.searchParams.get("chainId");
+    const result = await getAllVaults(Number(chainId));
     console.log("result", result);
 
     return NextResponse.json(result.data);
