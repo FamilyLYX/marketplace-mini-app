@@ -65,4 +65,5 @@ export type Vault = {
     | "";
   created_at: string;
   updated_at?: string;
+  chainId: number;
 };

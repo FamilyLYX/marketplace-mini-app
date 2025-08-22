@@ -11,7 +11,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    await storeSalt(tokenId, contractAddress, salt, uidHash, productCode);
+    await storeSalt(
+      tokenId,
+      contractAddress,
+      salt,
+      uidHash,
+      productCode
+      // chainId
+    );
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Save salt error:", error);

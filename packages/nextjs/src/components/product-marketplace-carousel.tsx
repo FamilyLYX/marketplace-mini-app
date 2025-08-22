@@ -17,6 +17,7 @@ import {
 import { Vault } from "@/types";
 import { ProductCardShell } from "./inmarketplace-product";
 import { ProductInfo } from "./product-info";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function ProductMarketplaceCarousel({
   products,
@@ -25,6 +26,8 @@ export default function ProductMarketplaceCarousel({
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogProduct, setDialogProduct] = useState<Vault | null>(null);
+
+  const currency = useCurrency();
 
   const handleBuy = (vault: Vault) => {
     const params = new URLSearchParams({});
@@ -37,7 +40,7 @@ export default function ProductMarketplaceCarousel({
         images: vault.images ?? [],
         category: vault.category ?? "",
         brand: vault.brand ?? "",
-      }),
+      })
     );
     params.append("condition", vault.notes as string);
     params.append("location", vault.location as string);
@@ -62,7 +65,7 @@ export default function ProductMarketplaceCarousel({
               <ProductCardShell
                 image={product.images?.[0] || "/placeholder.png"}
                 title={product.title}
-                subtitle={`Price: ${product.price_in_lyx} LYX`}
+                subtitle={`Price: ${product.price_in_lyx} ${currency}`}
               >
                 <Button
                   variant="default"

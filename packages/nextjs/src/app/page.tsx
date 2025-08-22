@@ -24,7 +24,7 @@ const Inventory = () => {
   const { address: account } = useAccount();
   const factoryAddress = useFactoryAddress();
   const readClient = useReadClient();
-
+  const { chainId } = useAccount();
   const { data, isLoading: isNFTsLoading } = useQuery({
     queryKey: ["allNfts", factoryAddress, account],
     queryFn: () =>
@@ -37,7 +37,7 @@ const Inventory = () => {
   const { data: marketplace, isLoading: isMarketplaceLoading } = useQuery({
     queryKey: ["marketplaceProducts"],
     queryFn: async () => {
-      const response = await fetchWithAuth("/api/vaults");
+      const response = await fetchWithAuth(`/api/vaults?chainId=${chainId}`);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }

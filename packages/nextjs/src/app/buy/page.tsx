@@ -22,6 +22,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
 import { useAccount } from "wagmi";
+import { useCurrency } from "@/hooks/useCurrency";
 
 // Updated BuyFormData
 interface BuyFormData {
@@ -239,6 +240,8 @@ function PaymentStep({
   const price = searchParams.get("price") || "";
   const { depositFunds } = useFamilyVault(vaultAddress as `0x${string}`);
 
+  const currency = useCurrency();
+
   const handleBuyMutation = useMutation({
     mutationFn: async () => {
       const res = await depositFunds({
@@ -337,7 +340,9 @@ function PaymentStep({
           onClick={() => handleBuyMutation.mutate()}
           disabled={!account || handleBuyMutation.isPending}
         >
-          {handleBuyMutation.isPending ? "Processing..." : "LYX Payment"}
+          {handleBuyMutation.isPending
+            ? "Processing..."
+            : `${currency} Payment`}
         </Button>
         <Button
           className="w-full h-12 text-lg font-semibold rounded-full border-2 border-black bg-white text-black opacity-50 cursor-not-allowed"
@@ -356,7 +361,10 @@ function PaymentStep({
           ← Back
         </Button>
         <div className="text-2xl font-extrabold text-gray-900 p-2 bg-white rounded-xl shadow">
-          Price: <span className="text-primary">{price} LYX</span>
+          Price:{" "}
+          <span className="text-primary">
+            {price} {currency}
+          </span>
         </div>
       </div>
     </div>
