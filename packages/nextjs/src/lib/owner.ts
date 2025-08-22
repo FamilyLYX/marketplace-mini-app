@@ -68,7 +68,8 @@ export async function getAllNFTMetadata(
         functionName: "getDataForTokenId",
         args: [tokenId, DPP_METADATA_KEY],
       });
-      if (!metadata || metadata == "0x") {
+
+      if (!metadata || metadata === "0x") {
         continue;
       }
       // 3. Decode the metadata since its hex
