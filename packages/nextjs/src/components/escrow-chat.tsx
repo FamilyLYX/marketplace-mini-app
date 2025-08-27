@@ -1,8 +1,8 @@
-import { ChatService } from "@/lib/chatService";
+// import { ChatService } from "@/lib/chatService";
 import React, { useEffect, useState, useRef } from "react";
 // import { useUpProvider } from "./up-provider";
 import { useFamilyVault } from "@/hooks/useFamilyVault";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Vault } from "@/types";
 import { toast } from "sonner";
 import clsx from "clsx";
@@ -42,7 +42,7 @@ import { useAccount } from "wagmi";
 interface ChatMessage {
   from: string;
   content: string;
-  timestamp: string;
+  timestamp?: string;
 }
 
 interface ProductChatProps {
@@ -648,7 +648,7 @@ const MessageBubble = ({
             isFromCurrentUser ? "text-gray-300" : "text-gray-400"
           )}
         >
-          {new Date(message.timestamp).toLocaleTimeString([], {
+          {new Date(message.timestamp ?? "").toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           })}
@@ -709,13 +709,13 @@ const ChatMessages = ({
             ? "secondary"
             : "outline";
 
-        const dateStr = msg.timestamp.slice(0, 10);
+        const dateStr = msg?.timestamp?.slice(0, 10);
         const showDate = dateStr !== lastDate;
-        lastDate = dateStr;
+        lastDate = dateStr ?? "";
 
         return (
           <React.Fragment key={idx}>
-            {showDate && <DateSeparator date={dateStr} />}
+            {showDate && <DateSeparator date={dateStr ?? ""} />}
             <MessageBubble
               message={msg}
               isFromCurrentUser={isFromCurrentUser}
@@ -788,26 +788,46 @@ export default function ProductChat({ vault }: ProductChatProps) {
   const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMsg, setNewMsg] = useState("");
 
   // Data fetching
-  async function fetchChat() {
-    try {
-      const messages = await ChatService.getMessages(vaultAddress);
-      setMessages(messages);
-    } catch (error) {
-      console.error("Error fetching chat:", error);
-      setMessages([]);
-    }
-  }
+  // async function fetchChat() {
+  //   try {
+  //     // const messages = await ChatService.getMessages(vaultAddress);
+  //     const
+  //     setMessages(messages);
+  //   } catch (error) {
+  //     console.error("Error fetching chat:", error);
+  //     setMessages([]);
+  //   }
+  // }
 
-  useEffect(() => {
-    fetchChat();
-    const intervalId = setInterval(fetchChat, 15000);
-    return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vaultAddress, userAddress]);
+  const { data: messages, refetch } = useQuery<ChatMessage[]>({
+    queryKey: ["messages", vaultAddress],
+    queryFn: async () => {
+      const response = await fetchWithAuth(
+        `/api/chat?productId=${vaultAddress}`
+      );
+      return response.json();
+    },
+    refetchInterval: 15000,
+  });
+
+  // useEffect(() => {
+  //   fetchChat();
+  //   const intervalId = setInterval(fetchChat, 15000);
+  //   return () => clearInterval(intervalId);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [vaultAddress, userAddress]);
+
+  const { mutate: _sendMessage } = useMutation({
+    mutationFn: (message: ChatMessage) =>
+      fetchWithAuth(`/api/chat?productId=${vaultAddress}`, {
+        method: "POST",
+        body: JSON.stringify(message),
+      }),
+  });
 
   // Message sending
   async function sendMessage(
@@ -822,24 +842,22 @@ export default function ProductChat({ vault }: ProductChatProps) {
         ? adminAddress
         : "system";
 
-    const result = await ChatService.sendMessage(
-      vaultAddress,
-      fromAddress,
-      content
-    );
+    const result = _sendMessage({
+      from: fromAddress,
+      content,
+      timestamp: new Date().toISOString(),
+    });
+    console.log("result", result, updateUI);
 
-    if (result.success && updateUI) {
-      setMessages((msgs) => [
-        ...msgs,
-        {
-          from: fromAddress,
-          content,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-    } else if (!result.success) {
-      console.error("Send message error:", result.error);
+    if (updateUI) {
+      refetch();
     }
+
+    // if (result.success && updateUI) {
+    //   //refetch the messages
+    // } else if (!result.success) {
+    //   console.error("Send message error:", result.error);
+    // }
   }
 
   // Action handlers
@@ -1014,7 +1032,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
       />
 
       <ChatMessages
-        messages={messages}
+        messages={messages ?? []}
         userAddress={userAddress}
         adminAddress={adminAddress}
         seller={seller}

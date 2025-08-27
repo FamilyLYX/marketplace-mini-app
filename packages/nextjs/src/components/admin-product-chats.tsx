@@ -11,21 +11,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { fetchWithAuth } from "@/lib/api";
-import { ChatService } from "@/lib/chatService";
 
 export default function AdminProductChats() {
-  const [chats, setChats] = useState<{ product_id: string }[]>([]);
+  const [chats, setChats] = useState<{ productId: string }[]>([]);
   const [vault, setVault] = useState<Vault | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const chatData = await ChatService.getAllProductChats();
+        const chatData = await fetchWithAuth("/api/chat");
+        const chatDataJson = (await chatData.json()) as { productId: string }[];
         // Extract unique product IDs from chats
         const uniqueProductIds = Array.from(
-          new Set(chatData.map((chat) => chat.product_id))
-        ).map((product_id) => ({ product_id }));
+          new Set(
+            chatDataJson.map((chat: { productId: string }) => chat.productId)
+          )
+        ).map((productId) => ({ productId }));
 
         setChats(uniqueProductIds);
       } catch (error) {
@@ -79,12 +81,12 @@ export default function AdminProductChats() {
           </thead>
           <tbody>
             {chats.map((chat) => (
-              <tr key={chat.product_id} className="border-b">
+              <tr key={chat.productId} className="border-b">
                 <td className="py-2 px-4 font-mono text-sm">
-                  {chat.product_id}
+                  {chat.productId}
                 </td>
                 <td className="py-2 px-4">
-                  <Button onClick={() => openChat(chat.product_id)}>
+                  <Button onClick={() => openChat(chat.productId)}>
                     Open Chat
                   </Button>
                 </td>
