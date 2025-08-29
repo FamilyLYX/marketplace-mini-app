@@ -56,7 +56,7 @@ export default function AdminProductChats() {
       }
 
       const vaultData = await response.json();
-      setVault(vaultData);
+      setVault(vaultData.data);
       setIsDialogOpen(true);
     } catch (error) {
       console.error("Vault fetch failed:", error);

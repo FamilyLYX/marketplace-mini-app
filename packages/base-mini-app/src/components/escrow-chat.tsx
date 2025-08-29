@@ -780,9 +780,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
   const showCancelButton =
     isSeller && order_status === "pending" && !isBuyer && !isAdmin;
   const showDisputeButton = !isAdmin && order_status === "pending";
-  const showResolveButton =
-    isAdmin && order_status === "disputed" && !isBuyer && !isSeller;
-
+  const showResolveButton = isAdmin && order_status === "disputed";
   // State
   const [cancelReason, setCancelReason] = useState("");
   const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
@@ -814,8 +812,6 @@ export default function ProductChat({ vault }: ProductChatProps) {
     refetchInterval: 15000,
   });
 
-  console.log("messages", messages);
-
   // useEffect(() => {
   //   fetchChat();
   //   const intervalId = setInterval(fetchChat, 15000);
@@ -842,7 +838,6 @@ export default function ProductChat({ vault }: ProductChatProps) {
     from: "user" | "admin" | "system" = "user",
     updateUI = true
   ) {
-    console.log("sending ...");
     const fromAddress =
       from === "user"
         ? userAddress
