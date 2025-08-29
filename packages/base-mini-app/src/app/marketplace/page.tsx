@@ -288,7 +288,12 @@ export default function Marketplace() {
         {account &&
           getAddress(account).toLowerCase() ===
             appConfig.adminAddress.toLowerCase() && (
-            <TabsContent value="admin">
+            <TabsContent
+              value="admin"
+              style={{
+                width: "100%",
+              }}
+            >
               <div className="flex flex-col gap-10 max-w-6xl w-full">
                 <h2 className="text-2xl font-semibold title">Admin Section</h2>
                 <p className="text-sm text-muted-foreground">

@@ -7,10 +7,8 @@ export async function GET(request: NextRequest) {
     const productId = searchParams.get("productId");
 
     if (!productId) {
-      return NextResponse.json(
-        { error: "Product ID is required" },
-        { status: 400 }
-      );
+      const messages = await ChatService.getAllProductChats();
+      return NextResponse.json(messages);
     }
 
     const messages = await ChatService.getMessages(productId);

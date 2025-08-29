@@ -123,7 +123,7 @@ export class VaultService {
         .where("vault_address", "==", vaultAddress)
         .get();
 
-      return { success: true, data: vault };
+      return { success: true, data: vault.docs[0].data() as Vault };
     } catch (error) {
       console.error("Error fetching vault:", error);
       return {

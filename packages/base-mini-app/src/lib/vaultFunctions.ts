@@ -52,6 +52,7 @@ export async function getAllVaultsInOrderStatusPending() {
 export async function getVaultByAddress(vault_address: string) {
   try {
     const vault = await VaultService.getVaultByAddress(vault_address);
+
     return vault;
   } catch (error) {
     console.error("Error fetching vault:", error);
