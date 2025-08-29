@@ -47,9 +47,12 @@ export const useFetchSaltAndUpdate = () => {
     );
     const res = await response.json();
 
-    console.log(res, "res useFetchSaltAndUpdate");
+    console.log(res.data.data, "res useFetchSaltAndUpdate");
     const data = res.data;
-    const plainUIDCode = data.productCode;
+    const plainUIDCode = data.uidCode;
+
+    console.log(plainUIDCode, data, "plainUIDCode useFetchSalpdate");
+
     if (!plainUIDCode) {
       throw new Error("Failed to fetch plain UID code");
     }
