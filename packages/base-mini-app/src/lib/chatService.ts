@@ -42,7 +42,11 @@ export class ChatService {
       const messages = await adminDb
         .collection("messages")
         .where("productId", "==", productId)
+        .orderBy("timestamp", "asc")
         .get();
+
+      console.log("messages", messages.docs);
+
       const messagesData = messages.docs.map(
         (doc) => doc.data() as ChatMessage
       );
@@ -59,7 +63,10 @@ export class ChatService {
    */
   static async getAllProductChats() {
     try {
-      const chats = await adminDb.collection("messages").get();
+      const chats = await adminDb
+        .collection("messages")
+        .orderBy("timestamp", "asc")
+        .get();
       const chatsData = chats.docs.map((doc) => doc.data() as ChatMessage);
       return chatsData;
     } catch (error) {
