@@ -814,6 +814,8 @@ export default function ProductChat({ vault }: ProductChatProps) {
     refetchInterval: 15000,
   });
 
+  console.log("messages", messages);
+
   // useEffect(() => {
   //   fetchChat();
   //   const intervalId = setInterval(fetchChat, 15000);
@@ -822,7 +824,12 @@ export default function ProductChat({ vault }: ProductChatProps) {
   // }, [vaultAddress, userAddress]);
 
   const { mutate: _sendMessage } = useMutation({
-    mutationFn: (message: ChatMessage) =>
+    mutationFn: (message: {
+      from: string;
+      content: string;
+      timestamp: string;
+      productId: string;
+    }) =>
       fetchWithAuth(`/api/chat?productId=${vaultAddress}`, {
         method: "POST",
         body: JSON.stringify(message),
@@ -835,6 +842,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
     from: "user" | "admin" | "system" = "user",
     updateUI = true
   ) {
+    console.log("sending ...");
     const fromAddress =
       from === "user"
         ? userAddress
@@ -846,6 +854,7 @@ export default function ProductChat({ vault }: ProductChatProps) {
       from: fromAddress,
       content,
       timestamp: new Date().toISOString(),
+      productId: vaultAddress,
     });
     console.log("result", result, updateUI);
 
