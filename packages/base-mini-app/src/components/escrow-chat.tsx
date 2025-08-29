@@ -683,7 +683,7 @@ const ChatMessages = ({
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-4 bg-white">
-      {messages.map((msg, idx) => {
+      {messages?.map((msg, idx) => {
         const isFromCurrentUser =
           msg.from.toLowerCase() === userAddress.toLowerCase();
 

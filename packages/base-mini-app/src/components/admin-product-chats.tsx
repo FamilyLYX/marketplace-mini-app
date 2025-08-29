@@ -23,11 +23,12 @@ export default function AdminProductChats() {
         const chatData = await fetchWithAuth("/api/chat");
         const chatDataJson = (await chatData.json()) as { productId: string }[];
         // Extract unique product IDs from chats
-        const uniqueProductIds = Array.from(
-          new Set(
-            chatDataJson.map((chat: { productId: string }) => chat.productId)
-          )
-        ).map((productId) => ({ productId }));
+        const uniqueProductIds =
+          Array.from(
+            new Set(
+              chatDataJson?.map((chat: { productId: string }) => chat.productId)
+            )
+          )?.map((productId) => ({ productId })) ?? [];
 
         setChats(uniqueProductIds);
       } catch (error) {
@@ -80,7 +81,7 @@ export default function AdminProductChats() {
             </tr>
           </thead>
           <tbody>
-            {chats.map((chat) => (
+            {chats?.map((chat) => (
               <tr key={chat.productId} className="border-b">
                 <td className="py-2 px-4 font-mono text-sm">
                   {chat.productId}
