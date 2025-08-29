@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     const messages = await ChatService.getMessages(productId);
-    return NextResponse.json({ messages });
+    return NextResponse.json(messages);
   } catch (error) {
     console.error("Error fetching messages:", error);
     return NextResponse.json(
@@ -27,20 +27,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { productId, fromAddress, content } = body;
+    const { productId, from, content } = body;
 
-    if (!productId || !fromAddress || !content) {
+    if (!productId || !from || !content) {
       return NextResponse.json(
         { error: "Product ID, from address, and content are required" },
         { status: 400 }
       );
     }
 
-    const result = await ChatService.sendMessage(
-      productId,
-      fromAddress,
-      content
-    );
+    const result = await ChatService.sendMessage(productId, from, content);
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 500 });
