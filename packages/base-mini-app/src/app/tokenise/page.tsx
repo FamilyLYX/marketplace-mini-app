@@ -3,7 +3,6 @@
 import { getAllNFTMetadataLength } from "@/lib/owner";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { useFactoryAddress } from "@/constants/factory";
 import { useReadClient } from "@/lib/app-config";
 import { useAccount } from "wagmi";

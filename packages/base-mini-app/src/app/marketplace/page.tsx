@@ -9,7 +9,6 @@ import { Vault } from "@/types";
 import { getAddress, PublicClient } from "viem";
 // import { useUpProvider } from "@/components/up-provider";
 import AdminProductChats from "@/components/admin-product-chats";
-import Image from "next/image";
 import ProductMarketplaceCarousel from "@/components/product-marketplace-carousel";
 import InventoryCarousel from "@/components/inventory-carousel";
 import OrdersCarousel from "@/components/orders-carousel";

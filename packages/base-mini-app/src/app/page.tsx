@@ -3,7 +3,7 @@
 
 import React, { useEffect } from "react";
 
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import "@rainbow-me/rainbowkit/styles.css";
 import { sdk } from "@farcaster/miniapp-sdk";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ const Home = () => {
 
   const { connect, connectors } = useConnect();
 
-  const { disconnect } = useDisconnect();
+  // const { disconnect } = useDisconnect();
 
   useEffect(() => {
     sdk.actions.ready().then(() => {

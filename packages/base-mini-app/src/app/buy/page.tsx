@@ -19,7 +19,6 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel";
-import { ArrowLeft } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
 import { useAccount } from "wagmi";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -39,7 +38,6 @@ interface BuyFormData {
 }
 
 export default function BuyPage() {
-  const router = useRouter();
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState<BuyFormData>({
     firstName: "",

@@ -10,7 +10,6 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 export default function ImportantNotice() {
   const { push } = useRouter();
   const [code, setCode] = useState("");
