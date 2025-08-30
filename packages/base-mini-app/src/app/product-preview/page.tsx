@@ -130,14 +130,7 @@ export default function ProductPreview() {
 
   if (!product) return <div className="text-center p-10">Loading...</div>;
   return (
-    <div className="min-h-screen flex flex-col gap-10 px-6 py-6 items-center">
-      <Image
-        src="/family_logo_white_bg.svg"
-        alt="Family Logo"
-        width={64}
-        height={64}
-        className="mt-2 w-16 h-16"
-      />
+    <div className="min-h-[90vh] flex flex-col gap-10 px-6 py-6 items-center">
       <div className="max-w-[400px] md:p-5 w-full flex-1 flex flex-col">
         <Carousel
           className="mx-auto mb-5"
@@ -153,7 +146,7 @@ export default function ProductPreview() {
                 <img
                   src={product}
                   alt={`Product image ${index + 1}`}
-                  className="w-[280px] mx-auto object-fit min-h-[318px] max-h-[400px] rounded-lg shadow-lg"
+                  className="w-[330px] mx-auto object-fit min-h-[380px] max-h-[400px] rounded-lg shadow-lg"
                 />
               </CarouselItem>
             ))}
@@ -174,9 +167,9 @@ export default function ProductPreview() {
               ? `${product.description?.slice(0, 50)} ...`
               : product?.description}
           </p>
-          <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">
+          {/* <p className="text-sm mt-2 px-2 text-gray-600 font-mono leading-relaxed">
             <span className="font-semibold">Brand:</span> {product.brand}
-          </p>
+          </p> */}
         </div>
 
         <div className="mt-auto w-full">

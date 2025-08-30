@@ -58,15 +58,8 @@ export default function BuyPage() {
   const back = () => setStep((s) => s - 1);
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-white">
-      <Button
-        variant="ghost"
-        className="absolute top-4 left-4 z-10 p-2"
-        onClick={() => router.push("/")}
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
-      <div className="flex-1 flex flex-col w-full h-full mt-14">
+    <div className="min-h-[88vh] overflow-y-auto px-5 w-full flex flex-col items-center justify-center">
+      <div className="flex-1 flex flex-col w-full h-full">
         {step === 1 && (
           <div className="w-full mx-auto">
             <CombinedForm data={formData} setData={setFormData} onNext={next} />
@@ -91,11 +84,11 @@ interface BuyFormProps {
 
 function CombinedForm({ data, setData, onNext }: BuyFormProps) {
   return (
-    <div className="w-full flex flex-col justify-between items-center">
-      <h1 className="text-4xl font-black leading-tight mb-2 w-full text-left">
+    <div className="w-full flex flex-col justify-between items-center text-white">
+      {/* <h1 className="text-4xl font-black leading-tight mb-2 w-full text-left">
         Buy Product
-      </h1>
-      <p className="text-lg text-[#888] mb-8 w-full text-left">
+      </h1> */}
+      <p className="text-lg text-[#888] mb-5 w-full text-left">
         Enter your details
       </p>
       <div className="space-y-4 w-full">
@@ -216,7 +209,7 @@ function CombinedForm({ data, setData, onNext }: BuyFormProps) {
       </div>
       <Button
         onClick={onNext}
-        className="w-full mt-34 h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
+        className="w-full my-5 h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
       >
         Continue to Payment <span className="ml-2">→</span>
       </Button>
@@ -360,7 +353,7 @@ function PaymentStep({
         >
           ← Back
         </Button>
-        <div className="text-2xl font-extrabold text-gray-900 p-2 bg-white rounded-xl shadow">
+        <div className="text-xl font-bold text-gray-900 p-2 bg-white rounded-xl shadow">
           Price:{" "}
           <span className="text-primary">
             {price} {currency}

@@ -27,16 +27,7 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center px-4 text-center bg-white">
-      <div className="mb-4">
-        <Image
-          src="/family_logo_white_bg.svg"
-          alt="Family Logo"
-          width={64}
-          height={64}
-          className="mt-2 w-16 h-16"
-        />
-      </div>
+    <div className="min-h-[80vh] w-full flex flex-col items-center justify-center px-4 text-center">
       {/* <ConnectButton showBalance={false} /> */}
 
       <span className="mb-4 inline-block bg-gray-200 text-gray-800 text-xs font-medium px-2 py-1 rounded-full">

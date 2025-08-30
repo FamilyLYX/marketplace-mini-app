@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 // import { Inter } from "next/font/google";
 import { MarketPlaceAppWithProviders } from "@/components/marketplace-provider";
+import Image from "next/image";
+import { ArrowLeft } from "lucide-react";
+import NavigationHeader from "@/components/navigation-header";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -18,8 +21,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={""}>
-        <MarketPlaceAppWithProviders>{children}</MarketPlaceAppWithProviders>
+      <body
+        className={
+          "bg-[length:100%_120vh] h-screen overflow-y-hidden home-background"
+        }
+      >
+        <MarketPlaceAppWithProviders>
+          <div className="flex flex-col h-screen overflow-y-auto">
+            <NavigationHeader />
+            {children}
+          </div>
+        </MarketPlaceAppWithProviders>
       </body>
     </html>
   );
