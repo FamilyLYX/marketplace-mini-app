@@ -106,7 +106,7 @@ const FAMILY_VAULT_FACTORY_ADDRESSES = {
   [xdcTestnet.id]:
     "0x58d682dAc73551c6CD8Be22cF0dAF13466C9d621" as `0x${string}`,
   [baseSepolia.id]:
-    "0x2C4472C14DDd6A9886a8a02dD63ADed8b482F585" as `0x${string}`,
+    "0x5F2171087a1ECda762afFbD26a8182656ce6623C" as `0x${string}`,
 };
 
 const useVaultFactoryAddress = () => {
