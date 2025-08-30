@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import tokenise from "../../../public/tokenise.svg";
 export default function Individual() {
-  const { replace } = useRouter();
+  const { push } = useRouter();
   return (
     <div className="min-h-[90vh] w-full flex flex-col items-center justify-between px-6 py-8 bg-white text-center">
       <div className="border border-gray-200 rounded-xl p-12 px-4 w-full max-w-sm text-center shadow-sm gap-6">
@@ -28,7 +28,7 @@ export default function Individual() {
       </div>
       <BlackButton
         onClick={() => {
-          replace("/form");
+          push("/form");
         }}
         // as="a"
         // href="/form"

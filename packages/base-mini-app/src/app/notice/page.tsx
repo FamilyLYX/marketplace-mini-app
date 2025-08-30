@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 export default function ImportantNotice() {
-  const { replace } = useRouter();
+  const { push } = useRouter();
   const [code, setCode] = useState("");
   const [open, setOpen] = useState(false);
 
@@ -25,7 +25,7 @@ export default function ImportantNotice() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(code);
-    replace("/product-preview");
+    push("/product-preview");
   };
 
   return (

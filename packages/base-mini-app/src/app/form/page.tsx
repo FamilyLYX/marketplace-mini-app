@@ -11,7 +11,7 @@ import { Product } from "@/types";
 import Image from "next/image";
 import BlackButton from "@/components/black-button";
 export default function FormPage() {
-  const { replace } = useRouter();
+  const { push } = useRouter();
 
   const [formData, setFormData] = useState<Product>({
     title: "",
@@ -169,7 +169,7 @@ export default function FormPage() {
           withArrow
           className="w-full rounded-full py-2 text-base"
           onClick={() => {
-            replace("/notice");
+            push("/notice");
           }}
         >
           Next
