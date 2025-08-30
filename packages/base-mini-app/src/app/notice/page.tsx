@@ -29,15 +29,8 @@ export default function ImportantNotice() {
   };
 
   return (
-    <div className="min-h-screen px-6 py-8 flex flex-col justify-between">
+    <div className="min-h-[90vh] px-6 py-8 flex flex-col justify-between">
       <div className="flex flex-col gap-4 items-center">
-        <Image
-          src="/family_logo_white_bg.svg"
-          alt="Family Logo"
-          width={64}
-          height={64}
-          className="mt-2 w-16 h-16"
-        />
         <h1 className="text-5xl text-[#FF0000] text-center font-bold long-title">
           Important Notice
         </h1>
@@ -71,7 +64,7 @@ export default function ImportantNotice() {
             <Button
               onClick={generateCode}
               variant="outline"
-              className="w-full rounded-full border-black text-black text-base py-6 font-mono"
+              className="w-full rounded-full border-black text-white bg-black text-base py-6 font-mono"
             >
               <Plus className="w-4 h-4 mr-2" /> Generate
             </Button>

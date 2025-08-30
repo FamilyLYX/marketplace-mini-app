@@ -162,22 +162,15 @@ export default function SellProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white px-6 py-12 relative">
-      <Button
-        variant="ghost"
-        className="absolute top-4 left-4 z-10 p-2"
-        onClick={() => router.push("/")}
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
+    <div className="max-h-[88vh] overflow-y-auto px-6 relative ">
       <div className="max-w-3xl">
-        <h1 className="text-4xl font-black text-start mb-2">Sell Product</h1>
+        {/* <h1 className="text-4xl font-black text-start mb-2">Sell Product</h1> */}
         <div className="mb-8">
           <p className="text-lg text-muted-foreground">
             To sell the product, please fill in all the fields below
           </p>
         </div>
-        <div className="space-y-6 pb-32">
+        <div className="space-y-6 text-white">
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
             <Input
@@ -205,7 +198,8 @@ export default function SellProductPage() {
               placeholder="Condition Notes*"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="min-h-[200px]"
+              // className="min-h-[200px]"
+              rows={2}
             />
           </div>
 
@@ -264,7 +258,7 @@ export default function SellProductPage() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white p-4">
+      <div className="p-4">
         <div className="max-w-3xl mx-auto">
           <Button
             className="w-full text-white rounded-full text-md py-6 text-lg"

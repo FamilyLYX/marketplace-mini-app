@@ -6,15 +6,8 @@ import tokenise from "../../../public/tokenise.svg";
 export default function Individual() {
   const { replace } = useRouter();
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-between px-6 py-8 bg-white text-center">
-      <Image
-        src="/family_logo_white_bg.svg"
-        alt="Family Logo"
-        width={64}
-        height={64}
-        className="mt-2 w-16 h-16"
-      />
-      <div className="border border-gray-200 rounded-xl p-12 w-full max-w-sm text-center shadow-sm gap-6">
+    <div className="min-h-[90vh] w-full flex flex-col items-center justify-between px-6 py-8 bg-white text-center">
+      <div className="border border-gray-200 rounded-xl p-12 px-4 w-full max-w-sm text-center shadow-sm gap-6">
         <h1 className="text-5xl font-display font-bold mb-4 long-title">
           Individual
         </h1>

@@ -77,14 +77,7 @@ export default function FormPage() {
   };
 
   return (
-    <div className="min-h-screen w-full px-6 py-8 flex flex-col justify-between items-center">
-      <Image
-        src="/family_logo_white_bg.svg"
-        alt="Family Logo"
-        width={64}
-        height={64}
-        className="mt-2 w-16 h-16"
-      />
+    <div className="min-h-[75vh] w-full px-6 py-2 flex flex-col justify-between items-center text-white">
       <div className="space-y-4 w-full">
         <div>
           <Label className="text-sm font-mono">Product Name</Label>
@@ -103,7 +96,7 @@ export default function FormPage() {
             name="description"
             placeholder="Description"
             className="mt-1"
-            rows={3}
+            rows={5}
             value={formData.description}
             onChange={handleInputChange}
           />

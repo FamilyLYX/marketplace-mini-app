@@ -162,26 +162,10 @@ export default function Marketplace() {
   }, [orderedProducts, confirmedProducts]);
 
   return (
-    <div className="min-h-screen w-full bg-white flex flex-col items-center px-4 md:px-12 py-8">
-      <div className=" flex flex-col items-center justify-center text-center mb-6">
-        <Image
-          src="/family_logo_white_bg.svg"
-          alt="Family Logo"
-          width={64}
-          height={64}
-          className="mt-2 w-16 h-16"
-        />
-        <h1 className="font-serif text-5xl font-black tracking-tight title">
-          Universal Goods
-        </h1>
-        <p className="mt-2 text-xs text-gray-500">
-          Marketplace for digitally traced products with escrow management
-        </p>
-      </div>
-
+    <div className="w-full flex flex-col items-center px-4 md:px-12 py-8 pb-2">
       <Tabs
         defaultValue="marketplace"
-        className="w-full flex items-center justify-center w-full"
+        className="w-full flex items-center justify-center"
       >
         <TabsList className="gap-2 bg-gray-100 rounded-full mb-6">
           <TabsTrigger

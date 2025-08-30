@@ -37,7 +37,7 @@ export function ProductCardShell({
 }) {
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      <div className="relative w-[340px] h-[480px] mb-4 rounded-[2.5rem] shadow-lg border bg-white flex items-center justify-center overflow-hidden">
+      <div className="relative w-[340px] h-[380px] mb-4 rounded-[2.5rem] shadow-lg border bg-white flex items-center justify-center overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={image || "/placeholder.png"}
