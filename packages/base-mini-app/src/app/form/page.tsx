@@ -8,7 +8,6 @@ import { Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/types";
-import Image from "next/image";
 import BlackButton from "@/components/black-button";
 export default function FormPage() {
   const { push } = useRouter();

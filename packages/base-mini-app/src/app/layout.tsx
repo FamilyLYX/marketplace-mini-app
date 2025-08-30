@@ -3,8 +3,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 // import { Inter } from "next/font/google";
 import { MarketPlaceAppWithProviders } from "@/components/marketplace-provider";
-import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
 import NavigationHeader from "@/components/navigation-header";
 
 // const inter = Inter({ subsets: ["latin"] });

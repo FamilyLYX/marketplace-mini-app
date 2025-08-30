@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { ProductMetadata } from "@/components/product";

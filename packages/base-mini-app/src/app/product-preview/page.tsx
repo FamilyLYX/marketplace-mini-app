@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/carousel";
 // import { useDPPNFTFactory } from "@/hooks/useDPPFactory";
 import { useMutation } from "@tanstack/react-query";
-import Image from "next/image";
 import { useDPP } from "@/hooks/useDPP";
 import { v4 as uuidv4 } from "uuid";
 import { encodePacked, keccak256, pad } from "viem";
