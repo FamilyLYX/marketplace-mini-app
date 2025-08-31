@@ -21,7 +21,10 @@ export async function GET() {
       signature: process.env.FARCASTER_SIGNATURE,
     },
     baseBuilder: {
-      allowedAddresses: ["0xbDaC5dD38C329Dc774a716c0BE0d6746568dEe3A"],
+      allowedAddresses: [
+        "0xbDaC5dD38C329Dc774a716c0BE0d6746568dEe3A",
+        "0x08c4Fe8751177D88527bc1a4725aE10319BD347e",
+      ],
     },
     frame: {
       version: "1",
@@ -34,6 +37,7 @@ export async function GET() {
       tags: ["builder"],
       heroImageUrl: `${URL}/hero.png`,
       tagline: "Test Builder",
+      webhookUrl: `${URL}/api/webhook`,
     },
     // frame: withValidProperties({
     //   version: "1",

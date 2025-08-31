@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "Buy, Sell your products",
 };
 
+const URL = process.env.NEXT_PUBLIC_URL;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,6 +21,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* head content */}
+        <meta
+          name="fc:miniapp"
+          content={`{"version":"1","imageUrl":"${
+            URL ?? "https://marketplace-mini-app.vercel.app"
+          }/family_logo_white_bg.svg","button":{"title":"🚩 Start","action":{"type":"launch_miniapp","name":"Yoink!","url":"${
+            URL ?? "https://marketplace-mini-app.vercel.app"
+          }","splashImageUrl":"${
+            URL ?? "https://marketplace-mini-app.vercel.app"
+          }/family_logo_white_bg.svg","splashBackgroundColor":"#f5f0ec"}}}'`}
+        />
+        {/* For backward compatibility */}
+        <meta
+          name="fc:frame"
+          content={`{"version":"1","imageUrl":"${
+            URL ?? "https://marketplace-mini-app.vercel.app"
+          }/family_logo_white_bg.svg","button":{"title":"🚩 Start","action":{"type":"launch_frame","name":"Yoink!","url":"${
+            URL ?? "https://marketplace-mini-app.vercel.app"
+          }","splashImageUrl":"${
+            URL ?? "https://marketplace-mini-app.vercel.app"
+          }/family_logo_white_bg.svg","splashBackgroundColor":"#f5f0ec"}}}'`}
+        />
+      </head>
       <body
         className={
           "bg-[length:100%_120vh] h-screen overflow-y-hidden home-background"
