@@ -1,5 +1,5 @@
 import { Abi } from "viem";
-import { baseSepolia, luksoTestnet, xdcTestnet } from "viem/chains";
+import { base, baseSepolia, luksoTestnet, xdcTestnet } from "viem/chains";
 import { useAccount } from "wagmi";
 
 const FACTORY_ABI = [
@@ -392,12 +392,13 @@ const FACTORY_ADDRESSES = {
   [xdcTestnet.id]: FACTORY_ADDRESS,
   [baseSepolia.id]:
     "0x1f2E6C90FdDF253C30c8e689B8582b1f068c8134" as `0x${string}`,
+  [base.id]: "0x66d2B12301cc5dee19D79f1A34161A2DB8cf8cA5" as `0x${string}`,
 };
 
 const useFactoryAddress = () => {
   const { chain } = useAccount();
   return FACTORY_ADDRESSES[
-    (chain?.id as keyof typeof FACTORY_ADDRESSES) ?? luksoTestnet.id
+    (chain?.id as keyof typeof FACTORY_ADDRESSES) ?? base.id
   ];
 };
 

@@ -12,13 +12,28 @@
 // }
 
 export async function GET() {
-  // const URL = process.env.NEXT_PUBLIC_URL;
+  const URL = process.env.NEXT_PUBLIC_URL;
 
   return Response.json({
     accountAssociation: {
       header: process.env.FARCASTER_HEADER,
       payload: process.env.FARCASTER_PAYLOAD,
       signature: process.env.FARCASTER_SIGNATURE,
+    },
+    baseBuilder: {
+      allowedAddresses: ["0x14E2EdDa8Ab6fEB7790F63bdB75b3A64B5E23Dda"],
+    },
+    frame: {
+      version: "1",
+      name: "Test Builder",
+      homeUrl: URL,
+      iconUrl: `${URL}/icon.png`,
+      splashImageUrl: `${URL}/splash.png`,
+      splashBackgroundColor: "#000000",
+      primaryCategory: "builder",
+      tags: ["builder"],
+      heroImageUrl: `${URL}/hero.png`,
+      tagline: "Test Builder",
     },
     // frame: withValidProperties({
     //   version: "1",

@@ -114,8 +114,7 @@ const FAMILY_VAULT_FACTORY_ADDRESSES = {
 const useVaultFactoryAddress = () => {
   const { chain } = useAccount();
   return FAMILY_VAULT_FACTORY_ADDRESSES[
-    (chain?.id as keyof typeof FAMILY_VAULT_FACTORY_ADDRESSES) ??
-      luksoTestnet.id
+    (chain?.id as keyof typeof FAMILY_VAULT_FACTORY_ADDRESSES) ?? base.id
   ];
 };
 
