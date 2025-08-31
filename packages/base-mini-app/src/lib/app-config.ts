@@ -1,5 +1,5 @@
 import { createPublicClient, http } from "viem";
-import { baseSepolia, xdc, xdcTestnet } from "viem/chains";
+import { base, xdc, xdcTestnet } from "viem/chains";
 import { useAccount } from "wagmi";
 
 interface Config {
@@ -46,7 +46,7 @@ const readClient = createPublicClient({
 const useReadClient = () => {
   const { chain: connectedChain } = useAccount();
   return createPublicClient({
-    chain: connectedChain ?? baseSepolia,
+    chain: connectedChain ?? base,
     transport: http(connectedChain?.rpcUrls.default.http[0]),
   });
 };
