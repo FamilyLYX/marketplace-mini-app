@@ -24,7 +24,7 @@ export async function GET() {
     frame: {
       name: "UniversalGoods (Open Beta)",
       version: "1",
-      iconUrl: "https://base.universalgoods.org/family_logo_white_bg.svg",
+      iconUrl: "https://base.universalgoods.org/icon.png",
       homeUrl: "https://base.universalgoods.org",
       imageUrl: "https://base.universalgoods.org/family_logo_white_bg.svg",
       buttonTitle: "Open",
