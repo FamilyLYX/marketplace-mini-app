@@ -41,6 +41,9 @@ export async function GET() {
       ogDescription:
         "Tokenise your products and safely trade it in the secondary market",
       tagline: "Tokenise and Marketplace",
+      heroImageUrl: "https://base.universalgoods.org/hero.png",
+      ogImageUrl: "https://base.universalgoods.org/hero.png",
+      castShareUrl: "https://base.universalgoods.org/hero.png",
     },
     // frame: withValidProperties({
     //   version: "1",
