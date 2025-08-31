@@ -22,7 +22,9 @@ export function ProductInfo({ metadata }: { metadata: ProductMetadata }) {
       <div className="text-center">
         {/* <div className="font-bold">Description</div> */}
         <div>
-          {metadata.description?.length > 53
+          {metadata.notes
+            ? metadata.notes
+            : metadata.description?.length > 53
             ? `${metadata.description?.slice(0, 50)} ...`
             : metadata.description}
         </div>

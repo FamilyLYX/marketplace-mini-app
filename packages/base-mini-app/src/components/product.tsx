@@ -47,11 +47,11 @@ export function ProductImageCarousel({ images }: { images: string[] }) {
         <>
           <CarouselPrevious
             ref={prevRef}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
+            className="absolute -left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
           />
           <CarouselNext
             ref={nextRef}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full shadow p-1"
           />
         </>
       )}

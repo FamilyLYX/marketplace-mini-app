@@ -22,6 +22,7 @@ export type ProductMetadata = {
   category: string;
   brand: string;
   images: string[];
+  notes?: string;
 };
 
 export function ConfirmProduct({
@@ -47,7 +48,7 @@ export function ConfirmProduct({
       }
       const { currentSalt, newSalt, newUidHash } = await fetchAndUpdateSalt(
         vault.nft_contract as `0x${string}`,
-        plainUIDCode,
+        plainUIDCode
       );
       const res = await confirmReceipt(plainUIDCode, currentSalt, newUidHash);
       if (!res) {
@@ -72,7 +73,7 @@ export function ConfirmProduct({
             body: JSON.stringify({
               order_status: "confirmed",
             } as Vault),
-          },
+          }
         );
         if (!response.ok) {
           const errorText = await response.text();

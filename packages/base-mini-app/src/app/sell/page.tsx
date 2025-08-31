@@ -165,11 +165,11 @@ export default function SellProductPage() {
     <div className="max-h-[88vh] overflow-y-auto px-6 relative ">
       <div className="max-w-3xl">
         {/* <h1 className="text-4xl font-black text-start mb-2">Sell Product</h1> */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <p className="text-lg text-muted-foreground">
             To sell the product, please fill in all the fields below
           </p>
-        </div>
+        </div> */}
         <div className="space-y-6 text-white">
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
@@ -198,8 +198,8 @@ export default function SellProductPage() {
               placeholder="Condition Notes*"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              // className="min-h-[200px]"
-              rows={2}
+              className="min-h-[150px]"
+              rows={6}
             />
           </div>
 
