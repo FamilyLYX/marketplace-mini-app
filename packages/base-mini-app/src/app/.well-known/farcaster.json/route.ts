@@ -34,7 +34,7 @@ export async function GET() {
       webhookUrl: "https://base.universalgoods.org/api/webhook",
       subtitle: "Tokenising Consumer Products",
       description:
-        "Seamlessly tokenise consumer products and securely buy & trade physical products on-chain",
+        "Seamlessly tokenise consumer products and securely buy and trade physical products onchain",
       primaryCategory: "utility",
       tags: ["tokenisation", "marketplace", "physical", "trading", "clothing"],
       ogTitle: "UniversalGoods",
