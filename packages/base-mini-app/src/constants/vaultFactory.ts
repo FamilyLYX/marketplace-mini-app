@@ -1,5 +1,5 @@
 import { Abi } from "viem";
-import { baseSepolia, luksoTestnet, xdcTestnet } from "viem/chains";
+import { base, baseSepolia, luksoTestnet, xdcTestnet } from "viem/chains";
 import { useAccount } from "wagmi";
 
 const FAMILY_VAULT_FACTORY_ABI = [
@@ -107,6 +107,8 @@ const FAMILY_VAULT_FACTORY_ADDRESSES = {
     "0x58d682dAc73551c6CD8Be22cF0dAF13466C9d621" as `0x${string}`,
   [baseSepolia.id]:
     "0x5F2171087a1ECda762afFbD26a8182656ce6623C" as `0x${string}`,
+
+  [base.id]: "0x03a901a563FCD2692046FFd08A510f0246253596" as `0x${string}`,
 };
 
 const useVaultFactoryAddress = () => {
