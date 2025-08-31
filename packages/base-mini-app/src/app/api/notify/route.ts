@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    // const body = await request.json();
     // const { fid, notification } = body;
 
     // const result = await sendFrameNotification({
