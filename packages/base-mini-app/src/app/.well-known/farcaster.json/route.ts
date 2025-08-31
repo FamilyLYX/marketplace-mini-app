@@ -21,23 +21,28 @@ export async function GET() {
       signature: process.env.FARCASTER_SIGNATURE,
     },
     baseBuilder: {
-      allowedAddresses: [
-        "0xbDaC5dD38C329Dc774a716c0BE0d6746568dEe3A",
-        "0x08c4Fe8751177D88527bc1a4725aE10319BD347e",
-      ],
+      allowedAddresses: ["0x08c4Fe8751177D88527bc1a4725aE10319BD347e"],
     },
     frame: {
+      name: "UniversalGoods (Open Beta)",
       version: "1",
-      name: "Test Builder",
-      homeUrl: URL,
-      iconUrl: `${URL}/icon.png`,
-      splashImageUrl: `${URL}/splash.png`,
-      splashBackgroundColor: "#000000",
-      primaryCategory: "builder",
-      tags: ["builder"],
-      heroImageUrl: `${URL}/hero.png`,
-      tagline: "Test Builder",
-      webhookUrl: `${URL}/api/webhook`,
+      iconUrl: "https://base.universalgoods.org/family_logo_white_bg.svg",
+      homeUrl: "https://base.universalgoods.org",
+      imageUrl: "https://base.universalgoods.org/family_logo_white_bg.svg",
+      buttonTitle: "Open",
+      splashImageUrl:
+        "https://base.universalgoods.org/family_logo_white_bg.svg",
+      splashBackgroundColor: "#FFFFFF",
+      webhookUrl: "https://base.universalgoods.org/api/webhook",
+      subtitle: "Tokenising Consumer Products",
+      description:
+        "Seamlessly tokenise consumer products and securely buy & trade physical products on-chain",
+      primaryCategory: "utility",
+      tags: ["tokenisation", "marketplace", "physical", "trading", "clothing"],
+      ogTitle: "UniversalGoods",
+      ogDescription:
+        "Tokenise your products and safely trade it in the secondary market",
+      tagline: "Tokenise and Marketplace",
     },
     // frame: withValidProperties({
     //   version: "1",
