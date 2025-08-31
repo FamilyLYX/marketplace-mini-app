@@ -107,6 +107,7 @@ export default function ProductMarketplaceCarousel({
                         images: product.images ?? [],
                         category: product.category ?? "",
                         brand: product.brand ?? "",
+                        notes: product.notes ?? "",
                       }}
                     />
                   </DialogContent>
@@ -116,8 +117,8 @@ export default function ProductMarketplaceCarousel({
           ))}
         </CarouselContent>
 
-        <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer z-10" />
-        <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer z-10" />
+        <CarouselPrevious className="absolute -left-1 top-[35%]  -translate-y-1/3 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer z-10" />
+        <CarouselNext className="absolute -right-1 top-[35%] -translate-y-1/3 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer z-10" />
       </Carousel>
     </div>
   );

@@ -86,9 +86,9 @@ function CombinedForm({ data, setData, onNext }: BuyFormProps) {
       {/* <h1 className="text-4xl font-black leading-tight mb-2 w-full text-left">
         Buy Product
       </h1> */}
-      <p className="text-lg text-[#888] mb-5 w-full text-left">
+      {/* <p className="text-lg text-[#888] mb-5 w-full text-left">
         Enter your details
-      </p>
+      </p> */}
       <div className="space-y-4 w-full">
         <div>
           <Label className="font-bold">First name</Label>
@@ -207,7 +207,7 @@ function CombinedForm({ data, setData, onNext }: BuyFormProps) {
       </div>
       <Button
         onClick={onNext}
-        className="w-full my-5 h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
+        className="w-full mt-5 h-12 text-lg font-semibold rounded-full bg-black hover:bg-gray-900 transition"
       >
         Continue to Payment <span className="ml-2">→</span>
       </Button>

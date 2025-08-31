@@ -50,8 +50,8 @@ export default function InventoryCarousel({ products }: { products: any[] }) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer" />
-        <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer" />
+        <CarouselPrevious className="absolute -left-1 top-[35%]  -translate-y-1/3 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer" />
+        <CarouselNext className="absolute -right-1 top-[35%] -translate-y-1/3 rounded-full bg-gray-200 p-2 hover:bg-gray-300 cursor-pointer" />
       </Carousel>
     </div>
   );
