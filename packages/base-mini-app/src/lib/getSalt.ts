@@ -2,7 +2,7 @@
 // import { pad } from "viem";
 // import { appConfig } from "./app-config"
 
-import { adminDb } from "./firerbase";
+import { adminDb } from "./firebase";
 
 // const SALT_DB = appConfig.salt_db; // Use the configured salt database
 

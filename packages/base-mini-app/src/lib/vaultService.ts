@@ -1,5 +1,5 @@
 import { Vault } from "@/types";
-import { adminDb } from "./firerbase";
+import { adminDb } from "./firebase";
 
 export class VaultService {
   static async findByOrderStatus(orderStatus: string) {

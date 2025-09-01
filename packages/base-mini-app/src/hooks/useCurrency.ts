@@ -1,12 +1,25 @@
 import { useAccount } from "wagmi";
+import { base, baseSepolia, luksoTestnet } from "wagmi/chains";
 
-const currencyMap = {
-  84532: "ETH",
-  51: "XDC",
-  4201: "LYX",
+enum SupportedChains {
+  BaseSepolia = baseSepolia.id,
+  Base = base.id,
+  Lyx = luksoTestnet.id as number,
+  baseMainnet = base.id,
+}
+
+const currencyMap: Record<SupportedChains, string> = {
+  [SupportedChains.BaseSepolia]: "ETH",
+  [SupportedChains.Base]: "XDC",
+  [SupportedChains.Lyx]: "LYX",
+  [SupportedChains.baseMainnet]: "ETH",
 };
 
 export const useCurrency = () => {
-  const { chainId } = useAccount();
-  return currencyMap[(chainId as keyof typeof currencyMap) ?? 4201];
+  const { chain } = useAccount();
+  return (
+    chain?.nativeCurrency.symbol ??
+    currencyMap[chain?.id as keyof typeof currencyMap] ??
+    "ETH"
+  );
 };

@@ -1,4 +1,4 @@
-import { adminDb } from "./firerbase";
+import { adminDb } from "./firebase";
 
 export interface ChatMessage {
   from: string;

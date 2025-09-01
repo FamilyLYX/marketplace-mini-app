@@ -1,6 +1,6 @@
 // utils/storeSalt.ts
 
-import { adminDb } from "./firerbase";
+import { adminDb } from "./firebase";
 
 export async function storeSalt(
   tokenId: string,
@@ -22,6 +22,8 @@ export async function storeSalt(
         uidCode: productCode,
         // chainId: chainId,
       });
+
+    console.log("saltRecord", saltRecord);
     return saltRecord;
   } catch (error) {
     console.error("Error storing salt:", error);

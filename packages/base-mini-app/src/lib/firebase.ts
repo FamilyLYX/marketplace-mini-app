@@ -17,4 +17,6 @@ if (!apps.length) {
 // Initialize Firestore
 export const adminDb = getFirestore(getApp());
 
+console.log("adminDb", adminDb, apps[0]);
+
 export default apps[0];
