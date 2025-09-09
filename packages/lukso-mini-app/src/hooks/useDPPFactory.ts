@@ -3,7 +3,6 @@ import { FACTORY_ABI, useFactoryAddress } from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
 import { Product } from "@/types";
 import { useReadClient } from "@/lib/app-config";
-import { sdk } from "@farcaster/miniapp-sdk";
 import { useUpProvider } from "@/components/up-provider";
 
 export const useDPPNFTFactory = () => {

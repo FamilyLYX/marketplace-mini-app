@@ -7,7 +7,7 @@ import {
   luksoTestnet,
   xdcTestnet,
 } from "viem/chains";
-import { useAccount } from "wagmi";
+// import { useAccount } from "wagmi";
 
 const FAMILY_VAULT_FACTORY_ABI = [
   {

@@ -1,5 +1,5 @@
 import { createConfig, http } from "wagmi";
-import { base, lukso, luksoTestnet } from "wagmi/chains";
+import { lukso, luksoTestnet } from "wagmi/chains";
 import { farcasterMiniApp as miniAppConnector } from "@farcaster/miniapp-wagmi-connector";
 import { isTestnet } from "./app-config";
 
