@@ -1,0 +1,373 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+import {
+  Account,
+  Chain,
+  createWalletClient,
+  ParseAccount,
+  PublicClient,
+  RpcSchema,
+  WalletClient,
+} from "viem";
+import { FACTORY_ABI } from "@/constants/factory";
+import { fromHex, pad } from "viem/utils";
+import { ProductMetadata } from "@/components/product";
+import { privateKeyToAccount } from "viem/accounts";
+import { FAMILY_VAULT_FACTORY_ABI } from "@/constants/vaultFactory";
+import { FAMILY_VAULT_ABI } from "@/constants/vault";
+import { NFT_ABI } from "@/constants/dpp";
+import { parseEventLogs } from "viem";
+import { appConfig } from "@/lib/app-config";
+import { luksoTestnet } from "viem/chains";
+import { Transport, useAccount } from "wagmi";
+
+const tokenId = pad("0x0", { size: 32 }); // hardcoded tokenId as bytes32
+
+const DPP_METADATA_KEY =
+  "0xfdc90bed11ed075e8de8d81f16642cab1d54295200de73e16728abf20dea834d";
+
+if (!process.env.NEXT_PUBLIC_PRIVATE_KEY) {
+  throw new Error("PRIVATE_KEY environment variable is not set.");
+}
+
+export const account = privateKeyToAccount(
+  process.env.NEXT_PUBLIC_PRIVATE_KEY as `0x${string}`
+);
+
+export async function getAllNFTMetadata(
+  readClient: PublicClient,
+  factoryAddress: `0x${string}`
+): Promise<
+  Record<
+    string,
+    {
+      nftAddress: string;
+      decodedMetadata: ProductMetadata;
+    }[]
+  >
+> {
+  try {
+    // 1. Fetch deployed NFTs from the factory contract
+    const deployedNFTs = (await readClient.readContract({
+      abi: FACTORY_ABI,
+      address: factoryAddress,
+      functionName: "getDeployedDPPs",
+    })) as string[];
+    console.log({ deployedNFTs });
+    const ownerMap: Record<
+      string,
+      {
+        nftAddress: string;
+        decodedMetadata: ProductMetadata;
+      }[]
+    > = {};
+    for (const nftAddress of deployedNFTs) {
+      // 2. Fetch metadata for each NFT
+      const metadata = await readClient.readContract({
+        abi: NFT_ABI,
+        address: nftAddress as `0x${string}`,
+        functionName: "getDataForTokenId",
+        args: [tokenId, DPP_METADATA_KEY],
+      });
+
+      if (!metadata || metadata === "0x") {
+        continue;
+      }
+      // 3. Decode the metadata since its hex
+      console.log("metadata", metadata, nftAddress);
+      const decodedMetadata = JSON.parse(
+        fromHex(metadata as `0x${string}`, "string")
+      ) as ProductMetadata;
+
+      // const decodedMetadata = JSON.parse(metadata as string);
+      const owner = (await readClient.readContract({
+        abi: NFT_ABI,
+        address: nftAddress as `0x${string}`,
+        functionName: "tokenOwnerOf",
+        args: [tokenId],
+      })) as `0x${string}`;
+
+      console.log("owner", owner);
+      if (!ownerMap[owner]) {
+        ownerMap[owner] = [];
+      }
+      ownerMap[owner].push({
+        nftAddress,
+        decodedMetadata,
+      });
+    }
+    console.log("ownerMap", ownerMap);
+    return ownerMap;
+  } catch (error) {
+    console.error("Error fetching NFT metadata:", error);
+    throw error;
+  }
+}
+
+export async function getAllNFTMetadataLength(
+  readClient: PublicClient,
+  factoryAddress: `0x${string}`
+): Promise<number> {
+  try {
+    console.log(
+      "🔍 Fetching deployed NFTs from factory contract",
+      readClient.chain,
+      factoryAddress
+    );
+    // 1. Fetch deployed NFTs from the factory contract
+    const deployedNFTs = (await readClient.readContract({
+      abi: FACTORY_ABI,
+      address: factoryAddress,
+      functionName: "getDeployedDPPs",
+    })) as string[];
+    // for (const nftAddress of deployedNFTs) {
+    //   // 2. Fetch metadata for each NFT
+    //   console.log(tokenId)
+    //   const metadata = await readClient.readContract({
+    //     abi: NFT_ABI,
+    //     address: nftAddress as `0x${string}`,
+    //     functionName: "getPublicMetadata",
+    //     args: [tokenId],
+    //   });
+    //   if (!metadata) {
+    //     console.warn(`No metadata found for NFT at address ${nftAddress}`);
+    //     continue;
+    //   }
+    //   console.log("📄 Metadata for NFT at address:", nftAddress, metadata);
+    //   const decodedMetadata = JSON.parse(metadata as string);
+    //   console.log("Decoded Metadata:", decodedMetadata);
+    //   const owner = await readClient.readContract({
+    //     abi: NFT_ABI,
+    //     address: nftAddress as `0x${string}`,
+    //     functionName: "owner",
+    //   });
+    //   console.log(
+    //     "👤 Owner:",
+    //     owner,
+    //     " of metadata: ",
+    //     decodedMetadata + " uidHash: ",
+    //   );
+    // }
+    return deployedNFTs.length;
+  } catch (error) {
+    console.error("Error fetching NFT metadata:", error);
+    throw error;
+  }
+}
+
+export const useWalletClient = () => {
+  const { chain: connectedChain } = useAccount();
+  return createWalletClient({
+    account,
+    chain: connectedChain ?? luksoTestnet,
+    transport: appConfig.chainUrl,
+  });
+};
+
+interface CreateVaultParams {
+  nftContract: `0x${string}`;
+  priceInLYX: number | bigint;
+  expectedUIDHash: `0x${string}`;
+  factoryAddress: `0x${string}`;
+  readClient: PublicClient;
+  walletClient: WalletClient<
+    Transport,
+    Chain,
+    ParseAccount<Account>,
+    RpcSchema
+  >;
+}
+
+export const createVaultTest = async (params: CreateVaultParams) => {
+  const {
+    nftContract,
+    priceInLYX,
+    expectedUIDHash,
+    walletClient,
+    readClient,
+    factoryAddress,
+  } = params;
+  try {
+    const tx = await walletClient.writeContract({
+      abi: FAMILY_VAULT_FACTORY_ABI,
+      address: factoryAddress,
+      functionName: "createVault",
+      args: [account.address, nftContract, priceInLYX, expectedUIDHash],
+      chain: appConfig.chain,
+    });
+    const receipt = await readClient.waitForTransactionReceipt({
+      hash: tx,
+    });
+    if (receipt.status !== "success") {
+      return null;
+    }
+    console.log("Transaction receipt:", receipt);
+    console.log("Transaction hash:", tx);
+    const parsedLogs = parseEventLogs({
+      abi: FAMILY_VAULT_FACTORY_ABI,
+      logs: receipt.logs,
+      eventName: "VaultCreated",
+    }) as any;
+
+    const vaultAddress = parsedLogs?.[0]?.args?.vaultAddress;
+
+    console.log("✅ Vault deployed at:", vaultAddress);
+    return { tx, vaultAddress };
+  } catch (err) {
+    console.error("Error creating vault:", err);
+    return null;
+  }
+};
+
+interface TransferOwnershipParams {
+  dppAddress: `0x${string}`;
+  to: `0x${string}`;
+  plainUidCode: string;
+  walletClient: WalletClient<
+    Transport,
+    Chain,
+    ParseAccount<Account>,
+    RpcSchema
+  >;
+  readClient: PublicClient;
+}
+
+export const transferOwnershipWithUIDTest = async (
+  params: TransferOwnershipParams
+) => {
+  const { dppAddress, to, plainUidCode, walletClient, readClient } = params;
+
+  try {
+    const tx = await walletClient.writeContract({
+      abi: NFT_ABI,
+      address: dppAddress,
+      functionName: "transferOwnershipWithUID",
+      args: [to, plainUidCode],
+      chain: appConfig.chain,
+    });
+
+    // Wait for the transaction receipt to confirm its success
+    const receipt = await readClient.waitForTransactionReceipt({
+      hash: tx,
+    });
+
+    // Check if the transaction was successful
+    if (receipt.status !== "success") {
+      console.error("Transaction failed:", receipt);
+      return null;
+    }
+
+    console.log("Ownership transferred successfully!");
+    console.log("Transaction receipt:", receipt);
+    console.log("Transaction hash:", tx);
+
+    // Return the transaction hash and any additional relevant data
+    return { tx };
+  } catch (err) {
+    console.error("Error transferring ownership:", err);
+    return null;
+  }
+};
+
+interface DepositFundsParams {
+  vaultAddress: `0x${string}`;
+  priceInLYX: bigint;
+  walletClient: WalletClient<
+    Transport,
+    Chain,
+    ParseAccount<Account>,
+    RpcSchema
+  >;
+  readClient: PublicClient;
+}
+
+export const depositFundsTest = async (params: DepositFundsParams) => {
+  const { vaultAddress, priceInLYX, walletClient, readClient } = params;
+
+  try {
+    const tx = await walletClient.sendTransaction({
+      to: vaultAddress,
+      value: priceInLYX,
+      account: account.address,
+      chain: appConfig.chain,
+    });
+
+    const receipt = await readClient.waitForTransactionReceipt({
+      hash: tx,
+    });
+
+    if (receipt.status !== "success") {
+      console.error("Transaction failed:", receipt);
+      return null;
+    }
+
+    console.log("Funds deposited successfully!");
+    console.log("Transaction receipt:", receipt);
+    console.log("Transaction hash:", tx);
+
+    return { tx };
+  } catch (err) {
+    console.error("Error depositing funds:", err);
+    return null;
+  }
+};
+
+interface ConfirmReceiptParams {
+  vaultAddress: `0x${string}`;
+  plainUidCode: string;
+  readClient: PublicClient;
+}
+
+export const confirmReceiptTest = async (params: ConfirmReceiptParams) => {
+  const { vaultAddress, plainUidCode, readClient } = params;
+
+  try {
+    // Simulate the call to catch any revert or issues before sending transaction
+    const simulation = await readClient.simulateContract({
+      abi: FAMILY_VAULT_ABI,
+      address: vaultAddress,
+      functionName: "confirmReceipt",
+      args: [plainUidCode],
+      account: account.address,
+      chain: appConfig.chain,
+    });
+    console.log("Simulation result:", simulation);
+
+    // const tx = await walletClient.writeContract({
+    //   abi: FAMILY_VAULT_ABI,
+    //   address: vaultAddress,
+    //   functionName: "confirmReceipt",
+    //   args: [plainUidCode],
+    //   chain: appConfig.chain,
+    //   account: account.address,
+    // });
+    //
+    // const receipt = await readClient.waitForTransactionReceipt({
+    //   hash: tx,
+    // });
+    //
+    // if (receipt.status !== "success") {
+    //   console.error("Receipt confirmation failed:", receipt);
+    //   return null;
+    // }
+    //
+    // console.log("✅ Receipt confirmed successfully!");
+    // console.log("Transaction receipt:", receipt);
+    // console.log("Transaction hash:", tx);
+
+    return { tx: ":" };
+  } catch (err) {
+    console.error("❌ Error confirming receipt:", err);
+    return null;
+  }
+};
+
+export function getOwnerOfNFT(
+  nftAddress: string,
+  readClient: PublicClient
+): Promise<string> {
+  return readClient.readContract({
+    abi: NFT_ABI,
+    address: nftAddress as `0x${string}`,
+    functionName: "owner",
+  }) as Promise<string>;
+}
