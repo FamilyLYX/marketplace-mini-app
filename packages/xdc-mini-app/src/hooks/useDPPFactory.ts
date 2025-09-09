@@ -2,17 +2,22 @@ import { toast } from "sonner";
 import { FACTORY_ABI, useFactoryAddress } from "@/constants/factory";
 import { NFT_ABI } from "@/constants/dpp";
 import { Product } from "@/types";
+import { useAccount, useWalletClient } from "wagmi";
 import { useReadClient } from "@/lib/app-config";
-import { useUpProvider } from "@/components/up-provider";
+import { sdk } from "@farcaster/miniapp-sdk";
 
 export const useDPPNFTFactory = () => {
+  const { data: client } = useWalletClient();
+
   const readClient = useReadClient();
-  const { address: account, client } = useUpProvider();
+  const { address: account } = useAccount();
 
   const factoryAddress = useFactoryAddress();
 
   const createNFT = async (formData: Product, plainUidCode: string) => {
+    const provider = await sdk.wallet.getEthereumProvider();
     // const _client = new Client(provider);
+    console.log("client", client, account, provider);
     if (!client || !account) {
       toast.error("Please connect your Universal Profile wallet.");
       throw new Error("Wallet not connected or account not available.");

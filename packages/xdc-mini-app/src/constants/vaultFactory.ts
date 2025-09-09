@@ -1,13 +1,6 @@
-import { useUpProvider } from "@/components/up-provider";
 import { Abi } from "viem";
-import {
-  base,
-  baseSepolia,
-  lukso,
-  luksoTestnet,
-  xdcTestnet,
-} from "viem/chains";
-// import { useAccount } from "wagmi";
+import { base, baseSepolia, luksoTestnet, xdc, xdcTestnet } from "viem/chains";
+import { useAccount } from "wagmi";
 
 const FAMILY_VAULT_FACTORY_ABI = [
   {
@@ -114,15 +107,14 @@ const FAMILY_VAULT_FACTORY_ADDRESSES = {
     "0x58d682dAc73551c6CD8Be22cF0dAF13466C9d621" as `0x${string}`,
   [baseSepolia.id]:
     "0x5F2171087a1ECda762afFbD26a8182656ce6623C" as `0x${string}`,
-  [lukso.id]: "0x2617c66707d40B33A869b1Dbb392b6fA5ca1D156" as `0x${string}`,
-
+  [xdc.id]: "0x66d2B12301cc5dee19D79f1A34161A2DB8cf8cA5" as `0x${string}`,
   [base.id]: "0x03a901a563FCD2692046FFd08A510f0246253596" as `0x${string}`,
 };
 
 const useVaultFactoryAddress = () => {
-  const { chainId } = useUpProvider();
+  const { chain } = useAccount();
   return FAMILY_VAULT_FACTORY_ADDRESSES[
-    (chainId as keyof typeof FAMILY_VAULT_FACTORY_ADDRESSES) ?? lukso.id
+    (chain?.id as keyof typeof FAMILY_VAULT_FACTORY_ADDRESSES) ?? base.id
   ];
 };
 
